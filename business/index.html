@@ -511,7 +511,32 @@
           if (doc.exists) {
             renderListing(doc.data(), slug);
           } else {
-            renderNotFound(slug);
+            // Fallback: query listings collection
+            db.collection('listings').where('status', '==', 'approved').get()
+              .then(snapshot => {
+                let matchedData = null;
+                const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]/g, '');
+                
+                snapshot.forEach(listingDoc => {
+                  const data = listingDoc.data();
+                  const cleanName = (data.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const webUrl = (data.website || '').toLowerCase();
+                  
+                  if (listingDoc.id === slug || data.slug === slug || cleanName === cleanSlug || webUrl.includes(`/business/${cleanSlug}`) || webUrl.includes(`/${cleanSlug}`)) {
+                    matchedData = data;
+                  }
+                });
+
+                if (matchedData) {
+                  renderListing(matchedData, slug);
+                } else {
+                  renderNotFound(slug);
+                }
+              })
+              .catch(err => {
+                console.error('Listings fallback query error:', err);
+                renderNotFound(slug);
+              });
           }
         })
         .catch(err => {
