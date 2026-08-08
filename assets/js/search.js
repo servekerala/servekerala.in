@@ -1,54 +1,98 @@
 // ==========================================================
-// SERVEKERALA.IN – DYNAMIC CLIENT-SIDE SEARCH AUTOCOMPLETE
+// SERVEKERALA.IN – DYNAMIC CLIENT-SIDE SEARCH AUTOCOMPLETE & ROUTING
 // ==========================================================
 
 const initSearch = () => {
-  // Directory mapping index
+  // Comprehensive Directory Services & Destinations Index
   const servicesList = [
-    { name: 'Solar Installation', path: '/services/solar-installation/' },
-    { name: 'Plumber', path: '/services/plumber/' },
-    { name: 'Electrician', path: '/services/electrician/' },
-    { name: 'AC Service', path: '/services/ac-service/' },
-    { name: 'CCTV Installation', path: '/services/cctv-installation/' },
-    { name: 'Home Cleaning', path: '/services/home-cleaning/' },
-    { name: 'Pest Control', path: '/services/pest-control/' },
-    { name: 'Water Purifier Service', path: '/services/water-purifier-service/' }
+    { name: 'Auto Mithram (Auto Rickshaw Directory)', path: '/auto-mithram/', keywords: ['auto', 'autorickshaw', 'rickshaw', 'driver', 'mithram', 'auto stand'] },
+    { name: 'Solar Installation', path: '/services/solar-installation/', keywords: ['solar', 'panel', 'inverter', 'green energy'] },
+    { name: 'Plumber & Plumbing', path: '/services/plumber/', keywords: ['plumber', 'pipe', 'leak', 'water fitting'] },
+    { name: 'Electrician & Electrical Services', path: '/services/electrician/', keywords: ['electrician', 'wiring', 'fuse', 'power'] },
+    { name: 'AC Service & Repair', path: '/services/ac-service/', keywords: ['ac', 'air conditioner', 'cooling', 'fridge'] },
+    { name: 'CCTV Installation & Security', path: '/services/cctv-installation/', keywords: ['cctv', 'camera', 'security', 'surveillance'] },
+    { name: 'Home Cleaning', path: '/services/home-cleaning/', keywords: ['cleaning', 'housekeeping', 'deep clean'] },
+    { name: 'Pest Control', path: '/services/pest-control/', keywords: ['pest', 'termite', 'cockroach', 'disinfection'] },
+    { name: 'Water Purifier Service', path: '/services/water-purifier-service/', keywords: ['water purifier', 'ro', 'filter', 'water filter'] },
+    { name: 'Battery Shops & Dealers', path: '/services/', keywords: ['battery', 'inverter battery', 'car battery'] },
+    { name: 'Fuel Stations & Petrol Pumps', path: '/services/', keywords: ['fuel', 'petrol', 'diesel', 'gas station'] },
+    { name: 'Hotels & Accommodations', path: '/services/', keywords: ['hotel', 'resort', 'stay', 'lodge'] },
+    { name: 'Restaurants & Dining', path: '/services/', keywords: ['restaurant', 'food', 'dining', 'bakery'] },
+    { name: 'Hospitals & Medical Centers', path: '/services/', keywords: ['hospital', 'clinic', 'doctor', 'healthcare'] }
   ];
 
+  // Specific Verified Business Profiles
+  const businessList = [
+    { name: 'Aqua Wellness (KYK Water Purifiers)', path: '/business/aquawellness/', keywords: ['aquawellness', 'aqua wellness', 'kyk', 'alkaline'] },
+    { name: 'Battery House (Thiruvalla)', path: '/business/battery-house-thiruvalla/', keywords: ['battery house', 'battery house thiruvalla'] },
+    { name: 'Solis Green India', path: '/solis-green-india/', keywords: ['solis', 'solis green', 'solis green india'] },
+    { name: 'Celtron Energies', path: '/business/celtron-energies/', keywords: ['celtron', 'celtron energies'] }
+  ];
+
+  // Complete Kerala Districts & Major Towns Index
   const locationsList = [
+    { name: 'Pathanamthitta', type: 'district', path: '/pathanamthitta/solar-installation/' },
+    { name: 'Thiruvalla', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/thiruvalla/' },
+    { name: 'Adoor', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/adoor/' },
+    { name: 'Ranni', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/ranni/' },
+    { name: 'Pandalam', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/pandalam/' },
+    { name: 'Kozhencherry', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/kozhencherry/' },
+    { name: 'Konni', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/konni/' },
+    
+    { name: 'Kottayam', type: 'district', path: '/kottayam/solar-installation/' },
+    { name: 'Changanacherry', type: 'town', district: 'Kottayam', path: '/kottayam/solar-installation/changanacherry/' },
+    { name: 'Ettumanoor', type: 'town', district: 'Kottayam', path: '/kottayam/solar-installation/ettumanoor/' },
+    { name: 'Pala', type: 'town', district: 'Kottayam', path: '/kottayam/solar-installation/pala/' },
+    { name: 'Vaikom', type: 'town', district: 'Kottayam', path: '/kottayam/solar-installation/vaikom/' },
+
     { name: 'Alappuzha', type: 'district', path: '/alappuzha/solar-installation/' },
     { name: 'Cherthala', type: 'town', district: 'Alappuzha', path: '/alappuzha/solar-installation/cherthala/' },
     { name: 'Haripad', type: 'town', district: 'Alappuzha', path: '/alappuzha/solar-installation/haripad/' },
     { name: 'Kayamkulam', type: 'town', district: 'Alappuzha', path: '/alappuzha/solar-installation/kayamkulam/' },
     { name: 'Mavelikkara', type: 'town', district: 'Alappuzha', path: '/alappuzha/solar-installation/mavelikkara/' },
-    { name: 'Kottayam', type: 'district', path: '/kottayam/solar-installation/' },
-    { name: 'Changanacherry', type: 'town', district: 'Kottayam', path: '/kottayam/solar-installation/changanacherry/' },
-    { name: 'Pathanamthitta', type: 'district', path: '/pathanamthitta/solar-installation/' },
-    { name: 'Thiruvalla', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/thiruvalla/' },
-    { name: 'Adoor', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/adoor/' },
-    { name: 'Konni', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/konni/' },
-    { name: 'Ranni', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/ranni/' },
-    { name: 'Pandalam', type: 'town', district: 'Pathanamthitta', path: '/pathanamthitta/solar-installation/pandalam/' }
+
+    { name: 'Kollam', type: 'district', path: '/kollam/solar-installation/' },
+    { name: 'Karunagappally', type: 'town', district: 'Kollam', path: '/kollam/solar-installation/karunagappally/' },
+    { name: 'Kottarakkara', type: 'town', district: 'Kollam', path: '/kollam/solar-installation/kottarakkara/' },
+    { name: 'Punalur', type: 'town', district: 'Kollam', path: '/kollam/solar-installation/punalur/' },
+    { name: 'Paravur', type: 'town', district: 'Kollam', path: '/kollam/solar-installation/paravur/' }
   ];
 
-  // Specific combinations index
-  const exactComboPaths = {
-    'plumber:pathanamthitta': '/pathanamthitta/plumber/',
-    'plumber:thiruvalla': '/pathanamthitta/plumber/thiruvalla/',
-    'solar-installation:alappuzha': '/alappuzha/solar-installation/',
-    'solar-installation:cherthala': '/alappuzha/solar-installation/cherthala/',
-    'solar-installation:haripad': '/alappuzha/solar-installation/haripad/',
-    'solar-installation:kayamkulam': '/alappuzha/solar-installation/kayamkulam/',
-    'solar-installation:mavelikkara': '/alappuzha/solar-installation/mavelikkara/',
-    'solar-installation:kottayam': '/kottayam/solar-installation/',
-    'solar-installation:changanacherry': '/kottayam/solar-installation/changanacherry/',
-    'solar-installation:pathanamthitta': '/pathanamthitta/solar-installation/',
-    'solar-installation:thiruvalla': '/pathanamthitta/solar-installation/thiruvalla/',
-    'solar-installation:adoor': '/pathanamthitta/solar-installation/adoor/',
-    'solar-installation:konni': '/pathanamthitta/solar-installation/konni/',
-    'solar-installation:ranni': '/pathanamthitta/solar-installation/ranni/',
-    'solar-installation:pandalam': '/pathanamthitta/solar-installation/pandalam/'
-  };
+  // Combined Route Dispatcher logic
+  function routeSearchQuery(rawQuery) {
+    const q = rawQuery.toLowerCase().trim();
+    if (!q) return;
+
+    // 1. Auto Rickshaw & Auto Mithram queries
+    if (['auto', 'autorickshaw', 'rickshaw', 'driver', 'auto mithram', 'mithram', 'auto stand'].some(k => q.includes(k))) {
+      window.location.href = '/auto-mithram/';
+      return;
+    }
+
+    // 2. Specific Business Profile Matches
+    const bMatch = businessList.find(b => b.keywords.some(k => q.includes(k)) || b.name.toLowerCase().includes(q));
+    if (bMatch) {
+      window.location.href = bMatch.path;
+      return;
+    }
+
+    // 3. Exact or Partial Service Matches
+    const sMatch = servicesList.find(s => s.name.toLowerCase() === q || s.keywords.some(k => q.includes(k)));
+    if (sMatch) {
+      window.location.href = sMatch.path;
+      return;
+    }
+
+    // 4. Location Matches
+    const lMatch = locationsList.find(l => l.name.toLowerCase() === q || q.includes(l.name.toLowerCase()));
+    if (lMatch) {
+      window.location.href = lMatch.path;
+      return;
+    }
+
+    // Default Fallback
+    window.location.href = '/services/';
+  }
 
   // ==================== HOMEPAGE HERO SEARCH ====================
   const serviceInput = document.getElementById('search-service');
@@ -56,7 +100,6 @@ const initSearch = () => {
   const searchBtn = document.getElementById('search-submit');
 
   if (serviceInput && locationInput && searchBtn) {
-    // Create suggestion dropdowns
     const serviceDropdown = document.createElement('div');
     serviceDropdown.className = 'suggestions-dropdown';
     serviceInput.parentNode.appendChild(serviceDropdown);
@@ -65,8 +108,7 @@ const initSearch = () => {
     locationDropdown.className = 'suggestions-dropdown';
     locationInput.parentNode.appendChild(locationDropdown);
 
-    // Helper: setup autocomplete trigger
-    function setupAutocomplete(inputEl, dropdownEl, items, type) {
+    function setupAutocomplete(inputEl, dropdownEl, items) {
       inputEl.addEventListener('input', () => {
         const query = inputEl.value.toLowerCase().trim();
         dropdownEl.innerHTML = '';
@@ -75,7 +117,11 @@ const initSearch = () => {
           return;
         }
 
-        const filtered = items.filter(item => item.name.toLowerCase().includes(query));
+        const filtered = items.filter(item => 
+          item.name.toLowerCase().includes(query) || 
+          (item.keywords && item.keywords.some(k => k.includes(query)))
+        );
+
         if (filtered.length === 0) {
           dropdownEl.style.display = 'none';
           return;
@@ -88,14 +134,12 @@ const initSearch = () => {
             inputEl.value = item.name;
             dropdownEl.style.display = 'none';
             inputEl.dataset.selectedPath = item.path;
-            inputEl.dataset.selectedKey = item.name.toLowerCase().replace(/\s+/g, '-');
           });
           dropdownEl.appendChild(row);
         });
         dropdownEl.style.display = 'block';
       });
 
-      // Close when clicking outside
       document.addEventListener('click', (e) => {
         if (!inputEl.contains(e.target) && !dropdownEl.contains(e.target)) {
           dropdownEl.style.display = 'none';
@@ -103,58 +147,25 @@ const initSearch = () => {
       });
     }
 
-    setupAutocomplete(serviceInput, serviceDropdown, servicesList, 'service');
-    setupAutocomplete(locationInput, locationDropdown, locationsList, 'location');
+    setupAutocomplete(serviceInput, serviceDropdown, [...servicesList, ...businessList]);
+    setupAutocomplete(locationInput, locationDropdown, locationsList);
 
-    // Submit action
     searchBtn.addEventListener('click', (e) => {
       e.preventDefault();
       const serviceVal = serviceInput.value.trim();
       const locationVal = locationInput.value.trim();
 
-      if (!serviceVal && !locationVal) return;
-
-      const serviceKey = serviceVal.toLowerCase().replace(/\s+/g, '-');
-      const locationKey = locationVal.toLowerCase().replace(/\s+/g, '-');
-      const comboKey = `${serviceKey}:${locationKey}`;
-
-      // 1. Try exact combined route
-      if (exactComboPaths[comboKey]) {
-        window.location.href = exactComboPaths[comboKey];
-        return;
+      if (serviceVal) {
+        routeSearchQuery(serviceVal);
+      } else if (locationVal) {
+        routeSearchQuery(locationVal);
+      } else {
+        window.location.href = '/services/';
       }
-
-      // 2. Try selected service input path
-      const serviceMatch = servicesList.find(s => s.name.toLowerCase() === serviceVal.toLowerCase());
-      if (serviceMatch && !locationVal) {
-        window.location.href = serviceMatch.path;
-        return;
-      }
-
-      // 3. Try selected location input path
-      const locationMatch = locationsList.find(l => l.name.toLowerCase() === locationVal.toLowerCase());
-      if (locationMatch && !serviceVal) {
-        window.location.href = locationMatch.path;
-        return;
-      }
-
-      // 4. Default fallback combos if not exact:
-      if (serviceMatch) {
-        window.location.href = serviceMatch.path;
-        return;
-      }
-
-      if (locationMatch) {
-        window.location.href = locationMatch.path;
-        return;
-      }
-
-      // Ultimate fallback: service directory
-      window.location.href = '/services/';
     });
   }
 
-  // ==================== HEADER SEARCH ====================
+  // ==================== GLOBAL HEADER SEARCH ====================
   const headerSearchInput = document.getElementById('header-search-input');
   const headerSearchSubmit = document.getElementById('header-search-submit');
   const headerSearchDropdown = document.getElementById('header-search-dropdown');
@@ -168,19 +179,32 @@ const initSearch = () => {
         return;
       }
 
-      // Filter services and locations
-      const filteredServices = servicesList.filter(s => s.name.toLowerCase().includes(query));
+      // Filter services, business profiles, and locations
+      const filteredServices = servicesList.filter(s => s.name.toLowerCase().includes(query) || (s.keywords && s.keywords.some(k => k.includes(query))));
+      const filteredBusinesses = businessList.filter(b => b.name.toLowerCase().includes(query) || (b.keywords && b.keywords.some(k => k.includes(query))));
       const filteredLocations = locationsList.filter(l => l.name.toLowerCase().includes(query));
 
-      if (filteredServices.length === 0 && filteredLocations.length === 0) {
+      if (filteredServices.length === 0 && filteredBusinesses.length === 0 && filteredLocations.length === 0) {
         headerSearchDropdown.style.display = 'none';
         return;
       }
 
-      // Populate services first
+      // 1. Populate Businesses
+      filteredBusinesses.forEach(b => {
+        const row = document.createElement('div');
+        row.innerHTML = `<span class="suggest-icon">🏢</span> <strong>${b.name}</strong>`;
+        row.addEventListener('click', () => {
+          headerSearchInput.value = b.name;
+          headerSearchDropdown.style.display = 'none';
+          window.location.href = b.path;
+        });
+        headerSearchDropdown.appendChild(row);
+      });
+
+      // 2. Populate Services
       filteredServices.forEach(s => {
         const row = document.createElement('div');
-        row.innerHTML = `<span class="suggest-icon">🔧</span> ${s.name}`;
+        row.innerHTML = `<span class="suggest-icon">${s.path.includes('auto') ? '🛺' : '🔧'}</span> ${s.name}`;
         row.addEventListener('click', () => {
           headerSearchInput.value = s.name;
           headerSearchDropdown.style.display = 'none';
@@ -189,7 +213,7 @@ const initSearch = () => {
         headerSearchDropdown.appendChild(row);
       });
 
-      // Populate locations
+      // 3. Populate Locations
       filteredLocations.forEach(l => {
         const row = document.createElement('div');
         row.innerHTML = `<span class="suggest-icon">📍</span> ${l.name}${l.district ? ` (${l.district})` : ''}`;
@@ -204,53 +228,18 @@ const initSearch = () => {
       headerSearchDropdown.style.display = 'block';
     });
 
-    const performHeaderSearch = () => {
-      const val = headerSearchInput.value.trim().toLowerCase();
-      if (!val) return;
-
-      // Try exact matches
-      const serviceMatch = servicesList.find(s => s.name.toLowerCase() === val);
-      if (serviceMatch) {
-        window.location.href = serviceMatch.path;
-        return;
-      }
-
-      const locationMatch = locationsList.find(l => l.name.toLowerCase() === val);
-      if (locationMatch) {
-        window.location.href = locationMatch.path;
-        return;
-      }
-
-      // Partial match fallback
-      const partialService = servicesList.find(s => s.name.toLowerCase().includes(val));
-      if (partialService) {
-        window.location.href = partialService.path;
-        return;
-      }
-
-      const partialLocation = locationsList.find(l => l.name.toLowerCase().includes(val));
-      if (partialLocation) {
-        window.location.href = partialLocation.path;
-        return;
-      }
-
-      // Default fallback
-      window.location.href = '/services/';
-    };
-
     headerSearchSubmit.addEventListener('click', (e) => {
       e.preventDefault();
-      performHeaderSearch();
+      routeSearchQuery(headerSearchInput.value);
     });
 
     headerSearchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        performHeaderSearch();
+        routeSearchQuery(headerSearchInput.value);
       }
     });
 
-    // Close when clicking outside
     document.addEventListener('click', (e) => {
       if (!headerSearchInput.contains(e.target) && !headerSearchDropdown.contains(e.target)) {
         headerSearchDropdown.style.display = 'none';
@@ -264,3 +253,4 @@ if (document.readyState === 'loading') {
 } else {
   initSearch();
 }
+

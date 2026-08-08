@@ -396,11 +396,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function filterAndRender() {
     const filtered = allDrivers.filter(driver => {
       // 1. Search filter
-      const matchesSearch = !currentFilter.search || 
-        (driver.driverName || '').toLowerCase().includes(currentFilter.search) ||
-        (driver.vehicleNumber || '').toLowerCase().includes(currentFilter.search) ||
-        (driver.standLocation || '').toLowerCase().includes(currentFilter.search) ||
-        (driver.town || '').toLowerCase().includes(currentFilter.search);
+      const searchQ = (currentFilter.search || '').toLowerCase();
+      const matchesSearch = !searchQ || 
+        (driver.driverName || '').toLowerCase().includes(searchQ) ||
+        (driver.vehicleNumber || '').toLowerCase().includes(searchQ) ||
+        (driver.standLocation || '').toLowerCase().includes(searchQ) ||
+        (driver.autoStand || '').toLowerCase().includes(searchQ) ||
+        (driver.town || '').toLowerCase().includes(searchQ) ||
+        (driver.locality || '').toLowerCase().includes(searchQ) ||
+        (driver.district || '').toLowerCase().includes(searchQ) ||
+        (driver.phone || '').includes(searchQ) ||
+        (driver.availability || '').toLowerCase().includes(searchQ);
 
       // 2. District filter
       const matchesDistrict = currentFilter.district === 'all' || 
