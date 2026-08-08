@@ -495,8 +495,8 @@
   window.addEventListener('DOMContentLoaded', () => {
     const slug = getSlugFromPath();
 
-    if (!slug || slug === 'listing') {
-      renderNotFound('');
+    if (!slug || slug === 'listing' || slug === 'business') {
+      window.location.replace('/services/');
       return;
     }
 
