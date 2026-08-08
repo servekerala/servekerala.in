@@ -464,6 +464,37 @@ if (typeof firebase !== 'undefined') {
       if (countPendingSpan) countPendingSpan.textContent = pendingCount;
       if (countApprovedSpan) countApprovedSpan.textContent = approvedCount;
       if (countRejectedSpan) countRejectedSpan.textContent = rejectedCount;
+
+      let totalCalls = 0;
+      let totalWa = 0;
+      let totalViews = 0;
+
+      allDocuments.forEach(d => {
+        totalCalls += (d.callClicks || 0);
+        totalWa += (d.whatsappClicks || 0);
+        totalViews += (d.profileViews || 0);
+      });
+
+      let summaryEl = document.getElementById('admin-click-summary');
+      if (!summaryEl) {
+        summaryEl = document.createElement('div');
+        summaryEl.id = 'admin-click-summary';
+        summaryEl.style.cssText = 'background: linear-gradient(135deg, #064e3b, #047857); color: white; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 4px 14px rgba(6,78,59,0.18);';
+        const container = document.getElementById('admin-listings-container');
+        if (container && container.parentNode) {
+          container.parentNode.insertBefore(summaryEl, container);
+        }
+      }
+
+      const collectionLabel = activeCollection === 'auto_mithram' ? '🛺 Auto Mithram Performance' : (activeCollection === 'business_pages' ? '📄 Business Pages Performance' : '🔧 Services Directory Performance');
+      summaryEl.innerHTML = `
+        <div style="font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.04em; opacity:0.95;">${collectionLabel}</div>
+        <div style="display:flex; gap:12px; font-weight:700; font-size:14px; flex-wrap:wrap;">
+          <span style="background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.3); backdrop-filter:blur(4px);">📞 Total Calls: ${totalCalls}</span>
+          <span style="background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.3); backdrop-filter:blur(4px);">💬 Total WhatsApp Leads: ${totalWa}</span>
+          <span style="background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.3); backdrop-filter:blur(4px);">👁️ Total Views: ${totalViews}</span>
+        </div>
+      `;
     }
 
     // ==================== RENDER CARD ELEMENT ====================
@@ -535,7 +566,7 @@ if (typeof firebase !== 'undefined') {
               <div class="admin-meta-item"><strong>WhatsApp:</strong> ${item.whatsapp || '—'}</div>
               ${item.email ? `<div class="admin-meta-item"><strong>Email:</strong> ${item.email}</div>` : ''}
               ${item.website ? `<div class="admin-meta-item"><strong>Website:</strong> <a href="${item.website}" target="_blank" style="color:var(--primary);">Visit</a></div>` : ''}
-              <div class="admin-meta-item" style="grid-column:span 2;color:var(--accent);font-weight:700;background:var(--accent-light);padding:4px 8px;border-radius:4px;display:inline-block;width:fit-content;margin-top:4px;">📊 Clicks: ${item.callClicks || 0} Calls | ${item.whatsappClicks || 0} WhatsApp</div>
+              <div class="admin-meta-item" style="grid-column:span 2;color:#047857;font-weight:700;background:#dcfce7;padding:6px 12px;border-radius:6px;border:1px solid #86efac;margin-top:4px;">📊 Calls: ${item.callClicks || 0} | WhatsApp: ${item.whatsappClicks || 0} | Views: ${item.profileViews || 0}</div>
             </div>
             <div class="admin-desc" style="font-size:13px;color:var(--text-muted);margin-top:10px;line-height:1.5;">${(item.description || '').slice(0, 140)}${item.description && item.description.length > 140 ? '...' : ''}</div>
             <div class="admin-actions" style="margin-top:16px;flex-wrap:wrap;gap:8px;">
@@ -566,7 +597,7 @@ if (typeof firebase !== 'undefined') {
               <div class="admin-meta-item"><strong>Date:</strong> ${dateString}</div>
               ${addressHTML}
               ${mapHTML}
-              <div class="admin-meta-item" style="grid-column: span 2; color: var(--accent); font-weight: 700; background: var(--accent-light); padding: 4px 8px; border-radius: 4px; display: inline-block; width: fit-content; margin-top: 4px;">📊 Calls: ${item.callClicks || 0} | WhatsApp: ${item.whatsappClicks || 0}</div>
+              <div class="admin-meta-item" style="grid-column: span 2; color: #047857; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; margin-top: 4px;">📊 Calls: ${item.callClicks || 0} | WhatsApp: ${item.whatsappClicks || 0} | Views: ${item.profileViews || 0}</div>
               ${websiteHTML}
             </div>
             <div class="admin-desc">
@@ -591,6 +622,11 @@ if (typeof firebase !== 'undefined') {
               <div class="admin-meta-item"><strong>WhatsApp:</strong> ${item.whatsapp}</div>
               <div class="admin-meta-item"><strong>Hours:</strong> ${item.availableHours || 'N/A'}</div>
               <div class="admin-meta-item"><strong>Date:</strong> ${dateString}</div>
+              <div class="admin-meta-item" style="grid-column: span 2; color: #047857; font-weight: 700; background: #dcfce7; padding: 6px 12px; border-radius: 6px; border: 1px solid #86efac; margin-top: 6px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                <span>📞 <strong>Calls:</strong> ${item.callClicks || 0}</span>
+                <span>💬 <strong>WhatsApp:</strong> ${item.whatsappClicks || 0}</span>
+                <span>👁️ <strong>Views:</strong> ${item.profileViews || 0}</span>
+              </div>
             </div>
             <div class="admin-actions" style="margin-top: 16px;">
               ${actionsHTML}
