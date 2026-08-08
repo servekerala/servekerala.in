@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>List Your Business | ServeKerala.in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <meta name="description" content="List your local business on ServeKerala.in and receive direct customer calls from your service area. A simple, Kerala-focused local business platform." />
+  <link rel="canonical" href="https://servekerala.in/list-your-business/" />
+
+  <!-- Open Graph / Social Tags -->
+  <meta property="og:title" content="List Your Business | ServeKerala.in" />
+  <meta property="og:description" content="List your local business on ServeKerala.in and receive direct customer calls from your service area. A simple, Kerala-focused local business platform." />
+  <meta property="og:image" content="https://servekerala.in/assets/images/logo.png?v=2" />
+  <meta property="og:url" content="https://servekerala.in/list-your-business/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="List Your Business | ServeKerala.in" />
+  <meta name="twitter:description" content="List your local business on ServeKerala.in and receive direct customer calls from your service area. A simple, Kerala-focused local business platform." />
+  <meta name="twitter:image" content="https://servekerala.in/assets/images/logo.png?v=2" />
+  <meta name="keywords" content="list business kerala, local business listing kerala, service providers kerala, register business kerala" />
+  <meta name="author" content="ServeKerala.in" />
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css?v=2.6">
+  <script src="/assets/js/search.js?v=2.3" defer></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/listing.js?v=2.2" defer></script>
+
+  <!-- ================= GOOGLE TAG MANAGER ================= -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PP7859BT');
+  </script>
+  <!-- =============== END GOOGLE TAG MANAGER =============== -->
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+
+<body>
+
+<!-- ================= GOOGLE TAG MANAGER (NOSCRIPT) ================= -->
+<noscript>
+  <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PP7859BT"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- =============== END GOOGLE TAG MANAGER (NOSCRIPT) =============== -->
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="logo" aria-label="ServeKerala.in Home"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;"></a>
+        <div class="header-search">
+      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
+      <button id="header-search-submit" class="btn-header-search">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
+    </div>
+    <nav class="main-nav">
+      <a href="/">Home</a>
+      <a href="/services/">Services</a>
+      <a href="/auto-mithram/">Auto Mithram</a>
+      <a href="/list-your-business/" class="nav-cta active">List Your Business</a>
+      <a href="/contact/">Contact</a>
+    </nav>
+    <button class="hamburger-btn" id="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
+  </div>
+</header>
+<div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+<div class="mobile-nav-drawer" id="mobile-nav-drawer">
+  <div class="mobile-nav-header">
+    <a href="/" class="mobile-nav-logo"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 35px; width: auto;"></a>
+    <button class="mobile-nav-close" id="mobile-nav-close">&#10005;</button>
+  </div>
+  <div class="mobile-nav-links">
+    <a href="/">🏠 Home</a>
+    <a href="/services/">🔧 Services</a>
+    <a href="/auto-mithram/">🛺 Auto Mithram</a>
+    <a href="/contact/">📞 Contact</a>
+    <a href="/list-your-business/" class="nav-cta">List Your Business</a>
+  </div>
+</div>
+<script>(function(){var h=document.getElementById('hamburger-btn'),o=document.getElementById('mobile-nav-overlay'),d=document.getElementById('mobile-nav-drawer'),c=document.getElementById('mobile-nav-close');function open(){h.classList.add('open');o.classList.add('visible');d.classList.add('open');document.body.style.overflow='hidden';}function close(){h.classList.remove('open');o.classList.remove('visible');d.classList.remove('open');document.body.style.overflow='';}h.addEventListener('click',function(){d.classList.contains('open')?close():open();});c.addEventListener('click',close);o.addEventListener('click',close);})();</script>
+
+
+<!-- ================= BREADCRUMBS ================= -->
+<div class="breadcrumb-container">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="/">Home</a>
+      <span class="separator"></span>
+      <span class="current">List Your Business</span>
+    </nav>
+  </div>
+</div>
+
+<!-- ================= PAGE CONTENT ================= -->
+<section class="section">
+  <div class="container">
+    <h1 style="font-size: 36px; font-weight: 800; color: var(--primary); margin-bottom: 16px;">List Your Business on ServeKerala.in</h1>
+    <p style="font-size: 18px; color: var(--text-muted); line-height: 1.6; margin-bottom: 40px;">
+      Reach local customers across Kerala searching for your service. Setup your verified profile in just a few minutes. 
+      Choose direct calls or WhatsApp messages with zero platform commission.
+    </p>
+
+    <!-- BENEFITS GRID -->
+    <div class="grid grid-4" style="margin-bottom: 50px;">
+      <div class="card" style="padding: 24px; text-align: left; height: auto;">
+        <span style="font-size: 28px; display: block; margin-bottom: 8px;">📞</span>
+        <div class="card-title" style="font-size: 16px; margin-bottom: 6px;">Direct Customer Calls</div>
+        <p style="color: var(--text-muted); font-size: 13px;">Receive phone calls and WhatsApp messages directly to your phone.</p>
+      </div>
+
+      <div class="card" style="padding: 24px; text-align: left; height: auto;">
+        <span style="font-size: 28px; display: block; margin-bottom: 8px;">🌴</span>
+        <div class="card-title" style="font-size: 16px; margin-bottom: 6px;">Kerala Focused</div>
+        <p style="color: var(--text-muted); font-size: 13px;">Targeted location listing by district, sub-service, and town.</p>
+      </div>
+
+      <div class="card" style="padding: 24px; text-align: left; height: auto;">
+        <span style="font-size: 28px; display: block; margin-bottom: 8px;">💸</span>
+        <div class="card-title" style="font-size: 16px; margin-bottom: 6px;">Zero Lead Commission</div>
+        <p style="color: var(--text-muted); font-size: 13px;">We never charge per call or take cuts. Keep 100% of your earnings.</p>
+      </div>
+
+      <div class="card" style="padding: 24px; text-align: left; height: auto;">
+        <span style="font-size: 28px; display: block; margin-bottom: 8px;">✔️</span>
+        <div class="card-title" style="font-size: 16px; margin-bottom: 6px;">Verified Stamp</div>
+        <p style="color: var(--text-muted); font-size: 13px;">Gain customer confidence with a verified directory checkmark.</p>
+      </div>
+    </div>
+
+    <!-- TWO COLUMN: FORM & INFO -->
+    <div class="profile-main-layout" style="margin: 0;">
+      
+      <!-- LEFT: REGISTRATION FORM -->
+      <div class="lead-form-box">
+        <h3 style="font-size: 24px;">Business Listing Application</h3>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
+          Submit your business details. Our moderation team will review and publish your listing page within 24 hours.
+        </p>
+
+        <div id="form-status-message" class="alert-box"></div>
+
+        <form id="listing-form">
+          
+          <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">1. Business Profile</h4>
+          
+          <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bname">Business Name</label>
+              <input type="text" id="bname" required placeholder="e.g. Kerala Solar EPC">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bcat">Service Category</label>
+              <select id="bcat" required>
+                <!-- Dynamic options -->
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bweb">Website (Optional)</label>
+              <input type="url" id="bweb" placeholder="https://example.com">
+            </div>
+          </div>
+
+          <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">2. Service Area & Location</h4>
+          
+          <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bdist">Main District</label>
+              <select id="bdist" required>
+                <!-- Dynamic options -->
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="btowns">Towns Covered</label>
+              <input type="text" id="btowns" required placeholder="e.g. Thiruvalla, Changanassery, Chengannur">
+            </div>
+          </div>
+
+          <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="baddress">Physical Address (Optional)</label>
+              <input type="text" id="baddress" placeholder="e.g. Near Post Office, Kottayam, Kerala">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bmap">Google Maps Share Link (Optional)</label>
+              <input type="url" id="bmap" placeholder="e.g. https://maps.app.goo.gl/XYZ">
+            </div>
+          </div>
+
+          <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">3. Contact Details</h4>
+          
+          <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bphone">Direct Phone</label>
+              <input type="tel" id="bphone" required placeholder="10-digit number">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bwa">WhatsApp Number</label>
+              <input type="tel" id="bwa" required placeholder="WhatsApp number">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bemail">Business Email</label>
+              <input type="email" id="bemail" required placeholder="contact@example.com">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 16px;">
+            <label for="bdesc">Business Summary (Short intro)</label>
+            <textarea id="bdesc" rows="3" required placeholder="Describe your team's experience, brands you use, warranty policies, or rates..."></textarea>
+          </div>
+
+          <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bservices">Services Offered (One per line)</label>
+              <textarea id="bservices" rows="4" required placeholder="e.g.&#10;Residential On-Grid Solar Plants&#10;Commercial Installations&#10;Subsidy Assistance"></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bwhychoose">Why Choose Us (One per line)</label>
+              <textarea id="bwhychoose" rows="4" required placeholder="e.g.&#10;Experienced Team&#10;End-to-End EPC&#10;Reliable After-Sales"></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-form-submit" style="width: auto; padding: 14px 40px; margin-top: 24px;">Submit Application</button>
+        </form>
+      </div>
+
+      <!-- RIGHT: SUBMISSION GUIDES -->
+      <div class="sidebar-sticky">
+        <div class="info-box" style="margin-bottom: 24px;">
+          <h3>WhatsApp Submission</h3>
+          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+            Rather send details directly? Message us on WhatsApp and our team will build your page:
+          </p>
+          <a href="https://wa.me/918281770660" class="btn btn-primary" style="font-size: 14px; padding: 10px 20px; border-radius: 999px;">
+            Submit via WhatsApp
+          </a>
+        </div>
+
+        <div class="trust-banner" style="margin-bottom: 0;">
+          📢 <strong>Verification Info:</strong> Verified badges are provided free of cost. Our team will verify phone numbers and coordinates prior to publishing to prevent fake registrations.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="container">
+    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+    <nav class="footer-nav">
+      <a href="/privacy-policy/">Privacy Policy</a>
+      <a href="/terms/">Terms & Conditions</a>
+      <a href="/disclaimer/">Disclaimer</a>
+      <a href="/contact/">Contact Us</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

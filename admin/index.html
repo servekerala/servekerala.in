@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard | ServeKerala.in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="canonical" href="https://servekerala.in/admin/" />
+
+  <!-- Open Graph / Social Tags -->
+  <meta property="og:title" content="Admin Dashboard | ServeKerala.in" />
+  <meta property="og:description" content="ServeKerala connects you directly with verified local professionals." />
+  <meta property="og:image" content="https://servekerala.in/assets/images/logo.png?v=2" />
+  <meta property="og:url" content="https://servekerala.in/admin/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Admin Dashboard | ServeKerala.in" />
+  <meta name="twitter:description" content="ServeKerala connects you directly with verified local professionals." />
+  <meta name="twitter:image" content="https://servekerala.in/assets/images/logo.png?v=2" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css?v=2.6">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/admin.js?v=4.0" defer></script>
+
+  <!-- ================= GOOGLE TAG MANAGER ================= -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PP7859BT');
+  </script>
+  <!-- =============== END GOOGLE TAG MANAGER =============== -->
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+
+<body class="admin-page">
+
+<!-- ================= GOOGLE TAG MANAGER (NOSCRIPT) ================= -->
+<noscript>
+  <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PP7859BT"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- =============== END GOOGLE TAG MANAGER (NOSCRIPT) =============== -->
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="container">
+    <div class="logo">ServeKerala<span>.in</span></div>
+    <div class="header-search">
+      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
+      <button id="header-search-submit" class="btn-header-search">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
+    </div>
+    <nav class="main-nav">
+      <a href="/">Home</a>
+      <a href="/services/?v=1.6">Services</a>
+      <a href="/list-your-business/?v=1.6" class="nav-cta">List Your Business</a>
+      <a href="/contact/?v=1.6">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= MAIN CONTENT ================= -->
+<main class="admin-section">
+  <div class="container">
+
+    <!-- 1. LOGIN INTERFACE -->
+    <div id="login-container" class="login-container">
+      <div class="login-card">
+        <h2>Admin Console</h2>
+        <div id="login-error-message" class="alert-box alert-error" style="display: none; margin-bottom: 16px;"></div>
+        <form id="admin-login-form">
+          <div class="form-group">
+            <label for="admin-email">Admin Email</label>
+            <input type="email" id="admin-email" required placeholder="servekerala.in@gmail.com" autocomplete="username">
+          </div>
+          <div class="form-group" style="margin-top: 16px;">
+            <label for="admin-password">Password</label>
+            <input type="password" id="admin-password" required placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn-form-submit" style="margin-top: 24px; width: 100%;">Sign In</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. DASHBOARD INTERFACE (Hidden by default) -->
+    <div id="dashboard-container" class="admin-dashboard hidden">
+      <div class="admin-header">
+        <div>
+          <h2>Moderation Dashboard</h2>
+          <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Logged in as: <span id="admin-user-email" style="font-weight: 600;">servekerala.in@gmail.com</span></p>
+        </div>
+        <button id="admin-signout-btn" class="btn btn-outline btn-signout">Sign Out</button>
+      </div>
+
+      <!-- Content Type Tabs -->
+      <div class="admin-content-types" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap;">
+        <button class="content-type-btn active" data-type="listings" style="padding: 8px 16px; border: none; background: var(--primary); color: white; border-radius: 4px; cursor: pointer; font-weight: 600;">Services</button>
+        <button class="content-type-btn" data-type="auto_mithram" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">Auto Mithram</button>
+        <button class="content-type-btn" data-type="business_pages" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">📄 Business Pages</button>
+        <button class="content-type-btn" data-type="kpi_dashboard" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">📈 KPI Dashboard</button>
+        <button class="content-type-btn" data-type="page_generator" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">🚀 Page Generator</button>
+        <button class="content-type-btn" data-type="location_settings" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600; margin-left: 10px;">📍 Locations</button>
+        <button class="content-type-btn" data-type="seo_settings" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">🔍 SEO Settings</button>
+        <button class="content-type-btn" data-type="cms_settings" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600; margin-left: auto;">⚙️ CMS / Settings</button>
+      </div>
+
+      <!-- Status Tabs -->
+      <div id="admin-status-tabs" class="admin-tabs">
+        <button class="admin-tab-btn active" data-status="pending">Pending Review (<span id="count-pending">0</span>)</button>
+        <button class="admin-tab-btn" data-status="approved">Approved (<span id="count-approved">0</span>)</button>
+        <button class="admin-tab-btn" data-status="rejected">Archived (<span id="count-rejected">0</span>)</button>
+      </div>
+
+      <!-- Listings status alert -->
+      <div id="dashboard-status-message" class="alert-box" style="margin-bottom: 20px;"></div>
+
+      <!-- Business Pages Action Bar (shown only for business_pages tab) -->
+      <div id="business-pages-action-bar" style="display:none; margin-bottom: 20px;">
+        <button id="btn-create-business-page" class="btn btn-primary" style="padding: 10px 22px; font-size: 15px; font-weight: 700;">
+          + Create New Listing Page
+        </button>
+      </div>
+
+      <!-- Listings Grid (Used for Services & Auto Mithram & Business Pages) -->
+      <div id="admin-listings-container" class="admin-listings">
+        <!-- Rendered dynamically by admin.js -->
+        <p style="color: var(--text-muted); text-align: center; padding: 40px 0;">Loading data...</p>
+      </div>
+
+      <!-- CMS / Settings Section (Hidden by default) -->
+      <div id="admin-cms-container" class="admin-cms" style="display: none; background: var(--bg-base); padding: 30px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+        <h3 style="font-size: 20px; color: var(--primary); margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">Global Site Settings</h3>
+        
+        <form id="cms-settings-form">
+          <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">Home Page Content</h4>
+          
+          <div class="form-group">
+            <label for="cms-hero-title">Hero Title</label>
+            <input type="text" id="cms-hero-title" required placeholder="e.g. Find Verified Local Services in Kerala">
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 30px;">
+            <label for="cms-hero-desc">Hero Description</label>
+            <textarea id="cms-hero-desc" rows="3" required placeholder="Discover certified local service providers..."></textarea>
+          </div>
+
+          <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 12px; border-top: 1px solid var(--border-color); padding-top: 24px;">Contact Page Details</h4>
+          <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="cms-contact-email">Support Email</label>
+              <input type="email" id="cms-contact-email" required placeholder="servekerala.in@gmail.com">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="cms-contact-phone">Support Phone Number</label>
+              <input type="tel" id="cms-contact-phone" required placeholder="+919744482385">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="cms-contact-wa">Support WhatsApp</label>
+              <input type="tel" id="cms-contact-wa" required placeholder="+918281770660">
+            </div>
+          </div>
+          <div class="grid grid-2" style="gap: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="cms-contact-hours">Business Hours</label>
+              <input type="text" id="cms-contact-hours" required placeholder="Mon-Sat, 6:00 AM - 9:00 PM">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="cms-contact-address">Physical Address</label>
+              <textarea id="cms-contact-address" rows="2" required placeholder="Kottayam, Kerala"></textarea>
+            </div>
+          </div>
+
+          <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+            <button type="submit" class="btn btn-primary" id="btn-save-cms" style="padding: 12px 30px; font-size: 16px;">Save Global Settings</button>
+          </div>
+        </form>
+
+        </div>
+
+      
+      <!-- Locations Section -->
+      <div id="admin-locations-container" class="admin-cms" style="display: none; background: var(--bg-base); padding: 30px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+        <!-- Dynamic Settings Management -->
+        <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-top: 36px; margin-bottom: 12px; border-top: 1px solid var(--border-color); padding-top: 24px;">Manage Directory Parameters</h4>
+        <div class="grid grid-2" style="gap: 30px; margin-top: 20px;">
+          <!-- District Management -->
+          <div style="background: #ffffff; padding: 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+            <h5 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Main Districts</h5>
+            <div id="district-list-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px;">
+              <!-- Districts rendered dynamically -->
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="new-district-input" placeholder="e.g. Kozhikode" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;">
+              <button type="button" id="btn-add-district" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 4px;">Add</button>
+            </div>
+          </div>
+
+          <!-- Category Management -->
+          <div style="background: #ffffff; padding: 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+            <h5 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Service Categories</h5>
+            <div id="category-list-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px;">
+              <!-- Categories rendered dynamically -->
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="new-category-name" placeholder="Display Name (e.g. Plumber)" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;">
+                <input type="text" id="new-category-id" placeholder="Slug/ID (e.g. plumbing)" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;">
+              </div>
+              <button type="button" id="btn-add-category" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 4px; width: 100%;">Add Category</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap: 30px; margin-top: 20px;">
+          <!-- Town Management -->
+          <div style="background: #ffffff; padding: 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h5 style="font-size: 15px; font-weight: 700; color: var(--primary); margin: 0;">Towns</h5>
+              <select id="manage-town-district-select" style="padding: 4px 8px; font-size: 13px; border-radius: 4px; border: 1px solid var(--border-color); max-width: 140px;">
+                 <option value="">Select District</option>
+              </select>
+            </div>
+            <div id="town-list-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px;">
+              <p style="font-size: 13px; color: var(--text-muted); padding: 4px;">Please select a District first.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="new-town-input" placeholder="e.g. Thiruvalla" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;" disabled>
+              <button type="button" id="btn-add-town" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 4px;" disabled>Add</button>
+            </div>
+          </div>
+
+          <!-- Locality Management -->
+          <div style="background: #ffffff; padding: 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px;">
+              <h5 style="font-size: 15px; font-weight: 700; color: var(--primary); margin: 0;">Localities / Areas</h5>
+              <div style="display: flex; gap: 4px;">
+                <select id="manage-locality-district-select" style="padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid var(--border-color); max-width: 100px;">
+                   <option value="">Select District</option>
+                </select>
+                <select id="manage-locality-town-select" style="padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid var(--border-color); max-width: 100px;" disabled>
+                   <option value="">Select Town</option>
+                </select>
+              </div>
+            </div>
+            <div id="locality-list-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px;">
+              <p style="font-size: 13px; color: var(--text-muted); padding: 4px;">Please select Town first.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="new-locality-input" placeholder="e.g. KSRTC Stand" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;" disabled>
+              <button type="button" id="btn-add-locality" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 4px;" disabled>Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <!-- Page Generator Section -->
+      <div id="admin-page-generator-container" class="admin-cms" style="display: none; background: var(--bg-base); padding: 30px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <h3 style="font-size: 20px; color: var(--primary); margin: 0;">Automated Page Generator</h3>
+          <button id="btn-save-page-generator" class="btn btn-primary" style="padding: 8px 16px;">Save Configuration & Deploy</button>
+        </div>
+        
+        <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 15px; line-height: 1.6;">
+          Define the configurations here. The Vercel build script will read these settings and automatically generate hundreds of static HTML pages for both the Service Directory and Auto Mithram directory!
+        </p>
+
+        <form id="page-generator-form">
+          <div class="grid grid-2" style="gap: 40px; margin-bottom: 40px;">
+            <!-- Service Directory Config -->
+            <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                Service Directory
+                <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">JSON Configuration</span>
+              </h4>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Defines the district/town mappings for services (e.g. Plumber in Kottayam).</p>
+              <textarea id="pg-service-config" rows="12" style="width: 100%; font-family: monospace; font-size: 13px; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-surface); resize: vertical;"></textarea>
+            </div>
+
+            <!-- Auto Mithram Config -->
+            <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                Auto Mithram Stands
+                <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">JSON Configuration</span>
+              </h4>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Defines the districts, towns, and specific auto stands (e.g. Railway Station in Thiruvalla).</p>
+              <textarea id="pg-auto-config" rows="12" style="width: 100%; font-family: monospace; font-size: 13px; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-surface); resize: vertical;"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+
+
+      <!-- SEO Settings Section (Hidden by default) -->
+      <div id="admin-seo-container" class="admin-seo" style="display: none; background: var(--bg-base); padding: 30px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+        <h3 style="font-size: 20px; color: var(--primary); margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">Page SEO Settings</h3>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Configure Meta Titles, Descriptions, and Keywords for core pages. Changes will be applied during the next deployment build.</p>
+        
+        <form id="seo-settings-form">
+          <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">🏠 Home Page (`/index.html`)</h4>
+            <div class="form-group">
+              <label>Meta Title</label>
+              <input type="text" id="seo-home-title" placeholder="e.g. ServeKerala.in - Find Trusted Local Services">
+            </div>
+            <div class="form-group">
+              <label>Meta Description</label>
+              <textarea id="seo-home-desc" rows="2" placeholder="Discover verified local service providers in Kerala..."></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Keywords (Comma separated)</label>
+              <input type="text" id="seo-home-keywords" placeholder="e.g. kerala services, local businesses, auto mithram">
+            </div>
+          </div>
+
+          <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">🚕 Auto Mithram (`/auto-mithram/index.html`)</h4>
+            <div class="form-group">
+              <label>Meta Title</label>
+              <input type="text" id="seo-auto-title" placeholder="e.g. Auto Mithram - Find Auto Rickshaws in Kerala">
+            </div>
+            <div class="form-group">
+              <label>Meta Description</label>
+              <textarea id="seo-auto-desc" rows="2" placeholder="Connect directly with local auto rickshaw drivers..."></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Keywords (Comma separated)</label>
+              <input type="text" id="seo-auto-keywords" placeholder="e.g. auto rickshaw, kerala transport, auto mithram">
+            </div>
+          </div>
+
+          <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">🛠️ Services Directory (`/services/index.html`)</h4>
+            <div class="form-group">
+              <label>Meta Title</label>
+              <input type="text" id="seo-services-title" placeholder="e.g. Browse All Services | ServeKerala.in">
+            </div>
+            <div class="form-group">
+              <label>Meta Description</label>
+              <textarea id="seo-services-desc" rows="2" placeholder="Browse verified plumbers, electricians, AC repair..."></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Keywords (Comma separated)</label>
+              <input type="text" id="seo-services-keywords" placeholder="e.g. plumber kerala, electrician, services">
+            </div>
+          </div>
+
+          <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+            <button type="submit" class="btn btn-primary" id="btn-save-seo" style="padding: 12px 30px; font-size: 16px;">Save SEO Settings</button>
+            <span id="seo-save-status" style="margin-left: 12px; font-size: 14px; font-weight: 600;"></span>
+          </div>
+        </form>
+      </div>
+
+      <!-- KPI Dashboard Section (Hidden by default) -->
+      <div id="admin-kpi-container" class="admin-kpi" style="display: none; background: var(--bg-base); padding: 30px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+        <h3 style="font-size: 20px; color: var(--primary); margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">Weekly KPI Dashboard</h3>
+        
+        <form id="kpi-report-form" style="background: #ffffff; padding: 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); margin-bottom: 30px;">
+          <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">Log New Weekly Report</h4>
+          
+          <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-week">Week Starting (Date) <span style="color:#dc2626;">*</span></label>
+              <input type="date" id="kpi-week" required />
+            </div>
+          </div>
+
+          <!-- Section 1: Traffic -->
+          <h5 style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-top: 16px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">Traffic</h5>
+          <div class="grid grid-2" style="gap: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-users">Total Users</label>
+              <input type="number" id="kpi-users" placeholder="e.g. 500" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-sessions">Total Sessions</label>
+              <input type="number" id="kpi-sessions" placeholder="e.g. 600" />
+            </div>
+          </div>
+
+          <!-- Section 2: SEO -->
+          <h5 style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-top: 16px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">Organic Search (SEO)</h5>
+          <div class="grid grid-3" style="gap: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-impressions">Impressions</label>
+              <input type="number" id="kpi-impressions" placeholder="e.g. 1500" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-clicks">Clicks</label>
+              <input type="number" id="kpi-clicks" placeholder="e.g. 100" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-ctr">CTR (%)</label>
+              <input type="number" step="0.1" id="kpi-ctr" placeholder="e.g. 6.5" />
+            </div>
+          </div>
+
+          <!-- Section 3: Leads -->
+          <h5 style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-top: 16px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">Leads & Conversions</h5>
+          <div class="grid grid-3" style="gap: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-wa-clicks">WhatsApp Clicks</label>
+              <input type="number" id="kpi-wa-clicks" placeholder="e.g. 45" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-phone-clicks">Phone Clicks</label>
+              <input type="number" id="kpi-phone-clicks" placeholder="e.g. 30" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-biz-regs">Business Registrations</label>
+              <input type="number" id="kpi-biz-regs" placeholder="e.g. 5" />
+            </div>
+          </div>
+
+          <!-- Section 4: Growth -->
+          <h5 style="font-size: 14px; font-weight: 700; color: var(--text-muted); margin-top: 16px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">Growth</h5>
+          <div class="grid grid-2" style="gap: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-new-listings">New Listings Added</label>
+              <input type="number" id="kpi-new-listings" placeholder="e.g. 10" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="kpi-new-districts">New District Pages</label>
+              <input type="number" id="kpi-new-districts" placeholder="e.g. 2" />
+            </div>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <button type="submit" class="btn btn-primary" id="btn-save-kpi" style="padding: 10px 24px; font-size: 15px;">💾 Save Weekly Report</button>
+          </div>
+        </form>
+
+        <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">Historical Reports</h4>
+        <div style="overflow-x: auto; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm);">
+          <table class="kpi-table" style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+            <thead>
+              <tr style="background: var(--bg-surface); border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 12px; border-right: 1px solid var(--border-color);">Week</th>
+                <th style="padding: 12px; border-right: 1px solid var(--border-color);">Traffic<br><span style="font-size: 11px; font-weight: normal;">(Users / Sess)</span></th>
+                <th style="padding: 12px; border-right: 1px solid var(--border-color);">SEO<br><span style="font-size: 11px; font-weight: normal;">(Imp / Clicks)</span></th>
+                <th style="padding: 12px; border-right: 1px solid var(--border-color);">Leads<br><span style="font-size: 11px; font-weight: normal;">(WA / Call / Reg)</span></th>
+                <th style="padding: 12px;">Growth<br><span style="font-size: 11px; font-weight: normal;">(Listings / Dist)</span></th>
+              </tr>
+            </thead>
+            <tbody id="kpi-table-body">
+              <tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading reports...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- ================= EDIT MODAL OVERLAY ================= -->
+<div id="edit-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Edit Business Application</h3>
+      <button class="modal-close" id="close-modal-btn">&times;</button>
+    </div>
+    <form id="edit-listing-form">
+      <input type="hidden" id="edit-id" />
+      <div class="modal-body">
+        
+        <div class="form-group">
+          <label for="edit-bname">Business Name</label>
+          <input type="text" id="edit-bname" required />
+        </div>
+
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bcat">Category</label>
+            <select id="edit-bcat" required>
+              <!-- Dynamic options -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bweb">Website (Optional)</label>
+            <input type="url" id="edit-bweb" />
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bdist">Main District</label>
+            <select id="edit-bdist" required>
+              <!-- Dynamic options -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-btowns">Towns Served</label>
+            <input type="text" id="edit-btowns" required />
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-baddress">Physical Address (Optional)</label>
+            <input type="text" id="edit-baddress" placeholder="e.g. Kottayam, Kerala" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bmap">Google Maps Share Link (Optional)</label>
+            <input type="url" id="edit-bmap" placeholder="e.g. https://maps.app.goo.gl/XYZ" />
+          </div>
+        </div>
+
+        <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bphone">Phone Number</label>
+            <input type="tel" id="edit-bphone" required />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bwa">WhatsApp Number</label>
+            <input type="tel" id="edit-bwa" required />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bemail">Email</label>
+            <input type="email" id="edit-bemail" required />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="edit-bdesc">Description</label>
+          <textarea id="edit-bdesc" rows="3" required></textarea>
+        </div>
+
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bservices">Services Offered (One per line)</label>
+            <textarea id="edit-bservices" rows="4"></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-bwhychoose">Why Choose Us (One per line)</label>
+            <textarea id="edit-bwhychoose" rows="4"></textarea>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="cancel-modal-btn" style="padding: 10px 20px; font-size: 14px;">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= EDIT MODAL OVERLAY (AUTO MITHRAM) ================= -->
+<div id="edit-modal-auto" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Edit Auto Mithram Profile</h3>
+      <button class="modal-close" id="close-modal-btn-auto">&times;</button>
+    </div>
+    <form id="edit-auto-form">
+      <input type="hidden" id="edit-auto-id" />
+      <div class="modal-body">
+        
+        <div class="grid grid-2" style="gap: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-name">Driver Name</label>
+            <input type="text" id="edit-auto-name" required />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-vehicle">Vehicle Number</label>
+            <input type="text" id="edit-auto-vehicle" required />
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-dist">District</label>
+            <select id="edit-auto-dist">
+              <option value="kottayam">Kottayam</option>
+              <option value="pathanamthitta">Pathanamthitta</option>
+              <option value="alappuzha">Alappuzha</option>
+              <option value="kollam">Kollam</option>
+              <option value="other">Other District</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-town">Town</label>
+            <select id="edit-auto-town" required>
+              <!-- Dynamic options -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-locality">Locality</label>
+            <select id="edit-auto-locality" required>
+              <!-- Dynamic options -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-stand">Auto Stand Name</label>
+            <input type="text" id="edit-auto-stand" required />
+          </div>
+        </div>
+
+        <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-phone">Call Number</label>
+            <input type="tel" id="edit-auto-phone" required />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-wa">WhatsApp</label>
+            <input type="tel" id="edit-auto-wa" required />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-time">Available Hours</label>
+            <input type="text" id="edit-auto-time" />
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="cancel-modal-btn-auto" style="padding: 10px 20px; font-size: 14px;">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= CREATE / EDIT BUSINESS PAGE MODAL ================= -->
+<div id="modal-business-page" class="modal-overlay">
+  <div class="modal-content" style="max-width: 760px;">
+    <div class="modal-header">
+      <h3 id="modal-bp-title">Create Business Listing Page</h3>
+      <button class="modal-close" id="close-modal-bp">&times;</button>
+    </div>
+    <form id="form-business-page">
+      <input type="hidden" id="bp-doc-id" />
+      <div class="modal-body">
+
+        <!-- Row 1: Name + Slug -->
+        <div class="grid grid-2" style="gap: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-name">Business Name <span style="color:#dc2626;">*</span></label>
+            <input type="text" id="bp-name" required placeholder="e.g. Solis Green India" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-slug">URL Slug <span style="color:#dc2626;">*</span> <span style="font-size:11px;font-weight:400;color:var(--text-muted);">(servekerala.in/business/<strong id="slug-preview">your-slug</strong>/)</span></label>
+            <input type="text" id="bp-slug" required placeholder="e.g. solis-green-india" pattern="[a-z0-9\-]+" title="Lowercase letters, numbers, and hyphens only" />
+          </div>
+        </div>
+
+        <!-- Row 2: Category + District -->
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-category">Category <span style="color:#dc2626;">*</span></label>
+            <select id="bp-category" required>
+              <!-- Populated dynamically from activeCategories -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-district">Main District <span style="color:#dc2626;">*</span></label>
+            <select id="bp-district" required>
+              <!-- Populated dynamically from activeDistricts -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 3: Towns + Website -->
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-towns">Towns / Areas Served</label>
+            <input type="text" id="bp-towns" placeholder="e.g. Kottayam, Changanacherry, Ettumanoor" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-website">Official Website (Optional)</label>
+            <input type="url" id="bp-website" placeholder="https://www.example.com" />
+          </div>
+        </div>
+
+        <!-- Row 4: Phone + WhatsApp + Email -->
+        <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-phone">Phone Number <span style="color:#dc2626;">*</span></label>
+            <input type="tel" id="bp-phone" required placeholder="+919876543210" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-whatsapp">WhatsApp Number <span style="color:#dc2626;">*</span></label>
+            <input type="tel" id="bp-whatsapp" required placeholder="+919876543210" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-email">Email (Optional)</label>
+            <input type="email" id="bp-email" placeholder="business@example.com" />
+          </div>
+        </div>
+
+        <!-- Row 5: Description -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="bp-desc">Business Description <span style="color:#dc2626;">*</span></label>
+          <textarea id="bp-desc" rows="3" required placeholder="Describe the business, what they do, and who they serve..."></textarea>
+        </div>
+
+        <!-- Row 6: Services + Why Choose -->
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-services">Services Offered <span style="font-size:11px;font-weight:400;color:var(--text-muted);">(one per line)</span></label>
+            <textarea id="bp-services" rows="5" placeholder="Residential Solar Installation&#10;Commercial Solar&#10;Subsidy Guidance&#10;Maintenance & Support"></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-whychoose">Why Choose Us <span style="font-size:11px;font-weight:400;color:var(--text-muted);">(one per line)</span></label>
+            <textarea id="bp-whychoose" rows="5" placeholder="10+ Years Experience&#10;Free Site Survey&#10;Subsidy Assistance&#10;Reliable After-Sales"></textarea>
+          </div>
+        </div>
+
+        <!-- Row 7: Address + Map -->
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-address">Physical Address (Optional)</label>
+            <input type="text" id="bp-address" placeholder="e.g. Kottayam, Kerala 686001" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-mapurl">Google Maps Link (Optional)</label>
+            <input type="url" id="bp-mapurl" placeholder="https://maps.app.goo.gl/..." />
+          </div>
+        </div>
+
+        <!-- Row 8: Google Business Profile (Optional) -->
+        <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-gbp-rating">Google Rating (e.g. 5.0)</label>
+            <input type="number" id="bp-gbp-rating" step="0.1" min="1" max="5" placeholder="5.0" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-gbp-reviews">Google Review Count</label>
+            <input type="number" id="bp-gbp-reviews" placeholder="112" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-gbp-url">Google Review / GBP Link</label>
+            <input type="url" id="bp-gbp-url" placeholder="https://g.page/r/... or search link" />
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button type="button" id="btn-generate-html" class="btn btn-outline" style="padding: 10px 20px; font-size: 14px; display:none;">⬇ Download Static HTML</button>
+        <div style="display:flex;gap:12px;">
+          <button type="button" class="btn btn-outline" id="cancel-modal-bp" style="padding: 10px 20px; font-size: 14px;">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-bp" style="padding: 10px 24px; font-size: 14px;">Save Listing Page</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer" style="margin-top: 80px;">
+  <div class="container">
+    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+    <nav class="footer-nav">
+      <a href="/privacy-policy/?v=1.6">Privacy Policy</a>
+      <a href="/terms/?v=1.6">Terms</a>
+      <a href="/contact/?v=1.6">Contact Us</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

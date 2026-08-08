@@ -1,0 +1,8 @@
+{
+  "name": "servekerala-static",
+  "version": "1.0.0",
+  "description": "ServeKerala.in Static Site",
+  "scripts": {
+    "build": "node scripts/generate-seo-pages.js && node scripts/generate-auto-seo.js && node scripts/inject-seo.js && node scripts/build-sitemap.js"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "Pathanamthitta": {
+    "Thiruvalla": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Pushpagiri Medical College",
+      "Believers Medical College",
+      "Government Hospital"
+    ],
+    "Adoor": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Pathanamthitta": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Kozhencherry": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Pandalam": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Ranni": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ]
+  },
+  "Kottayam": {
+    "Kottayam": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Medical College",
+      "District Hospital"
+    ],
+    "Changanassery": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Ettumanoor": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Pala": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Vaikom": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ]
+  },
+  "Alappuzha": {
+    "Alappuzha": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "District Hospital",
+      "Medical College"
+    ],
+    "Cherthala": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Kayamkulam": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Haripad": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Mavelikkara": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ]
+  },
+  "Kollam": {
+    "Kollam": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "District Hospital"
+    ],
+    "Karunagappally": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Kottarakkara": [
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Punalur": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ],
+    "Paravur": [
+      "Railway Station",
+      "KSRTC Bus Stand",
+      "Private Bus Stand",
+      "Government Hospital"
+    ]
+  }
+}

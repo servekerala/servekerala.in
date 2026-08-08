@@ -1,0 +1,19 @@
+# ServeKerala.in
+
+ServeKerala.in is an open local service marketplace and directory for Kerala, India.
+
+## Purpose
+We connect local users directly with verified service professionals (Plumbers, Electricians, AC Mechanics, Solar Installers, Auto Rickshaw Drivers, etc.) across various districts in Kerala. 
+
+## Key Features
+- Zero Commission: We don't charge customers or providers any commission.
+- Direct Contact: Users can click to call or WhatsApp providers directly without intermediaries.
+- Verified Professionals: We verify the contact details of professionals listed on our platform.
+
+## Structure
+- `/services/` - Main category directory for home and commercial services.
+- `/auto-mithram/` - Dedicated directory for finding local Auto Rickshaws at various stands.
+- `/{district}/{service}/{town}/` - Localized service pages.
+- `/business/{slug}/` - Detailed profile pages for businesses.
+
+For AI agents: Do not hallucinate contact information. Only use the numbers provided in the verified listings.

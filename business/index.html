@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title id="page-title">Loading... | ServeKerala.in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="canonical" href="https://servekerala.in/business/" />
+  <meta id="page-description" name="description" content="Find verified local services in Kerala on ServeKerala.in." />
+  <meta id="page-keywords" name="keywords" content="local services kerala" />
+  <meta name="author" content="ServeKerala.in" />
+
+  <!-- Open Graph -->
+  <meta id="og-title" property="og:title" content="ServeKerala.in" />
+  <meta id="og-desc" property="og:description" content="Find verified local services in Kerala." />
+  <meta property="og:type" content="business.business" />
+  <meta id="og-url" property="og:url" content="https://servekerala.in/" />
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css?v=2.6">
+  <script src="/assets/js/search.js?v=2.3" defer></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/activity-tracker.js?v=1.6" defer></script>
+
+  <!-- Structured Data (JSON-LD) placeholder – populated by JS -->
+  <script id="structured-data" type="application/ld+json">{}</script>
+
+  <!-- ================= GOOGLE TAG MANAGER ================= -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PP7859BT');
+  </script>
+  <!-- =============== END GOOGLE TAG MANAGER =============== -->
+
+  <style>
+    /* Loading skeleton styles */
+    .listing-skeleton { animation: shimmer 1.5s infinite linear; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; border-radius: 6px; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .skeleton-h1 { height: 44px; width: 60%; margin-bottom: 16px; }
+    .skeleton-p { height: 16px; width: 100%; margin-bottom: 10px; border-radius: 4px; }
+    .skeleton-p.short { width: 70%; }
+
+    /* Hero banner */
+    .listing-hero { background: linear-gradient(135deg, var(--primary) 0%, #1e3a5f 100%); padding: 60px 0 50px; color: white; position: relative; overflow: hidden; }
+    .listing-hero::before { content: ''; position: absolute; top: -50%; right: -10%; width: 500px; height: 500px; background: rgba(255,255,255,0.04); border-radius: 50%; }
+    .listing-hero-inner { display: flex; align-items: flex-start; gap: 28px; }
+    .listing-icon { width: 80px; height: 80px; background: rgba(255,255,255,0.15); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 36px; flex-shrink: 0; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+    .listing-hero h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; color: white; margin-bottom: 10px; line-height: 1.15; }
+    .listing-hero-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+    .listing-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.92); backdrop-filter: blur(8px); }
+    .listing-badge svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    
+    /* Contact action cards */
+    .contact-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid var(--border-color); transition: all 0.25s ease; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .contact-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-color: var(--primary); }
+    .contact-card-icon { font-size: 32px; margin-bottom: 10px; }
+    .contact-card h3 { font-size: 15px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .contact-card a { display: inline-block; font-size: 16px; font-weight: 700; color: var(--primary); text-decoration: none; padding: 10px 22px; background: var(--accent-light); border-radius: 8px; transition: all 0.2s ease; width: 100%; }
+    .contact-card a:hover { background: var(--primary); color: white; }
+    .contact-card.whatsapp a { background: #dcfce7; color: #16a34a; }
+    .contact-card.whatsapp a:hover { background: #16a34a; color: white; }
+    
+    /* Services list */
+    .services-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    .services-list li { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: white; border: 1px solid var(--border-color); border-radius: 10px; font-size: 15px; font-weight: 500; color: var(--text-main); }
+    .services-list li::before { content: '✓'; width: 22px; height: 22px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+    
+    /* Why choose grid */
+    .why-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .why-card { background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; text-align: center; transition: all 0.2s ease; }
+    .why-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .why-card-icon { font-size: 28px; margin-bottom: 8px; }
+    .why-card p { font-size: 14px; font-weight: 600; color: var(--text-main); margin: 0; }
+
+    /* Profile sidebar */
+    .profile-layout { display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
+    @media (max-width: 900px) { .profile-layout { grid-template-columns: 1fr; } }
+    .sidebar-card { background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .sidebar-card h4 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .sidebar-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+    .sidebar-row:last-child { border-bottom: none; }
+    .sidebar-row-label { font-weight: 600; color: var(--text-muted); min-width: 70px; }
+    .sidebar-row-val { color: var(--text-main); word-break: break-word; }
+    .sidebar-row-val a { color: var(--primary); text-decoration: none; }
+    .sidebar-row-val a:hover { text-decoration: underline; }
+
+    /* Map embed */
+    .map-container { border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); margin-top: 16px; }
+    .map-container iframe { display: block; width: 100%; border: none; }
+
+    /* Not found state */
+    .not-found-box { text-align: center; padding: 80px 40px; }
+    .not-found-box .emoji { font-size: 64px; margin-bottom: 20px; }
+    .not-found-box h2 { font-size: 28px; color: var(--text-main); margin-bottom: 12px; }
+    .not-found-box p { color: var(--text-muted); max-width: 400px; margin: 0 auto 28px; }
+
+    /* Verified badge */
+    .verified-strip { background: linear-gradient(90deg, #f0fdf4, #dcfce7); border: 1px solid #86efac; border-radius: 8px; padding: 12px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .verified-strip p { margin: 0; font-size: 13px; color: #15803d; }
+    .verified-strip strong { color: #166534; }
+  </style>
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+
+<body>
+
+<!-- ================= GOOGLE TAG MANAGER (NOSCRIPT) ================= -->
+<noscript>
+  <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PP7859BT"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="logo" aria-label="ServeKerala.in Home"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;"></a>
+    <div class="header-search">
+      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
+      <button id="header-search-submit" class="btn-header-search">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
+    </div>
+    <nav class="main-nav">
+      <a href="/">Home</a>
+      <a href="/services/?v=1.6">Services</a>
+      <a href="/list-your-business/?v=1.6">List Your Business</a>
+      <a href="/contact/?v=1.6">Contact</a>
+      <a href="/disclaimer/">Disclaimer</a>
+    </nav>
+<button class="hamburger-btn" id="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
+  </div>
+</header>
+<div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+<div class="mobile-nav-drawer" id="mobile-nav-drawer">
+  <div class="mobile-nav-header">
+    <a href="/" class="mobile-nav-logo"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 35px; width: auto;"></a>
+    <button class="mobile-nav-close" id="mobile-nav-close">&#10005;</button>
+  </div>
+  <div class="mobile-nav-links">
+    <a href="/">Home</a>
+    <a href="/services/">Services</a>
+    <a href="/auto-mithram/">Auto Mithram</a>
+    <a href="/contact/">Contact</a>
+    <a href="/list-your-business/" class="nav-cta">List Your Business</a>
+  </div>
+</div>
+<script>(function(){var h=document.getElementById('hamburger-btn'),o=document.getElementById('mobile-nav-overlay'),d=document.getElementById('mobile-nav-drawer'),c=document.getElementById('mobile-nav-close');function op(){h.classList.add('open');o.classList.add('visible');d.classList.add('open');document.body.style.overflow='hidden';}function cl(){h.classList.remove('open');o.classList.remove('visible');d.classList.remove('open');document.body.style.overflow='';}h.addEventListener('click',function(){d.classList.contains('open')?cl():op();});c.addEventListener('click',cl);o.addEventListener('click',cl);})();</script>
+
+<!-- ================= HERO (populated by JS) ================= -->
+<div id="listing-hero-section">
+  <!-- Skeleton -->
+  <section class="section" style="padding: 60px 0 50px; background: var(--bg-dark);">
+    <div class="container">
+      <div class="listing-skeleton skeleton-h1" style="background:rgba(255,255,255,0.1);"></div>
+      <div class="listing-skeleton skeleton-p" style="background:rgba(255,255,255,0.07); width:80%;"></div>
+      <div class="listing-skeleton skeleton-p short" style="background:rgba(255,255,255,0.07);"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= BREADCRUMB ================= -->
+<div class="breadcrumb-container">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="/">Home</a>
+      <span class="separator"></span>
+      <span id="breadcrumb-current" class="current">Loading...</span>
+      <a href="/disclaimer/">Disclaimer</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ================= MAIN CONTENT (populated by JS) ================= -->
+<main id="listing-main-content">
+  <!-- Skeleton loading state -->
+  <section class="section light-bg">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+        <div class="listing-skeleton" style="height:120px;border-radius:12px;"></div>
+        <div class="listing-skeleton" style="height:120px;border-radius:12px;"></div>
+        <div class="listing-skeleton" style="height:120px;border-radius:12px;"></div>
+      </div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <div class="listing-skeleton skeleton-p" style="width:40%;margin-bottom:24px;height:28px;"></div>
+      <div class="listing-skeleton skeleton-p"></div>
+      <div class="listing-skeleton skeleton-p short"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="container">
+    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+    <nav class="footer-nav">
+      <a href="/privacy-policy/">Privacy Policy</a>
+      <a href="/terms/">Terms & Conditions</a>
+      <a href="/disclaimer/">Disclaimer</a>
+      <a href="/contact/">Contact Us</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- ================= LISTING LOADER SCRIPT ================= -->
+<script>
+(function() {
+  'use strict';
+
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCX0GVM7M09qd2b5FlgvETPzJL702MMpMc",
+    authDomain: "servekerala2026.firebaseapp.com",
+    projectId: "servekerala2026",
+    storageBucket: "servekerala2026.firebasestorage.app",
+    messagingSenderId: "122091003614",
+    appId: "1:122091003614:web:e2114b7064aceff4f5ac4f"
+  };
+
+  // Extract slug from URL: /listing/business-slug/ → business-slug
+  function getSlugFromPath() {
+    const parts = window.location.pathname.replace(/\/$/, '').split('/');
+    return parts[parts.length - 1] || null;
+  }
+
+  // Category emoji map
+  const CATEGORY_ICONS = {
+    solar: '☀️', plumbing: '🔧', electrical: '⚡', ac: '❄️',
+    cctv: '📷', cleaning: '🧹', pest: '🐛', water: '💧',
+    default: '🏢'
+  };
+
+  function renderNotFound(slug) {
+    document.getElementById('page-title').textContent = 'Business Not Found | ServeKerala.in';
+    document.getElementById('breadcrumb-current').textContent = 'Not Found';
+    document.getElementById('listing-hero-section').innerHTML = '';
+    document.getElementById('listing-main-content').innerHTML = `
+      <section class="section">
+        <div class="container">
+          <div class="not-found-box">
+            <div class="emoji">🔍</div>
+            <h2>Business Listing Not Found</h2>
+            <p>We couldn't find a listing for "<strong>${slug || 'this page'}</strong>". It may have been removed or the URL is incorrect.</p>
+            <a href="/" class="btn btn-primary">Back to Home</a>
+          </div>
+        </div>
+      </section>`;
+  }
+
+  function renderListing(data, slug) {
+    const icon = CATEGORY_ICONS[data.category] || CATEGORY_ICONS.default;
+    const name = data.name || 'Business Listing';
+    const desc = data.description || '';
+    const phone = data.phone || '';
+    const whatsapp = data.whatsapp || phone;
+    const email = data.email || '';
+    const website = data.website || '';
+    const address = data.address || '';
+    const mapUrl = data.mapUrl || '';
+    const district = data.district || '';
+    const towns = data.towns || '';
+    const category = data.category || '';
+    const gbpRating = data.gbpRating || null;
+    const gbpReviews = data.gbpReviews || null;
+    const gbpUrl = data.gbpUrl || '';
+    const services = data.servicesOffered ? data.servicesOffered.split('\n').filter(Boolean) : [];
+    const whyChoose = data.whyChooseUs ? data.whyChooseUs.split('\n').filter(Boolean) : [];
+
+    // ── SEO meta tags ──
+    const displayCategory = data.primary_service || (category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Local Business');
+    const displayLocation = towns ? towns.split(',')[0].trim() : (district || 'Kerala');
+    document.getElementById('page-title').textContent = `${name} | ${displayCategory} in ${displayLocation} | ServeKerala`;
+    document.getElementById('page-description').setAttribute('content', desc.slice(0, 160) || `Find ${name} on ServeKerala.in.`);
+    document.getElementById('page-keywords').setAttribute('content', `${name.toLowerCase()}, ${category}, ${displayLocation.toLowerCase()}, kerala`);
+    document.getElementById('og-title').setAttribute('content', name);
+    document.getElementById('og-desc').setAttribute('content', desc.slice(0, 200));
+    document.getElementById('og-url').setAttribute('content', window.location.href);
+    document.getElementById('breadcrumb-current').textContent = name;
+
+    // ── JSON-LD Structured Data ──
+    const ld = {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": name,
+      "description": desc,
+      "url": window.location.href,
+      "telephone": phone,
+      "address": { "@type": "PostalAddress", "addressRegion": "Kerala", "addressCountry": "IN", "addressLocality": district }
+    };
+    if (email) ld.email = email;
+    if (website) ld.sameAs = [website];
+    document.getElementById('structured-data').textContent = JSON.stringify(ld, null, 2);
+
+    // ── GTM tracking ──
+    const track = (action) => {
+      if (typeof dataLayer !== 'undefined') {
+        dataLayer.push({ event: 'business_click', business_name: name, action_type: action });
+      }
+      if (typeof trackListingClick === 'function') {
+        trackListingClick(`/business/${slug}/`, action);
+      }
+    };
+
+    // ── Hero Section ──
+    let ratingHTML = '';
+    if (gbpRating && gbpReviews) {
+      const stars = '★'.repeat(Math.round(gbpRating)) + '☆'.repeat(5 - Math.round(gbpRating));
+      ratingHTML = `
+        <div class="listing-rating" style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+          <a href="${gbpUrl || mapUrl || '#'}" target="_blank" rel="noopener" style="text-decoration: none; display: flex; align-items: center; gap: 6px; color: #facc15;">
+            <span style="font-size: 18px; letter-spacing: 1px;">${stars}</span>
+            <span style="color: #ffffff; font-weight: 600; font-size: 15px;">${gbpRating}</span>
+            <span style="color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 400;">(${gbpReviews} Google Reviews)</span>
+          </a>
+        </div>`;
+    }
+
+    document.getElementById('listing-hero-section').innerHTML = `
+      <section class="listing-hero">
+        <div class="container">
+          <div class="listing-hero-inner">
+            <div class="listing-icon">${icon}</div>
+            <div style="flex:1;">
+              <h1>${name}</h1>
+              ${ratingHTML}
+              <p style="color:rgba(255,255,255,0.82);font-size:17px;margin:10px 0 0;line-height:1.6;max-width:680px;">${desc}</p>
+              <div class="listing-hero-meta">
+                ${district ? `<span class="listing-badge"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>${district}, Kerala</span>` : ''}
+                ${category ? `<span class="listing-badge"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>${category.charAt(0).toUpperCase() + category.slice(1)}</span>` : ''}
+                <span class="listing-badge" style="background:rgba(134,239,172,0.2);border-color:rgba(134,239,172,0.4);color:#bbf7d0;">
+                  <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Verified Listing
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>`;
+
+    // ── Contact Cards ──
+    let contactCards = '';
+    if (phone) contactCards += `
+      <div class="contact-card">
+        <div class="contact-card-icon">📞</div>
+        <h3>Phone</h3>
+        <a href="tel:${phone}" onclick="track('call')">Call Now</a>
+      </div>`;
+    if (whatsapp) contactCards += `
+      <div class="contact-card whatsapp">
+        <div class="contact-card-icon">💬</div>
+        <h3>WhatsApp</h3>
+        <a href="https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" onclick="track('whatsapp')">Chat on WhatsApp</a>
+      </div>`;
+    if (email) contactCards += `
+      <div class="contact-card">
+        <div class="contact-card-icon">✉️</div>
+        <h3>Email</h3>
+        <a href="mailto:${email}" onclick="track('email')">${email}</a>
+      </div>`;
+
+    // ── Services List ──
+    let servicesHTML = '';
+    if (services.length > 0) {
+      servicesHTML = `
+        <section class="section">
+          <div class="container">
+            <h2>Services Offered</h2>
+            <ul class="services-list" style="margin-top:20px;">
+              ${services.map(s => `<li>${s}</li>`).join('')}
+            </ul>
+          </div>
+        </section>`;
+    }
+
+    // ── Why Choose Us ──
+    let whyHTML = '';
+    if (whyChoose.length > 0) {
+      const whyIcons = ['⭐', '🔒', '💡', '🚀', '🎯', '🏆', '✅', '💎'];
+      whyHTML = `
+        <section class="section light-bg">
+          <div class="container">
+            <h2>Why Choose ${name}?</h2>
+            <div class="why-grid" style="margin-top:20px;">
+              ${whyChoose.map((w, i) => `
+                <div class="why-card">
+                  <div class="why-card-icon">${whyIcons[i % whyIcons.length]}</div>
+                  <p>${w}</p>
+                </div>`).join('')}
+            </div>
+          </div>
+        </section>`;
+    }
+
+    // ── Sidebar ──
+    let sidebarRows = '';
+    if (phone) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Phone</span><span class="sidebar-row-val"><a href="tel:${phone}">${phone}</a></span></div>`;
+    if (whatsapp) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">WhatsApp</span><span class="sidebar-row-val"><a href="https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}" target="_blank">${whatsapp}</a></span></div>`;
+    if (email) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Email</span><span class="sidebar-row-val"><a href="mailto:${email}">${email}</a></span></div>`;
+    if (district) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">District</span><span class="sidebar-row-val">${district}, Kerala</span></div>`;
+    if (towns) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Areas</span><span class="sidebar-row-val">${towns}</span></div>`;
+    if (website) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Website</span><span class="sidebar-row-val"><a href="${website}" target="_blank" rel="noopener">${website.replace(/^https?:\/\//,'')}</a></span></div>`;
+    if (address) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Address</span><span class="sidebar-row-val">${address}</span></div>`;
+    if (gbpRating) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Google Rating</span><span class="sidebar-row-val" style="color:#f59e0b;font-weight:700;">★ ${gbpRating} (${gbpReviews} reviews)</span></div>`;
+
+    let mapHTML = '';
+    if (mapUrl) {
+      // Convert Google Maps share link to embed URL if needed
+      let embedSrc = mapUrl;
+      if (mapUrl.includes('maps.app.goo.gl') || mapUrl.includes('goo.gl')) {
+        embedSrc = mapUrl; // will use as link, not embed
+        mapHTML = `<div style="margin-top:16px;"><a href="${mapUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;text-align:center;display:block;">📍 View on Google Maps</a></div>`;
+      } else if (mapUrl.includes('maps.google.com') || mapUrl.includes('/maps/')) {
+        const iframeSrc = mapUrl.replace('/maps/', '/maps/embed/v1/').includes('embed') ? mapUrl : `https://maps.google.com/maps?q=${encodeURIComponent(address || name + ' ' + district + ' Kerala')}&output=embed`;
+        mapHTML = `<div class="map-container"><iframe src="${iframeSrc}" height="200" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>`;
+      } else {
+        mapHTML = `<div style="margin-top:16px;"><a href="${mapUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;text-align:center;display:block;">📍 View on Google Maps</a></div>`;
+      }
+    }
+
+    let gbpButtonHTML = '';
+    if (gbpUrl) {
+      gbpButtonHTML = `<div style="margin-top:10px;"><a href="${gbpUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;text-align:center;display:block;border-color:#e5e7eb;color:var(--text-dark);background:#f9fafb;">✍️ Write a Google Review</a></div>`;
+    }
+
+    // ── Trust Note ──
+    const trustNote = `
+      <section class="section light-bg">
+        <div class="container">
+          <div class="verified-strip">
+            <span style="font-size:24px;">🛡️</span>
+            <p><strong>ServeKerala.in Verified Listing.</strong> We are a local business discovery platform. Customers contact ${name} directly. We do not sell leads or interfere in communication.</p>
+          </div>
+        </div>
+      </section>`;
+
+    // ── Main layout with sidebar ──
+    const mainContent = `
+      <!-- Contact Cards -->
+      <section class="section light-bg">
+        <div class="container">
+          <h2>Contact ${name}</h2>
+          <div class="grid grid-3" style="margin-top:20px;">
+            ${contactCards}
+          </div>
+        </div>
+      </section>
+
+      <!-- Body + Sidebar -->
+      <section class="section">
+        <div class="container">
+          <div class="profile-layout">
+            <!-- Left: Services + Why Choose -->
+            <div>
+              ${servicesHTML ? `<h2 style="margin-bottom:20px;">Services Offered</h2>
+                <ul class="services-list">${services.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
+              ${whyChoose.length > 0 ? `<h2 style="margin-top:40px;margin-bottom:20px;">Why Choose ${name}?</h2>
+                <div class="why-grid">${whyChoose.map((w, i) => `
+                  <div class="why-card"><div class="why-card-icon">${['⭐','🔒','💡','🚀','🎯','🏆','✅','💎'][i%8]}</div><p>${w}</p></div>`).join('')}</div>` : ''}
+            </div>
+            <!-- Right: Sidebar -->
+            <div>
+              <div class="sidebar-card">
+                <h4>Business Details</h4>
+                ${sidebarRows}
+                ${mapHTML}
+                ${gbpButtonHTML}
+              </div>
+              <div class="sidebar-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;">
+                <div style="text-align:center;">
+                  <div style="font-size:32px;margin-bottom:8px;">✅</div>
+                  <p style="font-size:14px;font-weight:700;color:#166534;margin:0;">Verified & Listed on ServeKerala.in</p>
+                  <p style="font-size:12px;color:#15803d;margin:6px 0 0;">Direct contact. No middlemen.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      ${trustNote}`;
+
+    document.getElementById('listing-main-content').innerHTML = mainContent;
+  }
+
+  // ── Bootstrap ──
+  window.addEventListener('DOMContentLoaded', () => {
+    const slug = getSlugFromPath();
+
+    if (!slug || slug === 'listing') {
+      renderNotFound('');
+      return;
+    }
+
+    try {
+      if (firebase.apps.length === 0) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+      const db = firebase.firestore();
+
+      db.collection('business_pages').doc(slug).get()
+        .then(doc => {
+          if (doc.exists) {
+            renderListing(doc.data(), slug);
+          } else {
+            renderNotFound(slug);
+          }
+        })
+        .catch(err => {
+          console.error('Firestore error:', err);
+          renderNotFound(slug);
+        });
+    } catch (e) {
+      console.error('Firebase init error:', e);
+      renderNotFound(slug);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

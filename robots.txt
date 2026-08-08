@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://servekerala.in/sitemap.xml
