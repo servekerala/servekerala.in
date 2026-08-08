@@ -279,11 +279,9 @@
     const whyChoose = data.whyChooseUs ? data.whyChooseUs.split('\n').filter(Boolean) : [];
 
     // ── SEO meta tags ──
-    const displayCategory = data.primary_service || (category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Local Business');
-    const displayLocation = towns ? towns.split(',')[0].trim() : (district || 'Kerala');
-    document.getElementById('page-title').textContent = `${name} | ${displayCategory} in ${displayLocation} | ServeKerala`;
+    document.getElementById('page-title').textContent = `${name} | ${district ? district + ', ' : ''}Kerala | ServeKerala.in`;
     document.getElementById('page-description').setAttribute('content', desc.slice(0, 160) || `Find ${name} on ServeKerala.in.`);
-    document.getElementById('page-keywords').setAttribute('content', `${name.toLowerCase()}, ${category}, ${displayLocation.toLowerCase()}, kerala`);
+    document.getElementById('page-keywords').setAttribute('content', `${name.toLowerCase()}, ${category}, ${district.toLowerCase()}, kerala`);
     document.getElementById('og-title').setAttribute('content', name);
     document.getElementById('og-desc').setAttribute('content', desc.slice(0, 200));
     document.getElementById('og-url').setAttribute('content', window.location.href);
@@ -483,182 +481,13 @@
                   <p style="font-size:14px;font-weight:700;color:#166534;margin:0;">Verified & Listed on ServeKerala.in</p>
                   <p style="font-size:12px;color:#15803d;margin:6px 0 0;">Direct contact. No middlemen.</p>
                 </div>
-    // ── Hero Section ──
-    let ratingHTML = '';
-    if (gbpRating && gbpReviews) {
-      const stars = '★'.repeat(Math.round(gbpRating)) + '☆'.repeat(5 - Math.round(gbpRating));
-      ratingHTML = `
-        <div class="listing-rating" style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
-          <a href="${gbpUrl || mapUrl || '#'}" target="_blank" rel="noopener" style="text-decoration: none; display: flex; align-items: center; gap: 6px; color: #facc15;">
-            <span style="font-size: 18px; letter-spacing: 1px;">${stars}</span>
-            <span style="color: #ffffff; font-weight: 600; font-size: 15px;">${gbpRating}</span>
-            <span style="color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 400;">(${gbpReviews} Google Reviews)</span>
-          </a>
-        </div>`;
-    }
-
-    document.getElementById('listing-hero-section').innerHTML = `
-      <section class="listing-hero">
-        <div class="container">
-          <div class="listing-hero-inner">
-            <div class="listing-icon">${icon}</div>
-            <div style="flex:1;">
-              <h1>${name}</h1>
-              ${ratingHTML}
-              <p style="color:rgba(255,255,255,0.82);font-size:17px;margin:10px 0 0;line-height:1.6;max-width:680px;">${desc}</p>
-              <div class="listing-hero-meta">
-                ${district ? `<span class="listing-badge"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>${district}, Kerala</span>` : ''}
-                ${category ? `<span class="listing-badge"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>${category.charAt(0).toUpperCase() + category.slice(1)}</span>` : ''}
-                <span class="listing-badge" style="background:rgba(134,239,172,0.2);border-color:rgba(134,239,172,0.4);color:#bbf7d0;">
-                  <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  Verified Listing
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>`;
-
-    // ── Contact Cards ──
-    let contactCards = '';
-    if (phone) contactCards += `
-      <div class="contact-card">
-        <div class="contact-card-icon">📞</div>
-        <h3>Phone</h3>
-        <a href="tel:${phone}" onclick="track('call')">Call Now</a>
-      </div>`;
-    if (whatsapp) contactCards += `
-      <div class="contact-card whatsapp">
-        <div class="contact-card-icon">💬</div>
-        <h3>WhatsApp</h3>
-        <a href="https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" onclick="track('whatsapp')">Chat on WhatsApp</a>
-      </div>`;
-    if (email) contactCards += `
-      <div class="contact-card">
-        <div class="contact-card-icon">✉️</div>
-        <h3>Email</h3>
-        <a href="mailto:${email}" onclick="track('email')">${email}</a>
-      </div>`;
-
-    // ── Services List ──
-    let servicesHTML = '';
-    if (services.length > 0) {
-      servicesHTML = `
-        <section class="section">
-          <div class="container">
-            <h2>Services Offered</h2>
-            <ul class="services-list" style="margin-top:20px;">
-              ${services.map(s => `<li>${s}</li>`).join('')}
-            </ul>
-          </div>
-        </section>`;
-    }
-
-    // ── Why Choose Us ──
-    let whyHTML = '';
-    if (whyChoose.length > 0) {
-      const whyIcons = ['⭐', '🔒', '💡', '🚀', '🎯', '🏆', '✅', '💎'];
-      whyHTML = `
-        <section class="section light-bg">
-          <div class="container">
-            <h2>Why Choose ${name}?</h2>
-            <div class="why-grid" style="margin-top:20px;">
-              ${whyChoose.map((w, i) => `
-                <div class="why-card">
-                  <div class="why-card-icon">${whyIcons[i % whyIcons.length]}</div>
-                  <p>${w}</p>
-                </div>`).join('')}
-            </div>
-          </div>
-        </section>`;
-    }
-
-    // ── Sidebar ──
-    let sidebarRows = '';
-    if (phone) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Phone</span><span class="sidebar-row-val"><a href="tel:${phone}">${phone}</a></span></div>`;
-    if (whatsapp) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">WhatsApp</span><span class="sidebar-row-val"><a href="https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}" target="_blank">${whatsapp}</a></span></div>`;
-    if (email) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Email</span><span class="sidebar-row-val"><a href="mailto:${email}">${email}</a></span></div>`;
-    if (district) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">District</span><span class="sidebar-row-val">${district}, Kerala</span></div>`;
-    if (towns) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Areas</span><span class="sidebar-row-val">${towns}</span></div>`;
-    if (website) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Website</span><span class="sidebar-row-val"><a href="${website}" target="_blank" rel="noopener">${website.replace(/^https?:\/\//,'')}</a></span></div>`;
-    if (address) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Address</span><span class="sidebar-row-val">${address}</span></div>`;
-    if (gbpRating) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Google Rating</span><span class="sidebar-row-val" style="color:#f59e0b;font-weight:700;">★ ${gbpRating} (${gbpReviews} reviews)</span></div>`;
-
-    let mapHTML = '';
-    if (mapUrl) {
-      // Convert Google Maps share link to embed URL if needed
-      let embedSrc = mapUrl;
-      if (mapUrl.includes('maps.app.goo.gl') || mapUrl.includes('goo.gl')) {
-        embedSrc = mapUrl; // will use as link, not embed
-        mapHTML = `<div style="margin-top:16px;"><a href="${mapUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;text-align:center;display:block;">📍 View on Google Maps</a></div>`;
-      } else if (mapUrl.includes('maps.google.com') || mapUrl.includes('/maps/')) {
-        const iframeSrc = mapUrl.replace('/maps/', '/maps/embed/v1/').includes('embed') ? mapUrl : `https://maps.google.com/maps?q=${encodeURIComponent(address || name + ' ' + district + ' Kerala')}&output=embed`;
-        mapHTML = `<div class="map-container"><iframe src="${iframeSrc}" height="200" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>`;
-      } else {
-        mapHTML = `<div style="margin-top:16px;"><a href="${mapUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;text-align:center;display:block;">📍 View on Google Maps</a></div>`;
-      }
-    }
-
-    let gbpButtonHTML = '';
-    if (gbpUrl) {
-      gbpButtonHTML = `<div style="margin-top:10px;"><a href="${gbpUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;text-align:center;display:block;border-color:#e5e7eb;color:var(--text-dark);background:#f9fafb;">✍️ Write a Google Review</a></div>`;
-    }
-
-    // ── Trust Note ──
-    const trustNote = `
-      <section class="section light-bg">
-        <div class="container">
-          <div class="verified-strip">
-            <span style="font-size:24px;">🛡️</span>
-            <p><strong>ServeKerala.in Verified Listing.</strong> We are a local business discovery platform. Customers contact ${name} directly. We do not sell leads or interfere in communication.</p>
-          </div>
-        </div>
-      </section>`;
-
-    // ── Main layout with sidebar ──
-    const mainContent = `
-      <!-- Contact Cards -->
-      <section class="section light-bg">
-        <div class="container">
-          <h2>Contact ${name}</h2>
-          <div class="grid grid-3" style="margin-top:20px;">
-            ${contactCards}
-          </div>
-        </div>
-      </section>
-
-      <!-- Body + Sidebar -->
-      <section class="section">
-        <div class="container">
-          <div class="profile-layout">
-            <!-- Left: Services + Why Choose -->
-            <div>
-              ${servicesHTML ? `<h2 style="margin-bottom:20px;">Services Offered</h2>
-                <ul class="services-list">${services.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
-              ${whyChoose.length > 0 ? `<h2 style="margin-top:40px;margin-bottom:20px;">Why Choose ${name}?</h2>
-                <div class="why-grid">${whyChoose.map((w, i) => `
-                  <div class="why-card"><div class="why-card-icon">${['⭐','🔒','💡','🚀','🎯','🏆','✅','💎'][i%8]}</div><p>${w}</p></div>`).join('')}</div>` : ''}
-            </div>
-            <!-- Right: Sidebar -->
-            <div>
-              <div class="sidebar-card">
-                <h4>Business Details</h4>
-                ${sidebarRows}
-                ${mapHTML}
-                ${gbpButtonHTML}
-              </div>
-              <div class="sidebar-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;">
-                <div style="text-align:center;">
-                  <div style="font-size:32px;margin-bottom:8px;">✅</div>
-                  <p style="font-size:14px;font-weight:700;color:#166534;margin:0;">Verified & Listed on ServeKerala.in</p>
-                  <p style="font-size:12px;color:#15803d;margin:6px 0 0;">Direct contact. No middlemen.</p>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
       ${trustNote}`;
+
     document.getElementById('listing-main-content').innerHTML = mainContent;
   }
 
