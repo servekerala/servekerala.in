@@ -480,9 +480,14 @@ if (typeof firebase !== 'undefined') {
         summaryEl = document.createElement('div');
         summaryEl.id = 'admin-click-summary';
         summaryEl.style.cssText = 'background: linear-gradient(135deg, #064e3b, #047857); color: white; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 4px 14px rgba(6,78,59,0.18);';
-        const container = document.getElementById('admin-listings-container');
-        if (container && container.parentNode) {
-          container.parentNode.insertBefore(summaryEl, container);
+        const tabsEl = document.getElementById('admin-status-tabs');
+        if (tabsEl && tabsEl.parentNode) {
+          tabsEl.parentNode.insertBefore(summaryEl, tabsEl);
+        } else {
+          const container = document.getElementById('admin-listings-container');
+          if (container && container.parentNode) {
+            container.parentNode.insertBefore(summaryEl, container);
+          }
         }
       }
 
