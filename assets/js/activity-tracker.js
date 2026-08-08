@@ -55,6 +55,15 @@ if (typeof firebase !== 'undefined') {
     }
 
     db.collection('auto_mithram').doc(docId).update(updateData)
-      .catch(err => console.error("Track auto click error:", err));
+      .catch(err => {
+        // Fallback: search auto_mithram collection by driver name or phone if docId was temporary
+        db.collection('auto_mithram').get().then(snap => {
+          snap.forEach(d => {
+            if (d.id === docId || d.data().phone === docId) {
+              db.collection('auto_mithram').doc(d.id).update(updateData);
+            }
+          });
+        }).catch(e => console.error("Track auto click fallback error:", e));
+      });
   };
 }

@@ -17,7 +17,7 @@ const firebaseConfig = {
 // --- FALLBACK DRIVERS (Pre-populated to guarantee instant rendering even if Firestore is slow/offline) ---
 const FALLBACK_DRIVERS = [
   {
-    id: "fb_driver_1",
+    id: "UHLl0ZEH7ZtFS0kjWgsB",
     driverName: "Ramesh Kumar",
     vehicleNumber: "KL-33-M-1234",
     phone: "9876543210",
@@ -33,8 +33,8 @@ const FALLBACK_DRIVERS = [
     pinCode: "123456"
   },
   {
-    id: "fb_driver_2",
-    driverName: "Rajeah",
+    id: "lM6RzNi3okvkaCqQ3d8J",
+    driverName: "Rajesh",
     vehicleNumber: "KL-25-B-8992",
     phone: "7012868664",
     whatsapp: "7012868664",
@@ -49,8 +49,8 @@ const FALLBACK_DRIVERS = [
     pinCode: "123456"
   },
   {
-    id: "fb_driver_3",
-    driverName: "Sunil Varma",
+    id: "5enl9wj9bImdKloZ2hPS",
+    driverName: "Shinoy Thomas",
     vehicleNumber: "KL-27-C-4589",
     phone: "9447123456",
     whatsapp: "9447123456",
