@@ -614,6 +614,13 @@ if (typeof firebase !== 'undefined') {
           `;
         } else if (activeCollection === 'auto_mithram') {
           // Render Auto Mithram Card
+          let waNumber = (item.whatsapp || item.phone || '').replace(/\D/g, '');
+          if (waNumber.length === 10) waNumber = '91' + waNumber;
+          const driverProfileUrl = `https://www.servekerala.in/auto-mithram/?search=${encodeURIComponent(item.driverName || '')}`;
+          const adminWaMsg = encodeURIComponent(`Namaste ${item.driverName}! 🛺 Welcome to Auto Mithram on ServeKerala.in!\n\nYour Autorickshaw profile (${item.vehicleNumber}) is APPROVED and active!\n\n📍 Stand: ${item.standLocation}\n🔗 Your Live Listing: ${driverProfileUrl}\n\nShare this link in your local WhatsApp groups so customers can call you directly!`);
+          const adminWaLink = `https://wa.me/${waNumber}?text=${adminWaMsg}`;
+          const sendWaBtnHTML = `<a href="${adminWaLink}" target="_blank" class="btn-admin" style="background:#25d366;color:white;border:none;font-weight:700;display:inline-flex;align-items:center;gap:4px;text-decoration:none;">💬 Send WhatsApp Welcome</a>`;
+
           card.innerHTML = `
             <div class="admin-card-header">
               <h4>${item.driverName}</h4>
@@ -633,7 +640,8 @@ if (typeof firebase !== 'undefined') {
                 <span>👁️ <strong>Views:</strong> ${item.profileViews || 0}</span>
               </div>
             </div>
-            <div class="admin-actions" style="margin-top: 16px;">
+            <div class="admin-actions" style="margin-top: 16px; flex-wrap: wrap; gap: 8px;">
+              ${sendWaBtnHTML}
               ${actionsHTML}
             </div>
           `;

@@ -222,14 +222,42 @@ if (typeof firebase !== 'undefined') {
       };
 
       db.collection('auto_mithram').add(dataToSave)
-      .then(() => {
+      .then((docRef) => {
         joinForm.style.display = 'none';
+
+        let driverWaNum = dataToSave.whatsapp.replace(/\D/g, '');
+        if (driverWaNum.length === 10) driverWaNum = '91' + driverWaNum;
+
+        const driverProfileUrl = `https://www.servekerala.in/auto-mithram/?search=${encodeURIComponent(dataToSave.driverName)}`;
+        const waMsgText = encodeURIComponent(`Hi ${dataToSave.driverName}! 🛺 Welcome to Auto Mithram on ServeKerala.in!\n\nYour driver application for vehicle ${dataToSave.vehicleNumber} (${dataToSave.autoStand}) is submitted!\n\n🔗 Profile Link: ${driverProfileUrl}\n\nKeep this link saved to share with customers!`);
+        const sendWaUrl = `https://wa.me/${driverWaNum}?text=${waMsgText}`;
+        const shareWaUrl = `https://wa.me/?text=${encodeURIComponent(`Hi! I have registered my Autorickshaw on ServeKerala Auto Mithram. Call or WhatsApp me directly for rides: ${driverProfileUrl}`)}`;
+
         statusMsg.innerHTML = `
-          <div style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 64px; color: var(--primary); margin-bottom: 16px;">✓</div>
-            <h2 style="color: var(--primary); margin-bottom: 16px;">Application Submitted Successfully!</h2>
-            <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 32px; line-height: 1.6;">Thank you for joining Auto Mithram. Your driver profile has been securely saved.<br>Our moderation team will review and publish it within 24 hours.</p>
-            <a href="/" class="btn-primary" style="display: inline-block; padding: 12px 32px; text-decoration: none;">Return to Home</a>
+          <div style="text-align: center; padding: 30px 20px;">
+            <div style="font-size: 56px; color: #059669; margin-bottom: 12px;">✓</div>
+            <h2 style="color: #064e3b; font-size: 26px; margin-bottom: 12px; font-weight: 800;">Application Submitted Successfully!</h2>
+            <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 24px; line-height: 1.6; max-width: 540px; margin-left: auto; margin-right: auto;">
+              Thank you <strong>${dataToSave.driverName}</strong>! Your autorickshaw profile (<strong>${dataToSave.vehicleNumber}</strong>) is registered. Our moderation team will verify and activate your listing within 24 hours.
+            </p>
+
+            <!-- WhatsApp Actions Card -->
+            <div style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 2px solid #6ee7b7; padding: 20px; border-radius: 14px; margin-bottom: 28px; text-align: center; box-shadow: 0 4px 12px rgba(16,185,129,0.1);">
+              <h4 style="color: #065f46; font-size: 17px; margin-bottom: 8px; font-weight: 700;">📱 Get Welcome Confirmation on WhatsApp</h4>
+              <p style="font-size: 13px; color: #047857; margin-bottom: 16px;">Click below to send your profile details & live link directly to your WhatsApp app:</p>
+              
+              <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="${sendWaUrl}" target="_blank" class="btn-primary" style="background: #25d366; border: none; color: white; padding: 12px 24px; font-weight: 700; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; box-shadow: 0 4px 10px rgba(37,211,102,0.3);">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                  Receive Profile Link on WhatsApp
+                </a>
+                <a href="${shareWaUrl}" target="_blank" class="btn-outline" style="border: 2px solid #059669; color: #047857; padding: 12px 24px; font-weight: 700; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; background: white;">
+                  📢 Share Profile with Friends / Drivers
+                </a>
+              </div>
+            </div>
+
+            <a href="/auto-mithram/" class="btn-primary" style="display: inline-block; padding: 12px 32px; text-decoration: none;">Go to Auto Mithram Directory</a>
           </div>
         `;
         statusMsg.classList.add('card-glass');
