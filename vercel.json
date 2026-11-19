@@ -13,27 +13,27 @@
     },
     {
       "source": "/submit-event/",
-      "destination": "/events/submit.html"
+      "destination": "/events/submit/"
     },
     {
       "source": "/submit-event",
-      "destination": "/events/submit.html"
+      "destination": "/events/submit/"
     },
     {
       "source": "/events/submit/",
-      "destination": "/events/submit.html"
+      "destination": "/events/submit/"
     },
     {
       "source": "/events/submit",
-      "destination": "/events/submit.html"
+      "destination": "/events/submit/"
     },
     {
       "source": "/events/:slug/",
-      "destination": "/events/detail.html"
+      "destination": "/events/detail/"
     },
     {
       "source": "/events/:slug",
-      "destination": "/events/detail.html"
+      "destination": "/events/detail/"
     }
   ],
   "headers": [

@@ -24,3 +24,5 @@ scripts/scratch-*
 npm-debug.log*
 
 .vercel
+
+.vercel

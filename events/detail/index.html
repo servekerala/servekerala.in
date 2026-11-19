@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title id="page-title">Event Details | ServeKerala.in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta id="page-desc" name="description" content="Discover event details, dates, venue, and timings on ServeKerala.in.">
+  <link rel="canonical" id="canonical-tag" href="https://servekerala.in/events/">
+
+  <!-- Open Graph -->
+  <meta id="og-title" property="og:title" content="Local Event in Kerala | ServeKerala.in">
+  <meta id="og-desc" property="og:description" content="Event dates, timings, venue and ticket information.">
+  <meta property="og:type" content="event">
+  <meta id="og-url" property="og:url" content="https://servekerala.in/events/">
+  <meta id="og-image" property="og:image" content="https://servekerala.in/assets/images/logo.png">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css?v=27.0">
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/lead-engine.js?v=1.0" defer></script>
+  <script src="/assets/js/events-loader.js?v=1.0" defer></script>
+  <script src="/assets/js/search.js?v=2.3" defer></script>
+
+  <!-- Structured Data JSON-LD Placeholder -->
+  <script id="event-schema-json" type="application/ld+json">{}</script>
+
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PP7859BT');
+  </script>
+</head>
+
+<body>
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PP7859BT" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo" aria-label="ServeKerala.in Home">
+        <img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;">
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/">Home</a>
+        <a href="/services/">Services</a>
+        <a href="/events/" class="active">Events</a>
+        <a href="/list-your-business/" class="nav-cta">List Your Business</a>
+        <a href="/contact/">Contact</a>
+      </nav>
+
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+  <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+    <div class="mobile-nav-header">
+      <a href="/" class="mobile-nav-logo"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 35px; width: auto;"></a>
+      <button class="mobile-nav-close" id="mobile-nav-close">&#10005;</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="/">🏠 Home</a>
+      <a href="/services/">🔧 Services</a>
+      <a href="/events/" class="active">🎉 Events</a>
+      <a href="/contact/">📞 Contact</a>
+      <a href="/list-your-business/" class="nav-cta">List Your Business</a>
+    </div>
+  </div>
+  <script>(function(){var h=document.getElementById('hamburger-btn'),o=document.getElementById('mobile-nav-overlay'),d=document.getElementById('mobile-nav-drawer'),c=document.getElementById('mobile-nav-close');function op(){h.classList.add('open');o.classList.add('visible');d.classList.add('open');document.body.style.overflow='hidden';}function cl(){h.classList.remove('open');o.classList.remove('visible');d.classList.remove('open');document.body.style.overflow='';}h.addEventListener('click',function(){d.classList.contains('open')?cl():op();});c.addEventListener('click',cl);o.addEventListener('click',cl);})();</script>
+
+  <!-- ================= BREADCRUMBS ================= -->
+  <div class="breadcrumb-container">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="separator"></span>
+        <a href="/events/">Events</a>
+        <span class="separator"></span>
+        <span id="breadcrumb-title" class="current">Loading...</span>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ================= MAIN EVENT CONTENT ================= -->
+  <main id="event-detail-main">
+    <section class="section">
+      <div class="container">
+        <p style="padding: 60px 0; text-align: center; color: var(--text-muted); font-size: 16px;">
+          Loading event details...
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace & events publisher. Connecting you directly to verified local professionals and community happenings without any middleman commission.
+        </p>
+        <div class="footer-badges">
+          <span class="trust-badge">✓ 100% Commission-Free</span>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Browse Services</a>
+          <a href="/events/">Local Events</a>
+          <a href="/contact/">Get in Touch</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>For Organizers & Pros</h4>
+        <p class="footer-cta-subtext">Submit your local event or list your service business for free to reach customers in your district.</p>
+        <a href="/events/submit/" class="btn-footer-cta" style="margin-bottom: 8px;">Submit Event</a>
+        <a href="/list-your-business/" class="btn-footer-cta" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff;">List Business</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+      <nav class="footer-bottom-nav">
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms & Conditions</a>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/contact/">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- ================= EVENT DETAIL HYDRATION SCRIPT ================= -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Extract slug from URL: /events/event-slug/
+      function getEventSlug() {
+        const parts = window.location.pathname.replace(/\/$/, '').split('/');
+        const lastPart = parts[parts.length - 1];
+        if (lastPart && lastPart !== 'events' && lastPart !== 'detail.html') {
+          return lastPart;
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id') || urlParams.get('slug') || null;
+      }
+
+      const slug = getEventSlug();
+
+      if (!slug) {
+        window.location.replace('/events/');
+        return;
+      }
+
+      // Load Events
+      if (typeof window.loadKeralaEvents === 'function') {
+        window.loadKeralaEvents((allEvents) => {
+          const cleanSlug = slug.toLowerCase();
+          const event = allEvents.find(e => (e.slug || '').toLowerCase() === cleanSlug || (e.id || '').toLowerCase() === cleanSlug);
+
+          if (!event) {
+            renderEventNotFound(slug);
+            return;
+          }
+
+          renderEventPage(event);
+        });
+      }
+    });
+
+    function renderEventNotFound(slug) {
+      document.getElementById('page-title').textContent = 'Event Not Found | ServeKerala.in';
+      document.getElementById('breadcrumb-title').textContent = 'Not Found';
+      document.getElementById('event-detail-main').innerHTML = `
+        <section class="section">
+          <div class="container" style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 54px; margin-bottom: 16px;">🔍</div>
+            <h2 style="font-size: 26px; color: var(--primary);">Event Not Found</h2>
+            <p style="color: var(--text-muted); max-width: 440px; margin: 0 auto 24px;">
+              We couldn't find an event for "<strong>${slug}</strong>". It may have concluded or the link is incorrect.
+            </p>
+            <a href="/events/" class="btn btn-primary" style="border-radius: 999px; padding: 12px 28px;">Browse All Kerala Events</a>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderEventPage(event) {
+      const pageTitle = `${event.title} – ${event.town}, ${event.district} | ServeKerala.in`;
+      const pageDesc = `${event.title} in ${event.town}, ${event.district}, Kerala. Dates: ${window.formatEventDateRange(event.startDate, event.endDate)}. Venue: ${event.venue}. ${event.description.slice(0, 120)}...`;
+      const currentUrl = `https://servekerala.in/events/${event.slug || event.id}/`;
+
+      document.getElementById('page-title').textContent = pageTitle;
+      document.getElementById('page-desc').setAttribute('content', pageDesc);
+      document.getElementById('canonical-tag').setAttribute('href', currentUrl);
+      document.getElementById('og-title').setAttribute('content', event.title);
+      document.getElementById('og-desc').setAttribute('content', pageDesc);
+      document.getElementById('og-url').setAttribute('content', currentUrl);
+      if (event.posterUrl) {
+        document.getElementById('og-image').setAttribute('content', event.posterUrl);
+      }
+      document.getElementById('breadcrumb-title').textContent = event.title;
+
+      // Google Event Schema (JSON-LD)
+      const schema = {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        "name": event.title,
+        "startDate": event.startDate ? `${event.startDate}T10:00:00+05:30` : undefined,
+        "endDate": event.endDate ? `${event.endDate}T21:00:00+05:30` : (event.startDate ? `${event.startDate}T21:00:00+05:30` : undefined),
+        "eventStatus": "https://schema.org/EventScheduled",
+        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+        "location": {
+          "@type": "Place",
+          "name": event.venue,
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": event.town,
+            "addressRegion": event.district,
+            "addressCountry": "IN"
+          }
+        },
+        "image": event.posterUrl || "https://servekerala.in/assets/images/logo.png",
+        "description": event.description,
+        "offers": {
+          "@type": "Offer",
+          "url": currentUrl,
+          "price": event.entryType && event.entryType.includes('Free') ? "0" : "50",
+          "priceCurrency": "INR",
+          "availability": "https://schema.org/InStock"
+        },
+        "organizer": {
+          "@type": "Organization",
+          "name": event.organizer || "Community Organizer",
+          "url": "https://servekerala.in"
+        }
+      };
+      document.getElementById('event-schema-json').textContent = JSON.stringify(schema, null, 2);
+
+      // Add to Google Calendar URL
+      const calStart = (event.startDate || '').replace(/-/g, '') + 'T100000Z';
+      const calEnd = (event.endDate || event.startDate || '').replace(/-/g, '') + 'T210000Z';
+      const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${calStart}/${calEnd}&details=${encodeURIComponent(event.description + '\n\nMore details: ' + currentUrl)}&location=${encodeURIComponent(event.venue + ', ' + event.town + ', Kerala')}`;
+
+      // WhatsApp Share URL
+      const shareMsg = `Join me at "${event.title}" in ${event.town}, ${event.district} (${window.formatEventDateRange(event.startDate, event.endDate)})!\n\n📍 Venue: ${event.venue}\n⏰ Time: ${event.time}\n🎟️ Entry: ${event.entryType}\n\nSee full details on ServeKerala: ${currentUrl}`;
+      const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareMsg)}`;
+
+      // Google Maps Venue Query
+      const mapsQuery = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue + ' ' + event.town + ' Kerala')}`;
+
+      // Render Layout
+      document.getElementById('event-detail-main').innerHTML = `
+        <section class="section" style="padding-top: 30px;">
+          <div class="container">
+            <div style="margin-bottom: 20px;">
+              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                <span class="event-cat-tag" style="position: static; display: inline-block;">${event.categoryLabel || 'Event'}</span>
+                <span style="font-size: 13.5px; font-weight: 700; color: var(--primary);">📍 ${event.town}, ${event.district}</span>
+              </div>
+              <h1 style="font-size: clamp(28px, 4vw, 40px); font-weight: 800; color: var(--primary); margin: 0 0 10px 0; line-height: 1.2;">
+                ${event.title}
+              </h1>
+              <p style="color: var(--text-muted); font-size: 16px; margin: 0;">
+                🗓️ <strong>${window.formatEventDateRange(event.startDate, event.endDate)}</strong> • ⏰ ${event.time}
+              </p>
+            </div>
+
+            <div class="event-detail-grid">
+              <!-- Left Column: Poster, Overview, Schedule & Vendors -->
+              <div>
+                ${event.posterUrl ? `
+                  <img src="${event.posterUrl}" alt="${event.title} Poster" class="event-detail-poster-img" />
+                ` : ''}
+
+                <div style="background: #ffffff; border-radius: 16px; border: 1px solid var(--border-color); padding: 28px; box-shadow: var(--shadow-sm); margin-bottom: 30px;">
+                  <h2 style="font-size: 20px; font-weight: 800; color: var(--primary); margin: 0 0 16px 0;">About This Event</h2>
+                  <div style="font-size: 16px; line-height: 1.75; color: var(--text-body); white-space: pre-line;">
+                    ${event.description}
+                  </div>
+                </div>
+
+                <!-- Event Vendors Cross-Promotion & Instant Lead Engine Widget -->
+                <div style="background: #ffffff; border-radius: 16px; border: 1.5px solid rgba(212,175,55,0.35); padding: 26px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                    <div>
+                      <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--secondary);">Event Marketplace</span>
+                      <h3 style="font-size: 19px; font-weight: 800; color: var(--primary); margin: 2px 0 0 0;">
+                        🎪 Need Suppliers & Services for this Event in ${event.town}?
+                      </h3>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="window.openQuoteModal && window.openQuoteModal({ businessName: 'Event Suppliers (${event.town})', town: '${event.town}', category: 'event-suppliers' })" style="padding: 8px 16px; font-size: 13px; font-weight: 700; border-radius: 999px;">
+                      ⚡ Request Event Quotes
+                    </button>
+                  </div>
+                  <p style="font-size: 14px; color: var(--text-muted); margin: 0 0 18px 0; line-height: 1.5;">
+                    Setting up a commercial stall, stage program, sound system, or exhibition booth? Connect with verified, commission-free local professionals in <strong>${event.town}, ${event.district}</strong>:
+                  </p>
+
+                  <div class="event-vendor-card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px;">
+                    <div>
+                      <strong style="color: var(--primary); display: block; font-size: 14.5px;">⚡ Stage Lighting & Heavy Generator Wiring</strong>
+                      <span style="font-size: 12.5px; color: var(--text-muted);">Industrial electricians & temporary power distribution in ${event.town}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                      <button type="button" class="btn btn-primary" onclick="window.openQuoteModal && window.openQuoteModal({ businessName: 'Electricians (${event.town})', town: '${event.town}', category: 'electrician' })" style="padding: 6px 12px; font-size: 12px;">⚡ Quote</button>
+                      <a href="/${event.district.toLowerCase()}/electrician/${event.town.toLowerCase()}/" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">Browse Pros</a>
+                    </div>
+                  </div>
+
+                  <div class="event-vendor-card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px;">
+                    <div>
+                      <strong style="color: var(--primary); display: block; font-size: 14.5px;">📷 Crowd Monitoring & Temporary CCTV Setup</strong>
+                      <span style="font-size: 12.5px; color: var(--text-muted);">NVR, wireless camera rigs, and temporary perimeter security</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                      <button type="button" class="btn btn-primary" onclick="window.openQuoteModal && window.openQuoteModal({ businessName: 'CCTV Specialists (${event.town})', town: '${event.town}', category: 'cctv-installation' })" style="padding: 6px 12px; font-size: 12px;">⚡ Quote</button>
+                      <a href="/${event.district.toLowerCase()}/cctv-installation/${event.town.toLowerCase()}/" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">Browse Pros</a>
+                    </div>
+                  </div>
+
+                  <div class="event-vendor-card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px;">
+                    <div>
+                      <strong style="color: var(--primary); display: block; font-size: 14.5px;">🧹 Pre-Event Sanitization & Post-Event Ground Cleanup</strong>
+                      <span style="font-size: 12.5px; color: var(--text-muted);">Waste disposal, litter clearance, and hall deep cleaning</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                      <button type="button" class="btn btn-primary" onclick="window.openQuoteModal && window.openQuoteModal({ businessName: 'Cleaning Crew (${event.town})', town: '${event.town}', category: 'home-cleaning' })" style="padding: 6px 12px; font-size: 12px;">⚡ Quote</button>
+                      <a href="/${event.district.toLowerCase()}/home-cleaning/${event.town.toLowerCase()}/" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">Browse Pros</a>
+                    </div>
+                  </div>
+
+                  <div class="event-vendor-card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 0;">
+                    <div>
+                      <strong style="color: var(--primary); display: block; font-size: 14.5px;">☀️ Eco Solar Lighting & Inverter Backups</strong>
+                      <span style="font-size: 12.5px; color: var(--text-muted);">Uninterrupted power supplies for stalls and night illumination</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                      <button type="button" class="btn btn-primary" onclick="window.openQuoteModal && window.openQuoteModal({ businessName: 'Solar & Battery Pros (${event.town})', town: '${event.town}', category: 'solar-installation' })" style="padding: 6px 12px; font-size: 12px;">⚡ Quote</button>
+                      <a href="/${event.district.toLowerCase()}/solar-installation/${event.town.toLowerCase()}/" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">Browse Pros</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column (Sidebar): Key Facts & Contact -->
+              <div>
+                <div style="background: #ffffff; border-radius: 16px; border: 1px solid var(--border-color); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+                  <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0 0 16px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                    Event Summary
+                  </h3>
+
+                  <div class="sidebar-row">
+                    <span class="sidebar-row-label">Dates</span>
+                    <span class="sidebar-row-val" style="font-weight: 700;">${window.formatEventDateRange(event.startDate, event.endDate)}</span>
+                  </div>
+
+                  <div class="sidebar-row">
+                    <span class="sidebar-row-label">Timings</span>
+                    <span class="sidebar-row-val">${event.time}</span>
+                  </div>
+
+                  <div class="sidebar-row">
+                    <span class="sidebar-row-label">Venue</span>
+                    <span class="sidebar-row-val"><strong>${event.venue}</strong>, ${event.town}</span>
+                  </div>
+
+                  <div class="sidebar-row">
+                    <span class="sidebar-row-label">Tickets</span>
+                    <span class="sidebar-row-val" style="color: var(--accent); font-weight: 700;">${event.entryType || 'Free Entry'}</span>
+                  </div>
+
+                  <div class="sidebar-row">
+                    <span class="sidebar-row-label">Organizer</span>
+                    <span class="sidebar-row-val">${event.organizer || 'Local Committee'}</span>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px;">
+                    <a href="${gcalUrl}" target="_blank" rel="noopener" class="btn btn-primary" style="width: 100%; text-align: center; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                      <span>📅 Add to Google Calendar</span>
+                    </a>
+
+                    <a href="${waShareUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width: 100%; text-align: center; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; border-color: #16A34A; color: #15803d; background: #dcfce7;">
+                      <span>💬 Share on WhatsApp</span>
+                    </a>
+
+                    <a href="${mapsQuery}" target="_blank" rel="noopener" class="btn btn-outline" style="width: 100%; text-align: center; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                      <span>📍 Open Venue in Maps</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Organizer Contact Card -->
+                ${(event.contactPhone || event.contactWhatsApp) ? `
+                  <div style="background: #ffffff; border-radius: 16px; border: 1px solid var(--border-color); padding: 22px; box-shadow: var(--shadow-sm);">
+                    <h4 style="font-size: 15px; font-weight: 700; color: var(--primary); margin: 0 0 10px 0;">Contact Organizer</h4>
+                    <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 16px 0;">Have a query about stalls, tickets, or registration?</p>
+                    <div style="display: flex; gap: 10px;">
+                      ${event.contactPhone ? `
+                        <a href="tel:${event.contactPhone}" class="btn btn-primary" style="flex: 1; text-align: center; padding: 10px; font-size: 13.5px; border-radius: 8px;">📞 Call</a>
+                      ` : ''}
+                      ${event.contactWhatsApp ? `
+                        <a href="https://wa.me/91${event.contactWhatsApp.replace(/\\D/g,'')}?text=${encodeURIComponent('Hi, inquiring about ' + event.title + ' listed on ServeKerala.')}" target="_blank" rel="noopener" class="btn btn-outline" style="flex: 1; text-align: center; padding: 10px; font-size: 13.5px; border-radius: 8px; border-color: #16A34A; color: #15803d; background: #dcfce7;">💬 WhatsApp</a>
+                      ` : ''}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+  </script>
+</body>
+</html>
+
