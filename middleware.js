@@ -18,7 +18,7 @@ export default function middleware(request) {
 
     if (!isAuthenticated) {
       // Redirect to professional login page
-      return Response.redirect(new URL('/admin/login.html', request.url), 302);
+      return Response.redirect(new URL('/admin/login/', request.url), 302);
     }
   }
 }
