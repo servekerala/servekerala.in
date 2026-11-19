@@ -41,6 +41,7 @@
   </script>
   <!-- =============== END GOOGLE TAG MANAGER =============== -->
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>
 </head>
 
 <body>
@@ -69,7 +70,7 @@
     <nav class="main-nav">
       <a href="/">Home</a>
       <a href="/services/">Services</a>
-      <a href="/auto-mithram/">Auto Mithram</a>
+      <a href="/events/">Events</a>
       <a href="/list-your-business/" class="nav-cta">List Your Business</a>
       <a href="/contact/" class="active">Contact</a>
       <a href="/disclaimer/">Disclaimer</a>
@@ -88,7 +89,7 @@
   <div class="mobile-nav-links">
     <a href="/">🏠 Home</a>
     <a href="/services/">🔧 Services</a>
-    <a href="/auto-mithram/">🛺 Auto Mithram</a>
+      <a href="/events/">🎉 Events</a>
     <a href="/contact/" class="active">📞 Contact</a>
     <a href="/list-your-business/" class="nav-cta">List Your Business</a>
   </div>
@@ -134,8 +135,8 @@
         <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 16px;">
           Call us directly for urgent enquiries or support issues:
         </p>
-        <a href="tel:+919744482385" data-cms="contactPhone" class="btn btn-outline cms-loading" style="font-size: 14px; padding: 10px 20px;">
-          +919744482385
+        <a href="tel:+918281770660" data-cms="contactPhone" class="btn btn-outline cms-loading" style="font-size: 14px; padding: 10px 20px;">
+          +918281770660
         </a>
       </div>
 
@@ -158,7 +159,10 @@
         <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
           Fill out the form below and our directory administration team will respond to you within 24 hours.
         </p>
-        <form onsubmit="alert('Thank you for contacting ServeKerala.in! Your message has been received.'); return false;">
+        <div id="biz-callback-notice" style="display: none; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--primary); padding: 12px 16px; border-radius: 6px; color: var(--text-main); margin-bottom: 20px; font-weight: 600;">
+          📞 Requesting callback for: <span id="biz-callback-name" style="color: var(--primary);"></span>
+        </div>
+        <form>
           <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
             <div class="form-group" style="margin-bottom: 0;">
               <label for="cname">Full Name</label>
@@ -233,17 +237,151 @@
 </section>
 
 <!-- ================= FOOTER ================= -->
-<footer class="site-footer">
-  <div class="container">
-    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
-    <nav class="footer-nav">
-      <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms/">Terms & Conditions</a>
-      <a href="/disclaimer/">Disclaimer</a>
-      <a href="/contact/">Contact Us</a>
-    </nav>
-  </div>
-</footer>
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace. Connecting you directly to verified local professionals without any middleman commission.
+        </p>
+        <div class="footer-badges">
+          <span class="trust-badge">✓ 100% Commission-Free</span>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Browse Services</a>
+          <a href="/events/">Local Events</a>
+          <a href="/contact/">Get in Touch</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>For Professionals</h4>
+        <p class="footer-cta-subtext">Are you a service provider? Register your business today to get high-quality WhatsApp leads.</p>
+        <a href="/list-your-business/?v=1.4" class="btn-footer-cta">List Your Business</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+      <nav class="footer-bottom-nav">
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms & Conditions</a>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/contact/">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const bizName = urlParams.get('biz');
+  
+  if (bizName) {
+    const notice = document.getElementById('biz-callback-notice');
+    const nameSpan = document.getElementById('biz-callback-name');
+    const subjectSelect = document.getElementById('csubject');
+    
+    if (notice && nameSpan) {
+      nameSpan.textContent = bizName;
+      notice.style.display = 'block';
+    }
+    
+    if (subjectSelect) {
+      const opt = document.createElement('option');
+      opt.value = 'callback-request';
+      opt.textContent = `Callback Request: ${bizName}`;
+      opt.selected = true;
+      subjectSelect.appendChild(opt);
+    }
+  }
+
+  const contactForm = document.querySelector('.lead-form-box form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const csubject = document.getElementById('csubject')?.value || '';
+      
+      alert('Thank you for contacting ServeKerala.in! Your message has been received.');
+      
+      if (bizName) {
+        if (typeof firebase !== 'undefined') {
+          const db = firebase.firestore();
+          db.collection('listings').where('name', '==', bizName).get().then(snap => {
+            let listingData = {};
+            let listingId = '';
+            snap.forEach(doc => {
+              listingId = doc.id;
+              listingData = doc.data();
+            });
+            
+            if (!listingId) {
+              db.collection('business_pages').where('name', '==', bizName).get().then(pSnap => {
+                let pData = {};
+                let pId = '';
+                pSnap.forEach(doc => {
+                  pId = doc.id;
+                  pData = doc.data();
+                });
+                
+                if (pId && typeof trackListingClick === 'function') {
+                  trackListingClick(pId, 'callback', true, 'business_pages', {
+                    name: pData.name,
+                    category: pData.category || '',
+                    district: pData.district || '',
+                    towns: pData.towns || '',
+                    button_location: 'contact_page'
+                  });
+                }
+              });
+            } else if (typeof trackListingClick === 'function') {
+              trackListingClick(listingId, 'callback', true, 'listings', {
+                name: listingData.name,
+                category: listingData.category || '',
+                district: listingData.district || '',
+                towns: listingData.towns || '',
+                button_location: 'contact_page'
+              });
+            }
+          }).catch(err => console.error("Error logging callback business query:", err));
+        }
+      } else {
+        if (typeof pushAnalyticsEvent === 'function') {
+          pushAnalyticsEvent('callback_request', {
+            business_id: '',
+            business_name: 'General Platform Support',
+            category: csubject,
+            district: '',
+            town: '',
+            button_location: 'contact_page'
+          });
+        }
+      }
+      
+      contactForm.reset();
+      const notice = document.getElementById('biz-callback-notice');
+      if (notice) notice.style.display = 'none';
+    });
+  }
+});
+</script>
 
 </body>
 </html>

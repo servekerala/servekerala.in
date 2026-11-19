@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submit Your Event Free in Kerala | ServeKerala.in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Submit your festival, exhibition, sports tournament, or cultural program on ServeKerala for free. Reach thousands of local residents across Kerala.">
+  <link rel="canonical" href="https://servekerala.in/events/submit/">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css?v=27.0">
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/search.js?v=2.3" defer></script>
+</head>
+
+<body>
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo" aria-label="ServeKerala.in Home">
+        <img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;">
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/">Home</a>
+        <a href="/services/">Services</a>
+        <a href="/events/">Events</a>
+        <a href="/list-your-business/" class="nav-cta">List Your Business</a>
+        <a href="/contact/">Contact</a>
+      </nav>
+
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+  <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+    <div class="mobile-nav-header">
+      <a href="/" class="mobile-nav-logo"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 35px; width: auto;"></a>
+      <button class="mobile-nav-close" id="mobile-nav-close">&#10005;</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="/">🏠 Home</a>
+      <a href="/services/">🔧 Services</a>
+      <a href="/events/">🎉 Events</a>
+      <a href="/contact/">📞 Contact</a>
+      <a href="/list-your-business/" class="nav-cta">List Your Business</a>
+    </div>
+  </div>
+  <script>(function(){var h=document.getElementById('hamburger-btn'),o=document.getElementById('mobile-nav-overlay'),d=document.getElementById('mobile-nav-drawer'),c=document.getElementById('mobile-nav-close');function op(){h.classList.add('open');o.classList.add('visible');d.classList.add('open');document.body.style.overflow='hidden';}function cl(){h.classList.remove('open');o.classList.remove('visible');d.classList.remove('open');document.body.style.overflow='';}h.addEventListener('click',function(){d.classList.contains('open')?cl():op();});c.addEventListener('click',cl);o.addEventListener('click',cl);})();</script>
+
+  <!-- ================= BREADCRUMBS ================= -->
+  <div class="breadcrumb-container">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="separator"></span>
+        <a href="/events/">Events</a>
+        <span class="separator"></span>
+        <span class="current">Submit Event</span>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ================= FORM SECTION ================= -->
+  <section class="section" style="padding-top: 20px;">
+    <div class="container" style="max-width: 720px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <span style="font-size: 13px; font-weight: 700; color: var(--accent); background: #dcfce7; padding: 4px 12px; border-radius: 999px;">
+          100% Free Event Listing
+        </span>
+        <h1 style="font-size: clamp(26px, 4vw, 36px); font-weight: 800; color: var(--primary); margin: 12px 0 8px;">
+          Publish Your Event on ServeKerala
+        </h1>
+        <p style="color: var(--text-muted); font-size: 15px; margin: 0;">
+          Reach thousands of local families, youth, and visitors across Kerala. Submissions are reviewed and published within hours.
+        </p>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 20px; padding: 32px; box-shadow: var(--shadow-sm);">
+        <form id="submit-event-form">
+          <div class="sk-form-group">
+            <label class="sk-form-label" for="ev-title">Event Title <span class="req">*</span></label>
+            <input type="text" id="ev-title" class="sk-form-input" placeholder="e.g. Thiruvalla Flower Show & Trade Fair 2026" required minlength="4">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-category">Category <span class="req">*</span></label>
+              <select id="ev-category" class="sk-form-select" required>
+                <option value="festival">🎪 Festival / Perunnal / Ulsavam</option>
+                <option value="expo">🛍️ Expo, Mela & Trade Fair</option>
+                <option value="food">🍲 Food & Dining Fest</option>
+                <option value="cultural">🎭 Cultural Show / Ganamela / Drama</option>
+                <option value="sports">⚽ Sports Tournament / League</option>
+                <option value="community">👥 Community & Workshop</option>
+              </select>
+            </div>
+
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-district">District <span class="req">*</span></label>
+              <select id="ev-district" class="sk-form-select" required>
+                <option value="Pathanamthitta">Pathanamthitta</option>
+                <option value="Kottayam">Kottayam</option>
+                <option value="Alappuzha">Alappuzha</option>
+                <option value="Kollam">Kollam</option>
+                <option value="Ernakulam">Ernakulam</option>
+                <option value="Thrissur">Thrissur</option>
+                <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-town">Town / Locality <span class="req">*</span></label>
+              <input type="text" id="ev-town" class="sk-form-input" placeholder="e.g. Thiruvalla Town" required>
+            </div>
+
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-venue">Exact Venue / Grounds <span class="req">*</span></label>
+              <input type="text" id="ev-venue" class="sk-form-input" placeholder="e.g. Municipal Stadium / YMCA Hall" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-start-date">Start Date <span class="req">*</span></label>
+              <input type="date" id="ev-start-date" class="sk-form-input" required>
+            </div>
+
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-end-date">End Date (or same day)</label>
+              <input type="date" id="ev-end-date" class="sk-form-input">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-timings">Daily Timings <span class="req">*</span></label>
+              <input type="text" id="ev-timings" class="sk-form-input" placeholder="e.g. 10:00 AM – 9:00 PM" required>
+            </div>
+
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-entry">Entry Type / Tickets</label>
+              <input type="text" id="ev-entry" class="sk-form-input" placeholder="e.g. Free Entry or ₹30 Entry Fee">
+            </div>
+          </div>
+
+          <div class="sk-form-group">
+            <label class="sk-form-label">Event Poster / Flyer (Recommended)</label>
+            <div id="poster-dropzone" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 22px; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s;">
+              <input type="file" id="ev-poster-file" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;">
+              <div id="dropzone-prompt">
+                <div style="font-size: 38px; margin-bottom: 6px;">📸</div>
+                <p style="font-size: 15px; font-weight: 700; color: var(--primary); margin: 0 0 4px;">Click to select or drag & drop event poster</p>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">PNG, JPG, or WebP &bull; Auto-optimized for mobile</p>
+              </div>
+              <div id="dropzone-preview" style="display: none;">
+                <img id="preview-img" src="" alt="Poster Preview" style="max-height: 220px; max-width: 100%; border-radius: 8px; box-shadow: var(--shadow-sm); object-fit: contain;">
+                <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+                  <button type="button" id="btn-change-poster" class="btn btn-outline" style="padding: 5px 14px; font-size: 12.5px;">Change Image</button>
+                  <button type="button" id="btn-remove-poster" class="btn btn-outline" style="padding: 5px 14px; font-size: 12.5px; color: #dc2626; border-color: #fca5a5;">Remove</button>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
+              <small style="color: var(--text-muted); font-size: 11.5px;">Have an online image link instead?</small>
+              <button type="button" id="toggle-url-input" style="background: none; border: none; color: #2563eb; font-size: 12px; cursor: pointer; text-decoration: underline;">Paste web URL</button>
+            </div>
+            <div id="manual-url-container" style="display: none; margin-top: 8px;">
+              <input type="url" id="ev-poster" class="sk-form-input" placeholder="https://... (Direct image link or poster URL)">
+            </div>
+          </div>
+
+          <div class="sk-form-group">
+            <label class="sk-form-label" for="ev-desc">Event Description & Key Highlights <span class="req">*</span></label>
+            <textarea id="ev-desc" class="sk-form-textarea" rows="4" placeholder="Tell visitors what to expect: special programs, guests, stalls, food attractions, parking facilities, etc." required minlength="20"></textarea>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 24px 0 20px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--primary); margin: 0 0 12px 0;">Organizer Contact Details (For Verification)</h4>
+            
+            <div class="sk-form-group">
+              <label class="sk-form-label" for="ev-organizer">Organizer / Committee Name <span class="req">*</span></label>
+              <input type="text" id="ev-organizer" class="sk-form-input" placeholder="e.g. Thiruvalla Rotary Club & Merchants Forum" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="sk-form-group" style="margin-bottom: 0;">
+                <label class="sk-form-label" for="ev-phone">Contact Phone <span class="req">*</span></label>
+                <input type="tel" id="ev-phone" class="sk-form-input" placeholder="10-digit mobile" required pattern="[0-9]{10}">
+              </div>
+              <div class="sk-form-group" style="margin-bottom: 0;">
+                <label class="sk-form-label" for="ev-wa">WhatsApp Number</label>
+                <input type="tel" id="ev-wa" class="sk-form-input" placeholder="WhatsApp contact">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="btn-submit-ev" style="width: 100%; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700;">
+            Submit Event for Free Listing &rarr;
+          </button>
+        </form>
+
+        <div id="submit-ev-success" style="display: none; text-align: center; padding: 30px 10px;">
+          <div style="font-size: 56px; margin-bottom: 14px;">🎉</div>
+          <h2 style="font-size: 26px; font-weight: 800; color: var(--primary); margin: 0 0 10px;">
+            Event Submitted for Review!
+          </h2>
+          <p style="color: var(--text-muted); font-size: 15px; line-height: 1.6; max-width: 480px; margin: 0 auto 20px;">
+            Thank you! Your event has been submitted. Our local moderators review all listings to ensure accurate community info.
+          </p>
+          
+          <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 20px; margin: 0 auto 24px; max-width: 460px; text-align: left;">
+            <strong style="color: #166534; font-size: 14.5px; display: block; margin-bottom: 4px;">⚡ Fast-Track Your Approval:</strong>
+            <p style="color: #15803d; font-size: 13px; margin: 0 0 14px; line-height: 1.4;">Notify our Kerala desk directly on WhatsApp for faster verification:</p>
+            <a id="btn-wa-alert-admin" href="#" target="_blank" rel="noopener" class="btn" style="background: #16a34a; color: #fff; width: 100%; text-align: center; border-radius: 8px; padding: 11px; font-size: 14px; font-weight: 700; display: block; text-decoration: none;">
+              💬 Alert Admin on WhatsApp (+91 82817 70660)
+            </a>
+          </div>
+
+          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a href="/events/" class="btn btn-outline" style="border-radius: 999px; padding: 12px 26px;">
+              &larr; Browse All Events
+            </a>
+            <button type="button" onclick="location.reload();" class="btn btn-primary" style="border-radius: 999px; padding: 12px 26px;">
+              + Submit Another Event
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace & events publisher. Connecting you directly to verified local professionals without any middleman commission.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Services</a>
+          <a href="/events/">Local Events</a>
+          <a href="/contact/">Contact</a>
+        </nav>
+      </div>
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Firebase Submission Logic -->
+  <script>
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyCX0GVM7M09qd2b5FlgvETPzJL702MMpMc",
+      authDomain: "servekerala2026.firebaseapp.com",
+      projectId: "servekerala2026",
+      storageBucket: "servekerala2026.firebasestorage.app",
+      messagingSenderId: "122091003614",
+      appId: "1:122091003614:web:e2114b7064aceff4f5ac4f"
+    };
+
+    if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+
+    
+    // --- Poster File Upload & Compression ---
+    let uploadedPosterBase64 = '';
+    const dropzone = document.getElementById('poster-dropzone');
+    const fileInput = document.getElementById('ev-poster-file');
+    const promptEl = document.getElementById('dropzone-prompt');
+    const previewEl = document.getElementById('dropzone-preview');
+    const previewImg = document.getElementById('preview-img');
+    const btnChange = document.getElementById('btn-change-poster');
+    const btnRemove = document.getElementById('btn-remove-poster');
+    const toggleUrlBtn = document.getElementById('toggle-url-input');
+    const manualUrlBox = document.getElementById('manual-url-container');
+
+    if (dropzone && fileInput) {
+      dropzone.addEventListener('click', (e) => {
+        if (e.target !== btnChange && e.target !== btnRemove) {
+          fileInput.click();
+        }
+      });
+
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = 'var(--primary)';
+        dropzone.style.background = '#f1f5f9';
+      });
+
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.style.borderColor = '#cbd5e1';
+        dropzone.style.background = '#f8fafc';
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = '#cbd5e1';
+        dropzone.style.background = '#f8fafc';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          processImageFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          processImageFile(e.target.files[0]);
+        }
+      });
+
+      if (btnChange) {
+        btnChange.addEventListener('click', (e) => {
+          e.stopPropagation();
+          fileInput.click();
+        });
+      }
+
+      if (btnRemove) {
+        btnRemove.addEventListener('click', (e) => {
+          e.stopPropagation();
+          uploadedPosterBase64 = '';
+          fileInput.value = '';
+          previewImg.src = '';
+          previewEl.style.display = 'none';
+          promptEl.style.display = 'block';
+        });
+      }
+
+      if (toggleUrlBtn && manualUrlBox) {
+        toggleUrlBtn.addEventListener('click', () => {
+          manualUrlBox.style.display = manualUrlBox.style.display === 'none' ? 'block' : 'none';
+        });
+      }
+    }
+
+    function processImageFile(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file (PNG, JPG, WebP).');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          // Compress canvas: max width 1200px
+          const maxDim = 1200;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          uploadedPosterBase64 = canvas.toDataURL('image/jpeg', 0.82);
+
+          previewImg.src = uploadedPosterBase64;
+          promptEl.style.display = 'none';
+          previewEl.style.display = 'block';
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('submit-event-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-ev');
+      btn.disabled = true;
+      btn.textContent = 'Submitting Event...';
+
+      const title = document.getElementById('ev-title').value.trim();
+      const category = document.getElementById('ev-category').value;
+      const district = document.getElementById('ev-district').value;
+      const town = document.getElementById('ev-town').value.trim();
+      const venue = document.getElementById('ev-venue').value.trim();
+      const startDate = document.getElementById('ev-start-date').value;
+      const endDate = document.getElementById('ev-end-date').value || startDate;
+      const time = document.getElementById('ev-timings').value.trim();
+      const entryType = document.getElementById('ev-entry').value.trim() || 'Free Entry';
+      const manualUrl = document.getElementById('ev-poster') ? document.getElementById('ev-poster').value.trim() : '';
+      const posterUrl = uploadedPosterBase64 || manualUrl || 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80';
+      const desc = document.getElementById('ev-desc').value.trim();
+      const organizer = document.getElementById('ev-organizer').value.trim();
+      const phone = document.getElementById('ev-phone').value.trim();
+      const wa = document.getElementById('ev-wa').value.trim() || phone;
+
+      // Generate slug
+      const cleanSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + (startDate ? startDate.split('-')[0] : '2026');
+
+      const categoryLabels = {
+        festival: '🎪 Festival & Perunnal',
+        expo: '🛍️ Expo & Fair',
+        food: '🍲 Food Fest',
+        cultural: '🎭 Arts & Shows',
+        sports: '⚽ Sports',
+        community: '👥 Community'
+      };
+
+      const eventData = {
+        title: title,
+        slug: cleanSlug,
+        category: category,
+        categoryLabel: categoryLabels[category] || 'Event',
+        district: district,
+        town: town,
+        venue: venue,
+        startDate: startDate,
+        endDate: endDate,
+        time: time,
+        entryType: entryType,
+        posterUrl: posterUrl,
+        description: desc,
+        organizer: organizer,
+        contactPhone: phone,
+        contactWhatsApp: wa,
+        status: 'pending', // admin approves
+        isFeatured: false,
+        createdAt: typeof firebase !== 'undefined' ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+      };
+
+      const db = firebase.firestore();
+      db.collection('events').add(eventData)
+        .then(() => {
+          document.getElementById('submit-event-form').style.display = 'none';
+          document.getElementById('submit-ev-success').style.display = 'block';
+          const waAdminAlert = document.getElementById('btn-wa-alert-admin');
+          if (waAdminAlert) {
+            const alertText = 'Hello ServeKerala Admin, I have submitted an event: "' + title + '" in ' + town + ', ' + district + ' (Dates: ' + startDate + ') on ServeKerala.in for review.';
+            waAdminAlert.href = 'https://wa.me/918281770660?text=' + encodeURIComponent(alertText);
+          }
+        })
+        .catch(err => {
+          console.error('Error submitting event:', err);
+          alert('Could not submit event. Please check your internet connection.');
+          btn.disabled = false;
+          btn.textContent = 'Submit Event for Free Listing →';
+        });
+    });
+  </script>
+</body>
+</html>
+

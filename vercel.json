@@ -10,6 +10,30 @@
     {
       "source": "/business/:slug/",
       "destination": "/business/"
+    },
+    {
+      "source": "/submit-event/",
+      "destination": "/events/submit.html"
+    },
+    {
+      "source": "/submit-event",
+      "destination": "/events/submit.html"
+    },
+    {
+      "source": "/events/submit/",
+      "destination": "/events/submit.html"
+    },
+    {
+      "source": "/events/submit",
+      "destination": "/events/submit.html"
+    },
+    {
+      "source": "/events/:slug/",
+      "destination": "/events/detail.html"
+    },
+    {
+      "source": "/events/:slug",
+      "destination": "/events/detail.html"
     }
   ],
   "headers": [
@@ -23,13 +47,40 @@
       ]
     },
     {
-      "source": "/(.*).html",
+      "source": "/((?!assets/).*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/auto-mithram/(.*)",
+      "destination": "https://www.automithram.com/$1",
+      "permanent": true
+    },
+    {
+      "source": "/auto-mithram/",
+      "destination": "https://www.automithram.com/",
+      "permanent": true
+    },
+    {
+      "source": "/join-auto-mithram/(.*)",
+      "destination": "https://www.automithram.com/join/$1",
+      "permanent": true
+    },
+    {
+      "source": "/join-auto-mithram/",
+      "destination": "https://www.automithram.com/join/",
+      "permanent": true
+    },
+    {
+      "source": "/auto/(.*)",
+      "destination": "https://www.automithram.com/auto/$1",
+      "permanent": true
     }
   ]
 }

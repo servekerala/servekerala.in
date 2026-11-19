@@ -1,0 +1,32 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function validProfileImage(maxBytes) {
+      return request.resource != null
+        && request.resource.size <= maxBytes
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+
+    function isVerifiedOwner(ownerEmail) {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == ownerEmail;
+    }
+
+    // Public profile images are readable by visitors and writable only by
+    // the verified account that owns the matching listing email.
+    match /business_profiles/{ownerEmail}/{filePath=**} {
+      allow read: if true;
+      allow create, update: if isVerifiedOwner(ownerEmail) && validProfileImage(5 * 1024 * 1024);
+      allow delete: if isVerifiedOwner(ownerEmail);
+    }
+
+    // Keep the existing public business-submission and admin upload folders
+    // working, while limiting them to common web image formats and 20 MB.
+    match /{legacyFolder}/{filePath=**} {
+      allow read: if true;
+      allow create, update: if legacyFolder in ['logos', 'covers', 'gallery']
+        && validProfileImage(20 * 1024 * 1024);
+    }
+  }
+}

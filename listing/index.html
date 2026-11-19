@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title id="page-title">Loading... | ServeKerala.in</title>
+  <title id="page-title">Local Business Profile | ServeKerala.in</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="canonical" href="https://servekerala.in/listing/" />
-  <meta id="page-description" name="description" content="Find verified local services in Kerala on ServeKerala.in." />
+  <meta id="page-description" name="description" content="View a local business profile on ServeKerala.in. Contact the business to confirm services and availability." />
   <meta id="page-keywords" name="keywords" content="local services kerala" />
   <meta name="author" content="ServeKerala.in" />
 
@@ -16,13 +16,14 @@
   <meta id="og-url" property="og:url" content="https://servekerala.in/" />
 
   <!-- Main CSS -->
-  <link rel="stylesheet" href="/assets/css/main.css?v=2.6">
+  <link rel="stylesheet" href="/assets/css/main.css?v=26.1">
   <script src="/assets/js/search.js?v=2.3" defer></script>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="/assets/js/activity-tracker.js?v=1.6" defer></script>
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>
+  <script src="/assets/js/lead-engine.js?v=1.0" defer></script>
 
   <!-- Structured Data (JSON-LD) placeholder – populated by JS -->
   <script id="structured-data" type="application/ld+json">{}</script>
@@ -60,7 +61,8 @@
     .contact-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-color: var(--primary); }
     .contact-card-icon { font-size: 32px; margin-bottom: 10px; }
     .contact-card h3 { font-size: 15px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .contact-card a { display: inline-block; font-size: 16px; font-weight: 700; color: var(--primary); text-decoration: none; padding: 10px 22px; background: var(--accent-light); border-radius: 8px; transition: all 0.2s ease; width: 100%; }
+    .contact-card a { display: inline-block; box-sizing: border-box; min-width: 0; font-size: 16px; font-weight: 700; color: var(--primary); text-decoration: none; padding: 10px 22px; background: var(--accent-light); border-radius: 8px; transition: all 0.2s ease; width: 100%; }
+    .contact-card .contact-email-link { font-size: clamp(13px, 1.05vw, 15px); line-height: 1.45; white-space: normal; overflow-wrap: anywhere; padding-inline: 12px; }
     .contact-card a:hover { background: var(--primary); color: white; }
     .contact-card.whatsapp a { background: #dcfce7; color: #16a34a; }
     .contact-card.whatsapp a:hover { background: #16a34a; color: white; }
@@ -85,8 +87,8 @@
     .sidebar-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
     .sidebar-row:last-child { border-bottom: none; }
     .sidebar-row-label { font-weight: 600; color: var(--text-muted); min-width: 70px; }
-    .sidebar-row-val { color: var(--text-main); word-break: break-word; }
-    .sidebar-row-val a { color: var(--primary); text-decoration: none; }
+    .sidebar-row-val { min-width: 0; color: var(--text-main); overflow-wrap: anywhere; }
+    .sidebar-row-val a { max-width: 100%; color: var(--primary); text-decoration: none; overflow-wrap: anywhere; }
     .sidebar-row-val a:hover { text-decoration: underline; }
 
     /* Map embed */
@@ -105,6 +107,7 @@
     .verified-strip strong { color: #166534; }
   </style>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/assets/js/i18n.js?v=26.0" defer></script>
 </head>
 
 <body>
@@ -119,16 +122,7 @@
 <header class="site-header">
   <div class="container">
     <a href="/" class="logo" aria-label="ServeKerala.in Home"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;"></a>
-    <div class="header-search">
-      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
-      <button id="header-search-submit" class="btn-header-search">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-      </button>
-      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
-    </div>
+    
     <nav class="main-nav">
       <a href="/">Home</a>
       <a href="/services/?v=1.6">Services</a>
@@ -235,6 +229,33 @@
     return parts[parts.length - 1] || null;
   }
 
+  function getCanonicalUrl() {
+    const pathname = window.location.pathname.endsWith('/') ? window.location.pathname : `${window.location.pathname}/`;
+    return `${window.location.origin}${pathname}`;
+  }
+
+  function setIndexingAllowed(allowed) {
+    let robots = document.querySelector('meta[name="robots"]');
+    if (!allowed) {
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.name = 'robots';
+        document.head.appendChild(robots);
+      }
+      robots.content = 'noindex,follow';
+    } else if (robots && /\bnoindex\b/i.test(robots.content)) {
+      robots.remove();
+    }
+  }
+
+  function inlineJsString(value) {
+    return JSON.stringify(String(value ?? ''))
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
   // Category emoji map
   const CATEGORY_ICONS = {
     solar: '☀️', plumbing: '🔧', electrical: '⚡', ac: '❄️',
@@ -244,6 +265,9 @@
 
   function renderNotFound(slug) {
     document.getElementById('page-title').textContent = 'Business Not Found | ServeKerala.in';
+    document.getElementById('page-description').setAttribute('content', 'This business profile could not be found on ServeKerala.in.');
+    document.querySelector('link[rel="canonical"]').setAttribute('href', getCanonicalUrl());
+    setIndexingAllowed(false);
     document.getElementById('breadcrumb-current').textContent = 'Not Found';
     document.getElementById('listing-hero-section').innerHTML = '';
     document.getElementById('listing-main-content').innerHTML = `
@@ -259,7 +283,41 @@
       </section>`;
   }
 
-  function renderListing(data, slug) {
+  function getOpenStatusText(hours) {
+    if (!hours) return '';
+    try {
+      const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const now = new Date();
+      const todayName = days[now.getDay()];
+      const dayConfig = hours[todayName];
+      if (!dayConfig) return '';
+      
+      if (dayConfig.closed) {
+        return '<span style="color:#dc2626; font-weight:700; font-size:14px;">● Closed Now</span>';
+      }
+      if (dayConfig.open24Hours) {
+        return '<span style="color:#16a34a; font-weight:700; font-size:14px;">● Open Now (24 Hours)</span>';
+      }
+      if (dayConfig.openTime && dayConfig.closeTime) {
+        const [oH, oM] = dayConfig.openTime.split(':').map(Number);
+        const [cH, cM] = dayConfig.closeTime.split(':').map(Number);
+        
+        const openDate = new Date(); openDate.setHours(oH, oM, 0);
+        const closeDate = new Date(); closeDate.setHours(cH, cM, 0);
+        
+        if (now >= openDate && now <= closeDate) {
+          return `<span style="color:#16a34a; font-weight:700; font-size:14px;">● Open Now</span> (until ${dayConfig.closeTime})`;
+        } else {
+          return `<span style="color:#dc2626; font-weight:700; font-size:14px;">● Closed Now</span> (opens at ${dayConfig.openTime})`;
+        }
+      }
+    } catch(e) {
+      console.error(e);
+    }
+    return '';
+  }
+
+  function renderListing(data, slug, collectionName, documentId = slug) {
     const icon = CATEGORY_ICONS[data.category] || CATEGORY_ICONS.default;
     const name = data.name || 'Business Listing';
     const desc = data.description || '';
@@ -275,43 +333,100 @@
     const gbpRating = data.gbpRating || null;
     const gbpReviews = data.gbpReviews || null;
     const gbpUrl = data.gbpUrl || '';
-    const services = data.servicesOffered ? data.servicesOffered.split('\n').filter(Boolean) : [];
+    const services = data.servicesOffered ? data.servicesOffered.split('\n').map(service => service.trim()).filter(Boolean) : (data.serviceIds || []);
     const whyChoose = data.whyChooseUs ? data.whyChooseUs.split('\n').filter(Boolean) : [];
 
-    // ── SEO meta tags ──
-    document.getElementById('page-title').textContent = `${name} | ${district ? district + ', ' : ''}Kerala | ServeKerala.in`;
-    document.getElementById('page-description').setAttribute('content', desc.slice(0, 160) || `Find ${name} on ServeKerala.in.`);
-    document.getElementById('page-keywords').setAttribute('content', `${name.toLowerCase()}, ${category}, ${district.toLowerCase()}, kerala`);
+    // SEO Meta title override
+    const finalTitle = data.seoTitle || `${name} | ${district ? district + ', ' : ''}Kerala | ServeKerala.in`;
+    const finalDesc = (data.seoDescription || desc || `View ${name} on ServeKerala.in and contact the business directly.`).slice(0, 160);
+    const finalKeywords = data.seoKeywords || `${name.toLowerCase()}, ${category}, ${district.toLowerCase()}, kerala`;
+    const canonicalUrl = getCanonicalUrl();
+    const allowIndexing = data.allowIndexing !== false
+      && desc.trim().length >= 60
+      && Boolean(phone || whatsapp || website);
+
+    document.getElementById('page-title').textContent = finalTitle;
+    document.getElementById('page-description').setAttribute('content', finalDesc);
+    document.getElementById('page-keywords').setAttribute('content', finalKeywords);
     document.getElementById('og-title').setAttribute('content', name);
-    document.getElementById('og-desc').setAttribute('content', desc.slice(0, 200));
-    document.getElementById('og-url').setAttribute('content', window.location.href);
+    document.getElementById('og-desc').setAttribute('content', finalDesc.slice(0, 200));
+    document.getElementById('og-url').setAttribute('content', canonicalUrl);
+    document.querySelector('link[rel="canonical"]').setAttribute('href', canonicalUrl);
+    setIndexingAllowed(allowIndexing);
     document.getElementById('breadcrumb-current').textContent = name;
 
-    // ── JSON-LD Structured Data ──
+    // Structured JSON-LD JSON
+    const schemaTypeMap = { plumbing: 'Plumber', electrical: 'Electrician', ac: 'HVACBusiness', solar: 'SolarBusiness' };
+    const schemaType = schemaTypeMap[category] || 'LocalBusiness';
+
     const ld = {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": schemaType,
       "name": name,
       "description": desc,
-      "url": window.location.href,
+      "url": canonicalUrl,
       "telephone": phone,
       "address": { "@type": "PostalAddress", "addressRegion": "Kerala", "addressCountry": "IN", "addressLocality": district }
     };
     if (email) ld.email = email;
     if (website) ld.sameAs = [website];
+    if (data.logo && data.logo.url) ld.logo = data.logo.url;
+    if (data.coverImage && data.coverImage.url) ld.image = data.coverImage.url;
+    
+    // Add Opening Hours Spec to JSON-LD
+    if (data.hours) {
+      ld.openingHoursSpecification = Object.keys(data.hours).map(day => {
+        const h = data.hours[day];
+        const dayMap = { monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday', thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
+        if (h.closed) {
+          return {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": dayMap[day],
+            "opens": "00:00",
+            "closes": "00:00"
+          };
+        } else if (h.open24Hours) {
+          return {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": dayMap[day],
+            "opens": "00:00",
+            "closes": "23:59"
+          };
+        } else {
+          return {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": dayMap[day],
+            "opens": h.openTime || "09:00",
+            "closes": h.closeTime || "18:00"
+          };
+        }
+      });
+    }
     document.getElementById('structured-data').textContent = JSON.stringify(ld, null, 2);
 
-    // ── GTM tracking ──
     const track = (action) => {
       if (typeof dataLayer !== 'undefined') {
         dataLayer.push({ event: 'business_click', business_name: name, action_type: action });
       }
       if (typeof trackListingClick === 'function') {
-        trackListingClick(`/business/${slug}/`, action);
+        trackListingClick(documentId, action, true, collectionName, {
+          name, category, district, towns, button_location: 'business_profile'
+        });
       }
     };
 
-    // ── Hero Section ──
+    // Hero Custom Background
+    let heroBgStyle = '';
+    if (data.coverImage && data.coverImage.url) {
+      heroBgStyle = `style="background-image: linear-gradient(rgba(11, 59, 44, 0.85), rgba(11, 59, 44, 0.95)), url('${data.coverImage.url}'); background-size: cover; background-position: center;"`;
+    }
+
+    // Hero Logo display
+    let logoHTML = `<div class="listing-icon">${icon}</div>`;
+    if (data.logo && data.logo.url) {
+      logoHTML = `<div class="listing-icon" style="background:#fff; padding:6px;"><img src="${data.logo.url}" alt="${name} Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px;" /></div>`;
+    }
+
     let ratingHTML = '';
     if (gbpRating && gbpReviews) {
       const stars = '★'.repeat(Math.round(gbpRating)) + '☆'.repeat(5 - Math.round(gbpRating));
@@ -325,22 +440,26 @@
         </div>`;
     }
 
+    const openStatusHTML = getOpenStatusText(data.hours);
+
     document.getElementById('listing-hero-section').innerHTML = `
-      <section class="listing-hero">
+      <section class="listing-hero" ${heroBgStyle}>
         <div class="container">
           <div class="listing-hero-inner">
-            <div class="listing-icon">${icon}</div>
+            ${logoHTML}
             <div style="flex:1;">
               <h1>${name}</h1>
               ${ratingHTML}
-              <p style="color:rgba(255,255,255,0.82);font-size:17px;margin:10px 0 0;line-height:1.6;max-width:680px;">${desc}</p>
-              <div class="listing-hero-meta">
+              <p style="color:rgba(255,255,255,0.82);font-size:17px;margin:10px 0 0;line-height:1.6;max-width:680px;">${data.shortDescription || desc}</p>
+              <div class="listing-hero-meta" style="margin-top: 18px;">
                 ${district ? `<span class="listing-badge"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>${district}, Kerala</span>` : ''}
                 ${category ? `<span class="listing-badge"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>${category.charAt(0).toUpperCase() + category.slice(1)}</span>` : ''}
+                <button type="button" class="btn btn-primary" style="background:#16A34A; border:none; padding:6px 18px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer; color:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(22,163,74,0.3); vertical-align:middle;" onclick="if(typeof openQuoteModal==='function')openQuoteModal({businessId:${inlineJsString(slug)},businessName:${inlineJsString(name)},phone:${inlineJsString(phone)},whatsapp:${inlineJsString(whatsapp)},category:${inlineJsString(category)},district:${inlineJsString(district)},collectionName:${inlineJsString(collectionName)}})">⚡ Request Free Quote</button>
                 <span class="listing-badge" style="background:rgba(134,239,172,0.2);border-color:rgba(134,239,172,0.4);color:#bbf7d0;">
                   <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                   Verified Listing
                 </span>
+                ${openStatusHTML ? `<span class="listing-badge" style="background:rgba(255,255,255,0.15);">${openStatusHTML}</span>` : ''}
               </div>
             </div>
           </div>
@@ -348,37 +467,41 @@
       </section>`;
 
     // ── Contact Cards ──
+    const smartWaUrl = typeof buildWhatsAppUrl === 'function' ? buildWhatsAppUrl(whatsapp, name, category, district) : `https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}`;
     let contactCards = '';
     if (phone) contactCards += `
       <div class="contact-card">
         <div class="contact-card-icon">📞</div>
-        <h3>Phone</h3>
+        <h3>Direct Phone</h3>
         <a href="tel:${phone}" onclick="track('call')">Call Now</a>
       </div>`;
     if (whatsapp) contactCards += `
       <div class="contact-card whatsapp">
         <div class="contact-card-icon">💬</div>
-        <h3>WhatsApp</h3>
-        <a href="https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" onclick="track('whatsapp')">Chat on WhatsApp</a>
+        <h3>Direct WhatsApp</h3>
+        <a href="${smartWaUrl}" target="_blank" rel="noopener" onclick="track('whatsapp')">Chat on WhatsApp</a>
+      </div>`;
+    contactCards += `
+      <div class="contact-card" style="border: 2px solid var(--accent); background: #f0fdf4;">
+        <div class="contact-card-icon">⚡</div>
+        <h3 style="color: var(--accent);">Direct Quote</h3>
+        <button type="button" style="display:inline-block; font-size:15px; font-weight:700; color:#fff; text-decoration:none; padding:10px 20px; background:var(--accent); border-radius:8px; border:none; cursor:pointer; width:100%; transition:all 0.2s;" onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'" onclick="if(typeof openQuoteModal==='function')openQuoteModal({businessId:${inlineJsString(slug)},businessName:${inlineJsString(name)},phone:${inlineJsString(phone)},whatsapp:${inlineJsString(whatsapp)},category:${inlineJsString(category)},district:${inlineJsString(district)},collectionName:${inlineJsString(collectionName)}})">Request Callback</button>
       </div>`;
     if (email) contactCards += `
       <div class="contact-card">
         <div class="contact-card-icon">✉️</div>
         <h3>Email</h3>
-        <a href="mailto:${email}" onclick="track('email')">${email}</a>
+        <a class="contact-email-link" href="mailto:${email}" onclick="track('email')">${email}</a>
       </div>`;
 
     // ── Services List ──
     let servicesHTML = '';
     if (services.length > 0) {
       servicesHTML = `
-        <section class="section">
-          <div class="container">
-            <h2>Services Offered</h2>
-            <ul class="services-list" style="margin-top:20px;">
-              ${services.map(s => `<li>${s}</li>`).join('')}
-            </ul>
-          </div>
+        <section class="section" style="padding:0; margin-bottom:30px;">
+          <ul class="services-list" style="margin-top:10px;">
+            ${services.map(s => `<li>${s}</li>`).join('')}
+          </ul>
         </section>`;
     }
 
@@ -387,37 +510,81 @@
     if (whyChoose.length > 0) {
       const whyIcons = ['⭐', '🔒', '💡', '🚀', '🎯', '🏆', '✅', '💎'];
       whyHTML = `
-        <section class="section light-bg">
-          <div class="container">
-            <h2>Why Choose ${name}?</h2>
-            <div class="why-grid" style="margin-top:20px;">
-              ${whyChoose.map((w, i) => `
-                <div class="why-card">
-                  <div class="why-card-icon">${whyIcons[i % whyIcons.length]}</div>
-                  <p>${w}</p>
-                </div>`).join('')}
-            </div>
+        <section class="section light-bg" style="padding: 24px; border-radius:12px; margin-top:30px; border: 1px solid var(--border-color);">
+          <h3 style="margin-top:0; margin-bottom:16px;">Why Choose ${name}?</h3>
+          <div class="why-grid">
+            ${whyChoose.map((w, i) => `
+              <div class="why-card">
+                <div class="why-card-icon">${whyIcons[i % whyIcons.length]}</div>
+                <p>${w}</p>
+              </div>`).join('')}
           </div>
         </section>`;
     }
 
-    // ── Sidebar ──
+    // ── Interactive Gallery ──
+    let galleryHTML = '';
+    if (data.gallery && data.gallery.length > 0) {
+      galleryHTML = `
+        <section class="section light-bg" style="margin-top: 30px; padding: 24px; border-radius:12px; border: 1px solid var(--border-color);">
+          <h3 style="margin-top:0; margin-bottom:16px;">Photos & Gallery</h3>
+          <div class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
+            ${data.gallery.map(img => `
+              <div class="gallery-item" style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); height: 140px; background: #fff; cursor: pointer; transition: transform 0.25s ease; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                <img src="${img.url}" alt="${img.altText || name}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;" onclick="window.open('${img.url}', '_blank')" />
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    // ── Sidebar Rows ──
     let sidebarRows = '';
     if (phone) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Phone</span><span class="sidebar-row-val"><a href="tel:${phone}">${phone}</a></span></div>`;
     if (whatsapp) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">WhatsApp</span><span class="sidebar-row-val"><a href="https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}" target="_blank">${whatsapp}</a></span></div>`;
     if (email) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Email</span><span class="sidebar-row-val"><a href="mailto:${email}">${email}</a></span></div>`;
     if (district) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">District</span><span class="sidebar-row-val">${district}, Kerala</span></div>`;
-    if (towns) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Areas</span><span class="sidebar-row-val">${towns}</span></div>`;
-    if (website) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Website</span><span class="sidebar-row-val"><a href="${website}" target="_blank" rel="noopener">${website.replace(/^https?:\/\//,'')}</a></span></div>`;
+    if (towns || (data.serviceAreas && data.serviceAreas.townIds && data.serviceAreas.townIds.length > 0)) {
+      const displayTowns = (data.serviceAreas && data.serviceAreas.townIds && data.serviceAreas.townIds.length > 0) ? data.serviceAreas.townIds.join(', ') : towns;
+      sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Areas</span><span class="sidebar-row-val" style="text-transform: capitalize;">${displayTowns}</span></div>`;
+    }
+    if (website) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Website</span><span class="sidebar-row-val"><a href="${website}" target="_blank" rel="noopener" onclick="track('website')">${website.replace(/^https?:\/\//,'')}</a></span></div>`;
     if (address) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Address</span><span class="sidebar-row-val">${address}</span></div>`;
     if (gbpRating) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Google Rating</span><span class="sidebar-row-val" style="color:#f59e0b;font-weight:700;">★ ${gbpRating} (${gbpReviews} reviews)</span></div>`;
 
+    // Business Hours Sidebar Card
+    let hoursSidebarHTML = '';
+    if (data.hours) {
+      hoursSidebarHTML = `
+        <div class="sidebar-card" style="margin-top: 20px;">
+          <h4>Business Hours</h4>
+          <div style="font-size:13.5px; color:var(--text-main);">
+            ${['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => {
+              const dayConfig = data.hours[day] || { closed: day === 'sunday', open: day !== 'sunday', open24Hours: false, openTime: '09:00', closeTime: '18:00' };
+              const currentDayName = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+              const isToday = currentDayName === day;
+              const todayStyle = isToday ? 'font-weight: 700; background: #e8f5e9; border-radius: 4px; padding: 4px 8px; margin: 2px -8px; border-left: 3px solid #16a34a;' : '';
+              let hoursText = '';
+              if (dayConfig.closed) hoursText = '<span style="color:#dc2626; font-weight:600;">Closed</span>';
+              else if (dayConfig.open24Hours) hoursText = '<span style="color:#16a34a; font-weight:600;">Open 24h</span>';
+              else hoursText = `${dayConfig.openTime} - ${dayConfig.closeTime}`;
+              
+              return `
+                <div style="display:flex; justify-content:space-between; margin-bottom: 8px; ${todayStyle}">
+                  <span style="text-transform: capitalize;">${day}</span>
+                  <span>${hoursText}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     let mapHTML = '';
     if (mapUrl) {
-      // Convert Google Maps share link to embed URL if needed
-      let embedSrc = mapUrl;
       if (mapUrl.includes('maps.app.goo.gl') || mapUrl.includes('goo.gl')) {
-        embedSrc = mapUrl; // will use as link, not embed
         mapHTML = `<div style="margin-top:16px;"><a href="${mapUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;text-align:center;display:block;">📍 View on Google Maps</a></div>`;
       } else if (mapUrl.includes('maps.google.com') || mapUrl.includes('/maps/')) {
         const iframeSrc = mapUrl.replace('/maps/', '/maps/embed/v1/').includes('embed') ? mapUrl : `https://maps.google.com/maps?q=${encodeURIComponent(address || name + ' ' + district + ' Kerala')}&output=embed`;
@@ -432,7 +599,6 @@
       gbpButtonHTML = `<div style="margin-top:10px;"><a href="${gbpUrl}" target="_blank" rel="noopener" class="btn btn-outline" style="width:100%;text-align:center;display:block;border-color:#e5e7eb;color:var(--text-dark);background:#f9fafb;">✍️ Write a Google Review</a></div>`;
     }
 
-    // ── Trust Note ──
     const trustNote = `
       <section class="section light-bg">
         <div class="container">
@@ -443,13 +609,12 @@
         </div>
       </section>`;
 
-    // ── Main layout with sidebar ──
     const mainContent = `
       <!-- Contact Cards -->
       <section class="section light-bg">
         <div class="container">
           <h2>Contact ${name}</h2>
-          <div class="grid grid-3" style="margin-top:20px;">
+          <div class="grid grid-4" style="margin-top:20px; gap: 16px;">
             ${contactCards}
           </div>
         </div>
@@ -459,13 +624,14 @@
       <section class="section">
         <div class="container">
           <div class="profile-layout">
-            <!-- Left: Services + Why Choose -->
+            <!-- Left: Description & Services & Gallery -->
             <div>
-              ${servicesHTML ? `<h2 style="margin-bottom:20px;">Services Offered</h2>
-                <ul class="services-list">${services.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
-              ${whyChoose.length > 0 ? `<h2 style="margin-top:40px;margin-bottom:20px;">Why Choose ${name}?</h2>
-                <div class="why-grid">${whyChoose.map((w, i) => `
-                  <div class="why-card"><div class="why-card-icon">${['⭐','🔒','💡','🚀','🎯','🏆','✅','💎'][i%8]}</div><p>${w}</p></div>`).join('')}</div>` : ''}
+              <h2 style="margin-bottom:16px;">About ${name}</h2>
+              <p style="font-size:16px; line-height:1.7; color:var(--text-main); margin-bottom: 30px; white-space: pre-line;">${desc}</p>
+              
+              ${servicesHTML ? `<h2 style="margin-bottom:16px;">Services Offered</h2> ${servicesHTML}` : ''}
+              ${galleryHTML}
+              ${whyHTML}
             </div>
             <!-- Right: Sidebar -->
             <div>
@@ -475,7 +641,10 @@
                 ${mapHTML}
                 ${gbpButtonHTML}
               </div>
-              <div class="sidebar-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;">
+              
+              ${hoursSidebarHTML}
+
+              <div class="sidebar-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac; margin-top:20px;">
                 <div style="text-align:center;">
                   <div style="font-size:32px;margin-bottom:8px;">✅</div>
                   <p style="font-size:14px;font-weight:700;color:#166534;margin:0;">Verified & Listed on ServeKerala.in</p>
@@ -489,6 +658,10 @@
       ${trustNote}`;
 
     document.getElementById('listing-main-content').innerHTML = mainContent;
+    track('view');
+    if (typeof initMobileBottomBar === 'function') {
+      initMobileBottomBar({ id: slug, name: name, phone: phone, whatsapp: whatsapp, category: category, district: district, towns: towns, collectionName: collectionName });
+    }
   }
 
   // ── Bootstrap ──
@@ -509,12 +682,13 @@
       db.collection('business_pages').doc(slug).get()
         .then(doc => {
           if (doc.exists) {
-            renderListing(doc.data(), slug);
+            renderListing(doc.data(), slug, 'business_pages');
           } else {
             // Fallback: query listings collection
             db.collection('listings').where('status', '==', 'approved').get()
               .then(snapshot => {
                 let matchedData = null;
+                let matchedDocId = null;
                 const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]/g, '');
                 
                 snapshot.forEach(listingDoc => {
@@ -524,11 +698,12 @@
                   
                   if (listingDoc.id === slug || data.slug === slug || cleanName === cleanSlug || webUrl.includes(`/business/${cleanSlug}`) || webUrl.includes(`/${cleanSlug}`)) {
                     matchedData = data;
+                    matchedDocId = listingDoc.id;
                   }
                 });
 
                 if (matchedData) {
-                  renderListing(matchedData, slug);
+                  renderListing(matchedData, slug, 'listings', matchedDocId || slug);
                 } else {
                   renderNotFound(slug);
                 }

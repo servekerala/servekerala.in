@@ -5,7 +5,6 @@
 const initSearch = () => {
   // Comprehensive Directory Services & Destinations Index
   const servicesList = [
-    { name: 'Auto Mithram (Auto Rickshaw Directory)', path: '/auto-mithram/', keywords: ['auto', 'autorickshaw', 'rickshaw', 'driver', 'mithram', 'auto stand'] },
     { name: 'Solar Installation', path: '/services/solar-installation/', keywords: ['solar', 'panel', 'inverter', 'green energy'] },
     { name: 'Plumber & Plumbing', path: '/services/plumber/', keywords: ['plumber', 'pipe', 'leak', 'water fitting'] },
     { name: 'Electrician & Electrical Services', path: '/services/electrician/', keywords: ['electrician', 'wiring', 'fuse', 'power'] },
@@ -25,8 +24,6 @@ const initSearch = () => {
   const businessList = [
     { name: 'Aqua Wellness (KYK Water Purifiers)', path: '/business/aquawellness/', keywords: ['aquawellness', 'aqua wellness', 'kyk', 'alkaline'] },
     { name: 'Battery House (Thiruvalla)', path: '/business/battery-house-thiruvalla/', keywords: ['battery house', 'battery house thiruvalla'] },
-    { name: 'Solis Green India', path: '/solis-green-india/', keywords: ['solis', 'solis green', 'solis green india'] },
-    { name: 'Celtron Energies', path: '/business/celtron-energies/', keywords: ['celtron', 'celtron energies'] }
   ];
 
   // Complete Kerala Districts & Major Towns Index
@@ -63,9 +60,19 @@ const initSearch = () => {
     const q = rawQuery.toLowerCase().trim();
     if (!q) return;
 
-    // 1. Auto Rickshaw & Auto Mithram queries
+    if (typeof pushAnalyticsEvent === 'function') {
+      const locationInputEl = document.getElementById('search-location');
+      const locationVal = locationInputEl ? locationInputEl.value.trim() : '';
+      pushAnalyticsEvent('search', {
+        search_term: rawQuery,
+        location: locationVal,
+        category: ''
+      });
+    }
+
+    // 1. Auto Rickshaw & Auto Mithram queries -> Dedicated Site
     if (['auto', 'autorickshaw', 'rickshaw', 'driver', 'auto mithram', 'mithram', 'auto stand'].some(k => q.includes(k))) {
-      window.location.href = '/auto-mithram/';
+      window.location.href = 'https://www.automithram.com/';
       return;
     }
 
@@ -196,6 +203,9 @@ const initSearch = () => {
         row.addEventListener('click', () => {
           headerSearchInput.value = b.name;
           headerSearchDropdown.style.display = 'none';
+          if (typeof pushAnalyticsEvent === 'function') {
+            pushAnalyticsEvent('search', { search_term: b.name, location: '', category: '' });
+          }
           window.location.href = b.path;
         });
         headerSearchDropdown.appendChild(row);
@@ -204,10 +214,13 @@ const initSearch = () => {
       // 2. Populate Services
       filteredServices.forEach(s => {
         const row = document.createElement('div');
-        row.innerHTML = `<span class="suggest-icon">${s.path.includes('auto') ? '🛺' : '🔧'}</span> ${s.name}`;
+        row.innerHTML = `<span class="suggest-icon">🔧</span> ${s.name}`;
         row.addEventListener('click', () => {
           headerSearchInput.value = s.name;
           headerSearchDropdown.style.display = 'none';
+          if (typeof pushAnalyticsEvent === 'function') {
+            pushAnalyticsEvent('search', { search_term: s.name, location: '', category: '' });
+          }
           window.location.href = s.path;
         });
         headerSearchDropdown.appendChild(row);
@@ -220,6 +233,9 @@ const initSearch = () => {
         row.addEventListener('click', () => {
           headerSearchInput.value = l.name;
           headerSearchDropdown.style.display = 'none';
+          if (typeof pushAnalyticsEvent === 'function') {
+            pushAnalyticsEvent('search', { search_term: l.name, location: '', category: '' });
+          }
           window.location.href = l.path;
         });
         headerSearchDropdown.appendChild(row);

@@ -21,20 +21,6 @@
   if (!mockListings) {
     mockListings = [
       {
-        id: 'listing_1',
-        name: 'Solis Green India Mock',
-        category: 'solar',
-        description: 'A mock solar EPC provider in Kottayam for local sandbox verification.',
-        district: 'Kottayam',
-        towns: 'Changanacherry, Thengana',
-        phone: '9539316623',
-        whatsapp: '9539316623',
-        email: 'info@solisgreenindia.in',
-        website: 'https://www.solisgreenindia.in',
-        status: 'pending',
-        createdAt: { seconds: Math.floor(Date.now() / 1000) - 3600 }
-      },
-      {
         id: 'listing_2',
         name: 'Quick Plumbers Kottayam',
         category: 'plumbing',

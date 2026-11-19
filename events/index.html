@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Events in Kerala 2026 – Festivals, Expos, Trade Fairs & Cultural Shows | ServeKerala.in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Discover upcoming local events in Kerala. Temple & Church festivals, expos, shopping fairs, food fests, and cultural programs across Kottayam, Pathanamthitta, Alappuzha & Kollam.">
+  <meta name="keywords" content="kerala events, festivals in kerala, trade fair kottayam, flower show thiruvalla, maramon convention, exhibitions kerala, food fest alappuzha, cultural events kerala">
+  <link rel="canonical" href="https://servekerala.in/events/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Events in Kerala – Festivals, Expos & Cultural Programs | ServeKerala.in">
+  <meta property="og:description" content="Explore verified local events, festivals, trade fairs, and exhibitions across Kerala.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://servekerala.in/events/">
+  <meta property="og:image" content="https://servekerala.in/assets/images/logo.png">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css?v=27.0">
+  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/events-loader.js?v=1.0" defer></script>
+  <script src="/assets/js/search.js?v=2.3" defer></script>
+
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PP7859BT');
+  </script>
+</head>
+
+<body>
+  <!-- GTM Noscript -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PP7859BT" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo" aria-label="ServeKerala.in Home">
+        <img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;">
+      </a>
+      
+      <nav class="main-nav">
+        <a href="/">Home</a>
+        <a href="/services/">Services</a>
+        <a href="/events/" class="active">Events</a>
+        <a href="/list-your-business/" class="nav-cta">List Your Business</a>
+        <a href="/contact/">Contact</a>
+      </nav>
+
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+  <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+    <div class="mobile-nav-header">
+      <a href="/" class="mobile-nav-logo"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 35px; width: auto;"></a>
+      <button class="mobile-nav-close" id="mobile-nav-close">&#10005;</button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="/">🏠 Home</a>
+      <a href="/services/">🔧 Services</a>
+      <a href="/events/" class="active">🎉 Events</a>
+      <a href="/contact/">📞 Contact</a>
+      <a href="/list-your-business/" class="nav-cta">List Your Business</a>
+    </div>
+  </div>
+  <script>(function(){var h=document.getElementById('hamburger-btn'),o=document.getElementById('mobile-nav-overlay'),d=document.getElementById('mobile-nav-drawer'),c=document.getElementById('mobile-nav-close');function op(){h.classList.add('open');o.classList.add('visible');d.classList.add('open');document.body.style.overflow='hidden';}function cl(){h.classList.remove('open');o.classList.remove('visible');d.classList.remove('open');document.body.style.overflow='';}h.addEventListener('click',function(){d.classList.contains('open')?cl():op();});c.addEventListener('click',cl);o.addEventListener('click',cl);})();</script>
+
+  <!-- ================= HERO ================= -->
+  <section class="events-hero">
+    <div class="container">
+      <span style="display: inline-block; background: rgba(212, 175, 55, 0.2); color: #FBF9F5; padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; border: 1px solid rgba(212, 175, 55, 0.4); margin-bottom: 14px;">
+        🌴 What's Happening in Kerala
+      </span>
+      <h1>Festivals, Expos & Local Events in Kerala</h1>
+      <p>
+        Explore verified upcoming community gatherings, temple and church festivals, shopping expos, and cultural programs across Central Travancore.
+      </p>
+      <div class="events-hero-actions">
+        <a href="/events/submit/" class="btn-submit-event">
+          <span>+ Submit Your Event Free</span>
+        </a>
+        <a href="#browse-events" class="btn btn-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.4); border-radius: 999px; padding: 12px 22px; font-weight: 700;">
+          Browse All Events &darr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FILTER TOOLBAR ================= -->
+  <div class="container" id="browse-events">
+    <div class="events-filter-bar">
+      <!-- Category Pills -->
+      <div class="events-filter-pills" id="event-cat-filters">
+        <button type="button" class="event-filter-pill active" data-cat="all">All Events</button>
+        <button type="button" class="event-filter-pill" data-cat="festival">🎪 Festivals</button>
+        <button type="button" class="event-filter-pill" data-cat="expo">🛍️ Expos & Fairs</button>
+        <button type="button" class="event-filter-pill" data-cat="food">🍲 Food & Dining</button>
+        <button type="button" class="event-filter-pill" data-cat="cultural">🎭 Cultural & Shows</button>
+        <button type="button" class="event-filter-pill" data-cat="sports">⚽ Sports</button>
+      </div>
+
+      <!-- District & Timeframe Dropdowns -->
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <select class="events-select-filter" id="event-district-filter" aria-label="Filter events by district">
+          <option value="all">📍 All Districts</option>
+          <option value="pathanamthitta">Pathanamthitta</option>
+          <option value="kottayam">Kottayam</option>
+          <option value="alappuzha">Alappuzha</option>
+          <option value="kollam">Kollam</option>
+        </select>
+
+        <select class="events-select-filter" id="event-date-filter" aria-label="Filter events by date">
+          <option value="all">🗓️ All Dates</option>
+          <option value="this-month">This Month</option>
+          <option value="upcoming">Future Events</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= EVENTS LISTING SECTION ================= -->
+  <section class="section" style="padding-top: 15px;">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <h2 style="font-size: 24px; font-weight: 800; color: var(--primary); margin: 0;">
+          Upcoming Events in Kerala (<span id="events-count-span">...</span>)
+        </h2>
+        <span style="font-size: 13.5px; color: var(--text-muted);">Updated daily • Verified organizers</span>
+      </div>
+
+      <!-- Events Grid Container -->
+      <div class="events-grid" id="events-grid-container">
+        <!-- Rendered dynamically by events-loader.js -->
+        <p style="padding: 40px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;">
+          Loading upcoming events...
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CROSS-PROMO: EVENT VENDORS ================= -->
+  <section class="section light-bg" style="border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 50px 0;">
+    <div class="container">
+      <div style="text-align: center; max-width: 720px; margin: 0 auto 36px;">
+        <span style="font-size: 13px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">Planning an Event in Kerala?</span>
+        <h2 style="font-size: 28px; font-weight: 800; color: var(--primary); margin: 8px 0 10px;">Hire Verified Local Event Vendors Direct</h2>
+        <p style="color: var(--text-muted); font-size: 15.5px; margin: 0;">
+          Connect directly with sound & light technicians, caterers, electricians, and event planners with 0% middleman commission.
+        </p>
+      </div>
+
+      <div class="grid grid-4" style="gap: 16px;">
+        <a href="/services/electrician/" class="card" style="padding: 22px; text-align: center; text-decoration: none; border-radius: 16px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">⚡</div>
+          <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 4px;">Generators & Wiring</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Verified electricians for stage & light</p>
+        </a>
+
+        <a href="/services/cctv-installation/" class="card" style="padding: 22px; text-align: center; text-decoration: none; border-radius: 16px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">📷</div>
+          <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 4px;">Event CCTV & Security</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Crowd monitoring & security camera setup</p>
+        </a>
+
+        <a href="/services/home-cleaning/" class="card" style="padding: 22px; text-align: center; text-decoration: none; border-radius: 16px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">🧹</div>
+          <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 4px;">Venue Cleaning</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Post-event waste clearing & sanitization</p>
+        </a>
+
+        <a href="/list-your-business/" class="card" style="padding: 22px; text-align: center; text-decoration: none; border-radius: 16px; background: var(--accent-light); border-color: rgba(22,163,74,0.3);">
+          <div style="font-size: 32px; margin-bottom: 8px;">💼</div>
+          <h3 style="font-size: 16px; color: var(--accent-hover); margin-bottom: 4px;">Are You a Vendor?</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin: 0;">List your event service free &rarr;</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SUBMIT EVENT CTA ================= -->
+  <section class="business-cta">
+    <div class="container">
+      <h2>Organizing an Event, Festival or Exhibition in Kerala?</h2>
+      <p>
+        Publish your festival schedule, trade mela, sports tournament, or cultural program on ServeKerala for free. Reach thousands of local residents and tourists across Kerala.
+      </p>
+      <a href="/events/submit/" class="btn-accent" style="padding: 13px 30px; font-size: 15px;">
+        Submit Your Event Free &rarr;
+      </a>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace & events publisher. Connecting you directly to verified local professionals and community happenings without any middleman commission.
+        </p>
+        <div class="footer-badges">
+          <span class="trust-badge">✓ 100% Commission-Free</span>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Browse Services</a>
+          <a href="/events/">Local Events</a>
+          <a href="/contact/">Get in Touch</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>For Organizers & Pros</h4>
+        <p class="footer-cta-subtext">Submit your local event or list your service business for free to reach customers in your district.</p>
+        <a href="/events/submit/" class="btn-footer-cta" style="margin-bottom: 8px;">Submit Event</a>
+        <a href="/list-your-business/" class="btn-footer-cta" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff;">List Business</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+      <nav class="footer-bottom-nav">
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms & Conditions</a>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/contact/">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- ================= CLIENT FILTER SCRIPT ================= -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let currentEvents = [];
+
+      const grid = document.getElementById('events-grid-container');
+      const countSpan = document.getElementById('events-count-span');
+      const catBtns = document.querySelectorAll('.event-filter-pill');
+      const districtSelect = document.getElementById('event-district-filter');
+      const dateSelect = document.getElementById('event-date-filter');
+
+      function filterAndRender() {
+        const activeCatBtn = document.querySelector('.event-filter-pill.active');
+        const selectedCat = activeCatBtn ? activeCatBtn.getAttribute('data-cat') : 'all';
+        const selectedDistrict = districtSelect.value.toLowerCase();
+        const selectedDate = dateSelect.value;
+
+        let filtered = currentEvents.filter(ev => {
+          // Category
+          if (selectedCat !== 'all' && (ev.category || '') !== selectedCat) return false;
+          // District
+          if (selectedDistrict !== 'all' && (ev.district || '').toLowerCase() !== selectedDistrict) return false;
+          // Date Filter
+          if (selectedDate === 'this-month' && ev.startDate) {
+            const now = new Date();
+            const evDate = new Date(ev.startDate);
+            if (evDate.getMonth() !== now.getMonth() || evDate.getFullYear() !== now.getFullYear()) return false;
+          }
+          return true;
+        });
+
+        countSpan.textContent = filtered.length;
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '<p style="padding: 50px 20px; text-align: center; color: var(--text-muted); grid-column: 1 / -1; font-size: 16px;">No upcoming events matching this filter. <br><a href="/events/submit/" style="color: var(--accent); font-weight: 700; margin-top: 10px; display: inline-block;">Submit an event in this area &rarr;</a></p>';
+          return;
+        }
+
+        grid.innerHTML = filtered.map(ev => window.createEventCardHtml(ev)).join('');
+      }
+
+      // Load Events
+      if (typeof window.loadKeralaEvents === 'function') {
+        window.loadKeralaEvents((events) => {
+          currentEvents = events;
+          filterAndRender();
+        });
+      }
+
+      // Bind Listeners
+      catBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          catBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          filterAndRender();
+        });
+      });
+
+      if (districtSelect) districtSelect.addEventListener('change', filterAndRender);
+      if (dateSelect) dateSelect.addEventListener('change', filterAndRender);
+    });
+  </script>
+</body>
+</html>
+

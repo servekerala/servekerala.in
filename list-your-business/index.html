@@ -23,13 +23,34 @@
   <meta name="author" content="ServeKerala.in" />
 
   <!-- Main CSS -->
-  <link rel="stylesheet" href="/assets/css/main.css?v=2.6">
+  <link rel="stylesheet" href="/assets/css/main.css?v=26.1">
   <script src="/assets/js/search.js?v=2.3" defer></script>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="/assets/js/listing.js?v=2.2" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script src="/assets/js/listing.js?v=26.2" defer></script>
+
+  <style>
+    .wizard-steps { display: flex; justify-content: space-between; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 30px; flex-wrap: wrap; gap: 10px; }
+    .step-indicator { font-size: 13.5px; font-weight: 700; color: #9ca3af; position: relative; padding-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+    .step-indicator.active { color: var(--primary); }
+    .step-indicator.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: var(--primary); border-radius: 2px; }
+    .wizard-step-content { display: none; }
+    .wizard-step-content.active { display: block; }
+    .services-checkbox-grid, .areas-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 15px; }
+    .checkbox-card { background: #fff; border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; font-size: 14px; }
+    .checkbox-card input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); margin: 0; }
+    .checkbox-card:hover { border-color: var(--primary); background: #f0fdf4; }
+    .hours-row { display: grid; grid-template-columns: 120px 80px 100px 1fr; gap: 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-row label { font-weight: 700; margin: 0; font-size: 14px; }
+    .hours-row input[type="time"] { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13.5px; }
+    .preview-thumbnail { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); display: none; }
+    .preview-container { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+    .form-group-info { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: block; }
+  </style>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
   <script>
@@ -41,8 +62,9 @@
   </script>
   <!-- =============== END GOOGLE TAG MANAGER =============== -->
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/assets/js/i18n.js?v=26.0" defer></script>
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>
 </head>
-
 <body>
 
 <!-- ================= GOOGLE TAG MANAGER (NOSCRIPT) ================= -->
@@ -56,20 +78,11 @@
 <header class="site-header">
   <div class="container">
     <a href="/" class="logo" aria-label="ServeKerala.in Home"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;"></a>
-        <div class="header-search">
-      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
-      <button id="header-search-submit" class="btn-header-search">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-      </button>
-      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
-    </div>
+        
     <nav class="main-nav">
       <a href="/">Home</a>
       <a href="/services/">Services</a>
-      <a href="/auto-mithram/">Auto Mithram</a>
+      <a href="/events/">Events</a>
       <a href="/list-your-business/" class="nav-cta active">List Your Business</a>
       <a href="/contact/">Contact</a>
     </nav>
@@ -87,7 +100,7 @@
   <div class="mobile-nav-links">
     <a href="/">🏠 Home</a>
     <a href="/services/">🔧 Services</a>
-    <a href="/auto-mithram/">🛺 Auto Mithram</a>
+      <a href="/events/">🎉 Events</a>
     <a href="/contact/">📞 Contact</a>
     <a href="/list-your-business/" class="nav-cta">List Your Business</a>
   </div>
@@ -114,6 +127,7 @@
       Reach local customers across Kerala searching for your service. Setup your verified profile in just a few minutes. 
       Choose direct calls or WhatsApp messages with zero platform commission.
     </p>
+    <p style="margin-top:-24px;margin-bottom:32px;color:var(--text-muted);">Already listed? <a href="/dashboard/" style="font-weight:700;color:var(--primary);">Sign in to manage your profile and view enquiries</a>.</p>
 
     <!-- BENEFITS GRID -->
     <div class="grid grid-4" style="margin-bottom: 50px;">
@@ -135,7 +149,7 @@
         <p style="color: var(--text-muted); font-size: 13px;">We never charge per call or take cuts. Keep 100% of your earnings.</p>
       </div>
 
-      <div class="card" style="padding: 24px; text-align: left; height: auto;">
+       <div class="card" style="padding: 24px; text-align: left; height: auto;">
         <span style="font-size: 28px; display: block; margin-bottom: 8px;">✔️</span>
         <div class="card-title" style="font-size: 16px; margin-bottom: 6px;">Verified Stamp</div>
         <p style="color: var(--text-muted); font-size: 13px;">Gain customer confidence with a verified directory checkmark.</p>
@@ -155,86 +169,415 @@
         <div id="form-status-message" class="alert-box"></div>
 
         <form id="listing-form">
-          
-          <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">1. Business Profile</h4>
-          
-          <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bname">Business Name</label>
-              <input type="text" id="bname" required placeholder="e.g. Kerala Solar EPC">
+          <!-- WIZARD STEP INDICATOR -->
+          <div class="wizard-steps">
+            <span class="step-indicator active" data-step="0">0. Find</span>
+            <span class="step-indicator" data-step="1">1. Info</span>
+            <span class="step-indicator" data-step="2">2. Photos</span>
+            <span class="step-indicator" data-step="3">3. Location</span>
+            <span class="step-indicator" data-step="4">4. Services</span>
+            <span class="step-indicator" data-step="5">5. Service Areas</span>
+            <span class="step-indicator" data-step="6">6. Contact</span>
+            <span class="step-indicator" data-step="7">7. Hours</span>
+            <span class="step-indicator" data-step="8">8. Confirm</span>
+          </div>
+
+          <!-- Section 0: Find Your Business (Import Source) -->
+          <div class="wizard-step-content active" id="step-0-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">0. Find Your Business</h4>
+            <p style="font-size: 13.5px; line-height: 1.5; color: var(--text-muted); margin-bottom: 20px;">
+              Enter your Google Maps/Google Business Profile link or your website to automatically import your business name, phone, address, and hours.
+            </p>
+            
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label for="import-gbp-url">Google Business Profile / Google Maps Link</label>
+              <input type="url" id="import-gbp-url" placeholder="e.g. https://maps.app.goo.gl/..." style="width: 100%;">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bcat">Service Category</label>
-              <select id="bcat" required>
-                <!-- Dynamic options -->
-              </select>
+            
+            <div style="text-align: center; margin: 12px 0; font-weight: 700; color: var(--text-muted); font-size: 13px;">OR</div>
+            
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label for="import-web-url">Business Website URL</label>
+              <input type="url" id="import-web-url" placeholder="e.g. https://mybusiness.com" style="width: 100%;">
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bweb">Website (Optional)</label>
-              <input type="url" id="bweb" placeholder="https://example.com">
+            
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 24px;">
+              <button type="button" class="btn btn-primary" id="btn-fetch-business" style="padding: 10px 24px; font-size: 13.5px; font-weight: 600;">🔍 Fetch Business Information</button>
+              <button type="button" class="btn btn-outline" id="btn-skip-import" style="padding: 10px 24px; font-size: 13.5px; font-weight: 600;">Skip / Enter Manually &rarr;</button>
+            </div>
+
+            <!-- Import Loading / Progress -->
+            <div id="import-loading" style="display: none; align-items: center; gap: 10px; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; margin-bottom: 24px;">
+              <span class="loading-spinner" style="width: 18px; height: 18px; border: 2px solid var(--primary); border-top-color: transparent; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite;"></span>
+              <span style="font-size: 13.5px; font-weight: 600; color: #166534;" id="import-loading-text">Fetching business details...</span>
+            </div>
+            
+            <!-- Import Error Feedback -->
+            <div id="import-error" style="display: none; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 14px; margin-bottom: 24px; color: #991b1b; font-size: 13px; line-height: 1.5;">
+              <strong>We couldn't retrieve business details automatically.</strong><br>
+              <span id="import-error-reason">Please check the URL or type your business information manually by clicking "Skip / Enter Manually".</span>
+            </div>
+
+            <!-- Import Confirmation Panel -->
+            <div id="import-confirm-panel" style="display: none; background: #fff; border: 2px solid var(--primary); border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+              <h5 style="color: var(--primary); font-size: 15px; font-weight: 700; margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                <span>✨</span> Business Found!
+              </h5>
+              <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; line-height: 1.5;">
+                <div><strong>Business Name:</strong> <span id="found-name" style="font-weight: 600;"></span></div>
+                <div><strong>Address:</strong> <span id="found-address" style="color: var(--text-muted);"></span></div>
+                <div><strong>Phone:</strong> <span id="found-phone"></span></div>
+                <div><strong>Website:</strong> <span id="found-website"></span></div>
+                <div><strong>Source:</strong> <span id="found-source" style="text-transform: uppercase; font-weight: bold; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1;"></span></div>
+                <div id="found-hours-row" style="display: none;"><strong>Hours:</strong> <span id="found-hours" style="font-size: 12px; color: #166534;"></span></div>
+                <div id="found-coords-row" style="display: none;"><strong>Coordinates:</strong> Lat: <span id="found-lat"></span>, Lng: <span id="found-lng"></span></div>
+              </div>
+              
+              <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <button type="button" class="btn btn-primary" id="btn-use-imported" style="padding: 8px 20px; font-size: 13px;">Use This Information</button>
+                <button type="button" class="btn btn-outline" id="btn-try-another" style="padding: 8px 20px; font-size: 13px;">Try Another Business</button>
+              </div>
             </div>
           </div>
 
-          <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">2. Service Area & Location</h4>
-          
-          <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bdist">Main District</label>
-              <select id="bdist" required>
-                <!-- Dynamic options -->
-              </select>
+          <!-- Section 1: Business Information -->
+          <div class="wizard-step-content" id="step-1-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">1. Business Information</h4>
+            <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bname">Business Name <span style="color:#dc2626;">*</span></label>
+                <input type="text" id="bname" required placeholder="e.g. Kerala Solar EPC">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bcat">Service Category <span style="color:#dc2626;">*</span></label>
+                <select id="bcat" required>
+                  <option value="">Select Category</option>
+                  <!-- Dynamically loaded -->
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bestablished">Established Year (Optional)</label>
+                <input type="number" id="bestablished" min="1900" max="2026" placeholder="e.g. 2018">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bweb">Website (Optional)</label>
+                <input type="url" id="bweb" placeholder="https://example.com">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label for="bshortdesc">Short Description / Tagline <span style="color:#dc2626;">*</span></label>
+              <input type="text" id="bshortdesc" required placeholder="e.g. Vetted solar installers for residential & commercial systems in Kottayam.">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
-              <label for="btowns">Towns Covered</label>
-              <input type="text" id="btowns" required placeholder="e.g. Thiruvalla, Changanassery, Chengannur">
-            </div>
-          </div>
-
-          <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="baddress">Physical Address (Optional)</label>
-              <input type="text" id="baddress" placeholder="e.g. Near Post Office, Kottayam, Kerala">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bmap">Google Maps Share Link (Optional)</label>
-              <input type="url" id="bmap" placeholder="e.g. https://maps.app.goo.gl/XYZ">
-            </div>
-          </div>
-
-          <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">3. Contact Details</h4>
-          
-          <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bphone">Direct Phone</label>
-              <input type="tel" id="bphone" required placeholder="10-digit number">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bwa">WhatsApp Number</label>
-              <input type="tel" id="bwa" required placeholder="WhatsApp number">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bemail">Business Email</label>
-              <input type="email" id="bemail" required placeholder="contact@example.com">
+              <label for="bdesc">Full Business Description <span style="color:#dc2626;">*</span></label>
+              <textarea id="bdesc" rows="4" required placeholder="Describe your team's experience, specialization, warranty policies, rates, and why customers choose you..."></textarea>
             </div>
           </div>
 
-          <div class="form-group" style="margin-top: 16px;">
-            <label for="bdesc">Business Summary (Short intro)</label>
-            <textarea id="bdesc" rows="3" required placeholder="Describe your team's experience, brands you use, warranty policies, or rates..."></textarea>
+          <!-- Section 2: Branding & Photos -->
+          <div class="wizard-step-content" id="step-2-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">2. Branding & Photos</h4>
+            <div style="font-size:13px; color:var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
+              Upload your logo and photos to stand out (Only JPG, PNG, and WebP are allowed):
+              <ul style="margin: 6px 0 0 16px; padding: 0; list-style-type: disc;">
+                <li><strong>Business Logo:</strong> 1 image, 400 x 400 px (1:1 Square), Max 500 KB</li>
+                <li><strong>Cover Photo:</strong> 1 image, 1200 x 430 px (Landscape), Max 1 MB</li>
+                <li><strong>Gallery Images:</strong> Max 2 images, 800 x 600 px (Landscape), Max 1 MB each</li>
+              </ul>
+            </div>
+            
+            <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="blogo">Business Logo <span style="font-size:11px; font-weight: normal; color:var(--text-muted);">(400x400 px, Square, Max 500KB)</span></label>
+                <input type="file" id="blogo" accept="image/*">
+                <div class="preview-container">
+                  <img id="logo-preview-img" class="preview-thumbnail">
+                  <span id="logo-upload-status" class="form-group-info">No file selected</span>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bcover">Cover Photo <span style="font-size:11px; font-weight: normal; color:var(--text-muted);">(1200x430 px, Landscape, Max 1MB)</span></label>
+                <input type="file" id="bcover" accept="image/*">
+                <div class="preview-container">
+                  <img id="cover-preview-img" class="preview-thumbnail">
+                  <span id="cover-upload-status" class="form-group-info">No file selected</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="bgallery">Gallery Photos <span style="font-size:11px; font-weight: normal; color:var(--text-muted);">(Max 2 images, 800x600 px, Landscape, Max 1MB each)</span></label>
+              <input type="file" id="bgallery" accept="image/*" multiple>
+              <div id="gallery-preview-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+              <span id="gallery-upload-status" class="form-group-info">No files selected</span>
+            </div>
           </div>
 
-          <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bservices">Services Offered (One per line)</label>
-              <textarea id="bservices" rows="4" required placeholder="e.g.&#10;Residential On-Grid Solar Plants&#10;Commercial Installations&#10;Subsidy Assistance"></textarea>
+          <!-- Section 3: Location -->
+          <div class="wizard-step-content" id="step-3-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">3. Physical Location</h4>
+            
+            <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bdist">Main District <span style="color:#dc2626;">*</span></label>
+                <select id="bdist" required>
+                  <option value="">Select District</option>
+                  <!-- Dynamically loaded -->
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="btown">Primary Town <span style="color:#dc2626;">*</span></label>
+                <select id="btown" required disabled>
+                  <option value="">Select District First</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bpincode">PIN Code</label>
+                <input type="text" id="bpincode" placeholder="e.g. 686101" pattern="[0-9]{6}" title="6-digit PIN code">
+              </div>
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label for="bwhychoose">Why Choose Us (One per line)</label>
-              <textarea id="bwhychoose" rows="4" required placeholder="e.g.&#10;Experienced Team&#10;End-to-End EPC&#10;Reliable After-Sales"></textarea>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label>Select Specific Local Area(s) (Optional)</label>
+              <div id="areas-checkboxes-container" class="areas-checkbox-grid">
+                <p style="color:var(--text-muted); font-size:13px; margin:0;">Select Primary Town to load areas.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-2" style="gap: 16px; margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="baddress">Physical Address (Optional)</label>
+                <input type="text" id="baddress" placeholder="e.g. Room 4, Building ABC, Near Post Office, Kottayam">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bmap">Google Maps Share Link (Optional)</label>
+                <input type="url" id="bmap" placeholder="e.g. https://maps.app.goo.gl/XYZ">
+              </div>
             </div>
           </div>
 
-          <button type="submit" class="btn-form-submit" style="width: auto; padding: 14px 40px; margin-top: 24px;">Submit Application</button>
+          <!-- Section 4: Services -->
+          <div class="wizard-step-content" id="step-4-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">4. Select Services</h4>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom: 8px;">Select up to 10 accurate services your business currently provides. These will appear on your public profile.</p>
+            <p id="service-selection-status" style="font-size:12px;color:var(--text-muted);margin:0 0 12px;" role="status" aria-live="polite">0 of 10 selected</p>
+            
+            <div style="margin-bottom: 16px;">
+              <input type="text" id="search-services-input" placeholder="🔍 Search services..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13.5px;">
+            </div>
+
+            <div id="services-checkboxes-container" class="services-checkbox-grid">
+              <p style="color:var(--text-muted); font-size:13px; margin:0;">Please select a Service Category in Step 1 to load services.</p>
+            </div>
+
+            <!-- Custom Service Suggestion -->
+            <div style="margin-top: 20px; padding: 14px; border: 1px dashed var(--primary); border-radius: 8px; background: #fafafa;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--primary);">
+                <input type="checkbox" id="request-custom-service-chk" style="width:16px; height:16px; margin:0;">
+                Can't find a service? Suggest it here
+              </label>
+              <div id="custom-service-field-container" style="display: none; margin-top: 10px;">
+                <input type="text" id="requested-custom-service" placeholder="Type name of service to add (e.g. Solar Panel Cleaning)" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13.5px;">
+                <span style="font-size:11px; color: var(--text-muted); display:block; margin-top: 4px;">Suggested services will be reviewed and added by administrators.</span>
+              </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 24px; margin-bottom: 0;">
+              <label for="bwhychoose">Why Choose Us / Custom Benefits (One per line) <span style="color:#dc2626;">*</span></label>
+              <textarea id="bwhychoose" rows="3" required placeholder="e.g.&#10;10 Years Warranty on Panels&#10;Vetted & Certified Technicians&#10;Direct Commission-Free Pricing"></textarea>
+            </div>
+          </div>
+
+          <!-- Section 5: Service Areas -->
+          <div class="wizard-step-content" id="step-5-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">5. Service Coverage Areas</h4>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom: 16px;">Check all districts and towns where you actively provide services and travel to.</p>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label>Districts Served</label>
+              <div class="areas-checkbox-grid" id="service-districts-container">
+                <!-- Loaded Dynamically -->
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Towns Served (Under selected districts)</label>
+              <div class="areas-checkbox-grid" id="service-towns-container">
+                <p style="color:var(--text-muted); font-size:13px; margin:0;">Check a district above to view towns.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 6: Contact & Socials -->
+          <div class="wizard-step-content" id="step-6-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">6. Contact Details</h4>
+            
+            <div class="grid grid-3" style="gap: 16px; margin-bottom: 20px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bphone">Direct Phone <span style="color:#dc2626;">*</span></label>
+                <input type="tel" id="bphone" required placeholder="10-digit number" pattern="[0-9]{10}">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bwa">WhatsApp Number <span style="color:#dc2626;">*</span></label>
+                <input type="tel" id="bwa" required placeholder="WhatsApp number" pattern="[0-9]{10}">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bemail">Business Email <span style="color:#dc2626;">*</span></label>
+                <input type="email" id="bemail" required placeholder="contact@example.com">
+              </div>
+            </div>
+
+            <h4 style="font-size: 15px; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">Social Profiles (Optional)</h4>
+            
+            <div class="grid grid-3" style="gap: 16px; margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bsocfb">Facebook URL</label>
+                <input type="url" id="bsocfb" placeholder="https://facebook.com/yourpage">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bsocig">Instagram URL</label>
+                <input type="url" id="bsocig" placeholder="https://instagram.com/yourprofile">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="bsocln">LinkedIn URL</label>
+                <input type="url" id="bsocln" placeholder="https://linkedin.com/company/yourpage">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 7: Business Hours -->
+          <div class="wizard-step-content" id="step-7-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">7. Structured Business Hours</h4>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom: 16px;">Specify your operating hours for each day of the week.</p>
+
+            <div style="background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 20px;">
+              <!-- Monday -->
+              <div class="hours-row" data-day="monday">
+                <label>Monday</label>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-closed" id="h-closed-mon"> <label for="h-closed-mon" style="font-weight:normal;font-size:13px;">Closed</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-24h" id="h-24h-mon"> <label for="h-24h-mon" style="font-weight:normal;font-size:13px;">24 Hours</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="time" class="hour-open-time" value="09:00"> to <input type="time" class="hour-close-time" value="18:00">
+                </div>
+              </div>
+              <!-- Tuesday -->
+              <div class="hours-row" data-day="tuesday">
+                <label>Tuesday</label>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-closed" id="h-closed-tue"> <label for="h-closed-tue" style="font-weight:normal;font-size:13px;">Closed</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-24h" id="h-24h-tue"> <label for="h-24h-tue" style="font-weight:normal;font-size:13px;">24 Hours</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="time" class="hour-open-time" value="09:00"> to <input type="time" class="hour-close-time" value="18:00">
+                </div>
+              </div>
+              <!-- Wednesday -->
+              <div class="hours-row" data-day="wednesday">
+                <label>Wednesday</label>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-closed" id="h-closed-wed"> <label for="h-closed-wed" style="font-weight:normal;font-size:13px;">Closed</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-24h" id="h-24h-wed"> <label for="h-24h-wed" style="font-weight:normal;font-size:13px;">24 Hours</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="time" class="hour-open-time" value="09:00"> to <input type="time" class="hour-close-time" value="18:00">
+                </div>
+              </div>
+              <!-- Thursday -->
+              <div class="hours-row" data-day="thursday">
+                <label>Thursday</label>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-closed" id="h-closed-thu"> <label for="h-closed-thu" style="font-weight:normal;font-size:13px;">Closed</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-24h" id="h-24h-thu"> <label for="h-24h-thu" style="font-weight:normal;font-size:13px;">24 Hours</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="time" class="hour-open-time" value="09:00"> to <input type="time" class="hour-close-time" value="18:00">
+                </div>
+              </div>
+              <!-- Friday -->
+              <div class="hours-row" data-day="friday">
+                <label>Friday</label>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-closed" id="h-closed-fri"> <label for="h-closed-fri" style="font-weight:normal;font-size:13px;">Closed</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-24h" id="h-24h-fri"> <label for="h-24h-fri" style="font-weight:normal;font-size:13px;">24 Hours</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="time" class="hour-open-time" value="09:00"> to <input type="time" class="hour-close-time" value="18:00">
+                </div>
+              </div>
+              <!-- Saturday -->
+              <div class="hours-row" data-day="saturday">
+                <label>Saturday</label>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-closed" id="h-closed-sat"> <label for="h-closed-sat" style="font-weight:normal;font-size:13px;">Closed</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-24h" id="h-24h-sat"> <label for="h-24h-sat" style="font-weight:normal;font-size:13px;">24 Hours</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="time" class="hour-open-time" value="09:00"> to <input type="time" class="hour-close-time" value="13:00">
+                </div>
+              </div>
+              <!-- Sunday -->
+              <div class="hours-row" data-day="sunday">
+                <label>Sunday</label>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-closed" id="h-closed-sun" checked> <label for="h-closed-sun" style="font-weight:normal;font-size:13px;">Closed</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" class="hour-24h" id="h-24h-sun"> <label for="h-24h-sun" style="font-weight:normal;font-size:13px;">24 Hours</label>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="time" class="hour-open-time" disabled> to <input type="time" class="hour-close-time" disabled>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 8: Confirm & Submit -->
+          <div class="wizard-step-content" id="step-8-content">
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">8. Confirmation</h4>
+            
+            <h5 style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">BUSINESS LISTING REVIEW</h5>
+            <div id="step-8-summary-container" style="margin-bottom: 24px; border: 1px solid var(--border-color); border-radius: 12px; background: #fff; padding: 20px; font-size: 13.5px; line-height: 1.5; color: var(--text-main);">
+              <!-- Rendered dynamically by JavaScript -->
+            </div>
+
+            <p style="font-size: 14px; line-height: 1.6; color: var(--text-main); margin-bottom: 20px;">
+              Please check the boxes below to verify that your details are accurate. Once submitted, our admins will review your request and verify your phone number before generating your directory profile page.
+            </p>
+            
+            <div class="checkbox-card" style="margin-bottom: 16px;">
+              <input type="checkbox" id="bconfirm" required>
+              <label for="bconfirm" style="font-weight: 600; cursor: pointer;">I confirm that all submitted business details are accurate and I operate in the selected regions.</label>
+            </div>
+            
+            <div style="background: #fff9e6; border: 1px solid #ffe299; border-radius: 8px; padding: 14px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 24px;">
+              <span style="font-size: 18px;">⚠️</span>
+              <p style="font-size: 12.5px; margin: 0; color: #b27b00; line-height: 1.4;">
+                To prevent spam and fraudulent listings, we verify direct phone contacts before publishing. Listings with false contacts or outside service ranges will be rejected.
+              </p>
+            </div>
+          </div>
+
+          <!-- Wizard Nav Controls -->
+          <div class="wizard-navigation" style="display: flex; justify-content: space-between; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px; width: 100%;">
+            <button type="button" class="btn btn-outline" id="prev-step-btn" style="display: none; padding: 10px 24px; font-size:14px;">&larr; Back</button>
+            <button type="button" class="btn btn-primary" id="next-step-btn" style="padding: 10px 24px; font-size:14px; margin-left: auto;">Next &rarr;</button>
+          </div>
         </form>
       </div>
 
@@ -254,23 +597,62 @@
           📢 <strong>Verification Info:</strong> Verified badges are provided free of cost. Our team will verify phone numbers and coordinates prior to publishing to prevent fake registrations.
         </div>
       </div>
-
     </div>
   </div>
 </section>
 
 <!-- ================= FOOTER ================= -->
-<footer class="site-footer">
-  <div class="container">
-    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
-    <nav class="footer-nav">
-      <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms/">Terms & Conditions</a>
-      <a href="/disclaimer/">Disclaimer</a>
-      <a href="/contact/">Contact Us</a>
-    </nav>
-  </div>
-</footer>
+  <!-- ================= FOOTER ================= -->
+    <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace. Connecting you directly to verified local professionals without any middleman commission.
+        </p>
+        <div class="footer-badges">
+          <span class="trust-badge">✓ 100% Commission-Free</span>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Browse Services</a>
+          <a href="/events/">Local Events</a>
+          <a href="/contact/">Get in Touch</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>For Professionals</h4>
+        <p class="footer-cta-subtext">Are you a service provider? Register your business today to get high-quality WhatsApp leads.</p>
+        <a href="/list-your-business/?v=1.4" class="btn-footer-cta">List Your Business</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+      <nav class="footer-bottom-nav">
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms & Conditions</a>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/contact/">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
 
 </body>
 </html>

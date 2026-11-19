@@ -25,16 +25,19 @@
     content="local services kerala, hire professionals kerala, solar installation kerala, electricians kottayam, plumbers thiruvalla, local lead marketplace" />
   <meta name="author" content="ServeKerala.in" />
 
-  <!-- Main CSS and Font script -->
-  <link rel="stylesheet" href="/assets/css/main.css?v=1.1">
+  <!-- Google Fonts Preconnect & Main CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css?v=26.1">
   <script src="/assets/js/search.js?v=2.3" defer></script>
 
   <!-- Firebase SDKs & Core Scripts -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/i18n.js?v=26.0" defer></script>
   <script src="/assets/js/cms-loader.js?v=2.3" defer></script>
-  <script src="/assets/js/home-loader.js?v=1.3" defer></script>
+  <script src="/assets/js/home-loader.js?v=26.2" defer></script>
 
   <!-- WebSite and Organization Schema -->
   <script type="application/ld+json">
@@ -89,68 +92,6 @@
         "position": 1,
         "item": {
           "@type": "ProfessionalService",
-          "@id": "https://servekerala.in/solis-green-india/#business",
-          "name": "Solis Green India",
-          "url": "https://servekerala.in/solis-green-india/",
-          "telephone": "+919539316623",
-          "priceRange": "$$",
-          "image": "https://servekerala.in/assets/images/solis-green-logo.jpg",
-          "description": "Solar plant installation, subsidy assistance, and turnkey EPC solutions across Kottayam, Pathanamthitta, Alappuzha, and Kollam.",
-          "address": {
-            "@type": "PostalAddress",
-            "addressRegion": "Kerala",
-            "addressCountry": "IN"
-          },
-          "areaServed": [
-            {"@type": "AdministrativeArea", "name": "Kottayam"},
-            {"@type": "AdministrativeArea", "name": "Pathanamthitta"},
-            {"@type": "AdministrativeArea", "name": "Alappuzha"},
-            {"@type": "AdministrativeArea", "name": "Kollam"}
-          ],
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.9",
-            "reviewCount": "42",
-            "bestRating": "5",
-            "worstRating": "1"
-          }
-        }
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "item": {
-          "@type": "ProfessionalService",
-          "@id": "https://servekerala.in/celtron-energies/#business",
-          "name": "Celtron Energies",
-          "url": "https://servekerala.in/celtron-energies/",
-          "telephone": "+919072221810",
-          "priceRange": "$$",
-          "image": "https://servekerala.in/assets/images/celtron-logo.jpg",
-          "description": "Solar plant engineering, solar batteries, accessories, and AMC support across Pathanamthitta and Kottayam.",
-          "address": {
-            "@type": "PostalAddress",
-            "addressRegion": "Kerala",
-            "addressCountry": "IN"
-          },
-          "areaServed": [
-            {"@type": "AdministrativeArea", "name": "Pathanamthitta"},
-            {"@type": "AdministrativeArea", "name": "Kottayam"}
-          ],
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "reviewCount": "28",
-            "bestRating": "5",
-            "worstRating": "1"
-          }
-        }
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "item": {
-          "@type": "ProfessionalService",
           "@id": "https://servekerala.in/business/battery-house-thiruvalla/#business",
           "name": "Battery House",
           "url": "https://servekerala.in/business/battery-house-thiruvalla/",
@@ -173,6 +114,7 @@
   }
   </script>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>
 </head>
 
 <body class="home-page">
@@ -189,25 +131,24 @@
   </noscript>
   <!-- =============== END GOOGLE TAG MANAGER (NOSCRIPT) =============== -->
 
+  <!-- Moving Announcement Banner -->
+  <a href="/list-your-business/" class="announcement-banner">
+    <div class="banner-track">
+      <span class="banner-text"><span class="banner-tag">LOCAL BUSINESSES</span> Grow your business free. Direct customer calls. Zero commission. <span class="arrow">&rarr;</span></span>
+      <span class="banner-text" aria-hidden="true"><span class="banner-tag">LOCAL BUSINESSES</span> Grow your business free. Direct customer calls. Zero commission. <span class="arrow">&rarr;</span></span>
+      <span class="banner-text" aria-hidden="true"><span class="banner-tag">LOCAL BUSINESSES</span> Grow your business free. Direct customer calls. Zero commission. <span class="arrow">&rarr;</span></span>
+    </div>
+  </a>
+
   <!-- ================= HEADER ================= -->
   <header class="site-header">
     <div class="container">
       <a href="/" class="logo" aria-label="ServeKerala.in Home"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;"></a>
-      <div class="header-search">
-        <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
-        <button id="header-search-submit" class="btn-header-search">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-        </button>
-        <div id="header-search-dropdown" class="suggestions-dropdown"></div>
-      </div>
+      
       <nav class="main-nav">
         <a href="/" class="active">Home</a>
         <a href="/services/">Services</a>
-        <a href="/auto-mithram/">Auto Mithram</a>
+        <a href="/events/">Events</a>
         <a href="/list-your-business/" class="nav-cta">List Your Business</a>
         <a href="/contact/">Contact</a>
       </nav>
@@ -232,7 +173,7 @@
     <div class="mobile-nav-links">
       <a href="/" class="active">🏠 Home</a>
       <a href="/services/">🔧 Services</a>
-      <a href="/auto-mithram/">🛺 Auto Mithram</a>
+      <a href="/events/">🎉 Events</a>
       <a href="/contact/">📞 Contact</a>
       <a href="/list-your-business/" class="nav-cta">List Your Business</a>
     </div>
@@ -272,33 +213,109 @@
 
   <!-- ================= HERO ================= -->
   <section class="hero">
-    <div class="container">
-      <h1 data-cms="heroTitle" class="cms-loading">Hire Top-Rated Local Experts. Zero Middlemen.</h1>
-      <p data-cms="heroDescription" class="hero-text cms-loading">
-        Need an electrician in Kottayam? A solar installer in Pathanamthitta? Get direct WhatsApp quotes from verified professionals near you.
-      </p>
+    <div class="container hero-grid">
+      <div class="hero-left">
+        <h1 data-cms="heroTitle" class="cms-loading">Find Trusted Local Services in Kerala</h1>
+        <p data-cms="heroDescription" class="hero-text cms-loading">
+          Electricians, plumbers, solar installers, AC technicians, CCTV experts and more.
+        </p>
 
-      <!-- INTERACTIVE AUTOCOMPLETE SEARCH COMPONENT -->
-      <div class="search-container">
-        <div class="search-box">
-          <svg class="search-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="search-service" placeholder="What service do you need today?"
-            autocomplete="off">
+        <!-- INTERACTIVE AUTOCOMPLETE SEARCH COMPONENT -->
+        <div class="search-container">
+          <div class="search-box">
+            <svg class="search-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="search" id="search-service" aria-label="Service or profession" placeholder="What service do you need today?"
+              autocomplete="off">
+          </div>
+          <div class="search-box">
+            <svg class="search-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <input type="search" id="search-location" aria-label="District or town" placeholder="District or Town (e.g. Thiruvalla, Kottayam)"
+              autocomplete="off">
+          </div>
+          <button id="search-submit" class="btn-search">Find a Pro</button>
         </div>
-        <div class="search-box">
-          <svg class="search-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          <input type="text" id="search-location" placeholder="District or Town (e.g. Thiruvalla, Kottayam)"
-            autocomplete="off">
+      </div>
+
+      <div class="hero-right">
+        <!-- Floating Teak Wood Aqua Wellness Card -->
+        <div class="premium-featured-card">
+          <div class="card-inner-wood">
+            <!-- Brass Corner Brackets -->
+            <div class="card-brass-corner top-left"></div>
+            <div class="card-brass-corner top-right"></div>
+            <div class="card-brass-corner bottom-left"></div>
+            <div class="card-brass-corner bottom-right"></div>
+            
+            <!-- Card Slider Wrapper for dynamic transitions -->
+            <div class="premium-card-slider-wrapper" id="hero-card-slider-wrapper" style="transition: opacity 0.4s ease, transform 0.4s ease;">
+              <div class="premium-card-header">
+                <div class="premium-card-logo">
+                  <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="url(#goldGradient)" stroke-width="2">
+                    <defs>
+                      <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#D4AF37" />
+                        <stop offset="100%" stop-color="#AA7C11" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                    <path d="M12 22V10"></path>
+                    <path d="M12 10a4 4 0 0 1 0 8"></path>
+                  </svg>
+                </div>
+                <div class="premium-card-title-area">
+                  <h3 id="hero-card-title">Aqua Wellness</h3>
+                  <span id="hero-card-location">pathanamthitta, Kerala</span>
+                </div>
+                <div class="premium-verified-crest">
+                  <div class="crest-laurel"></div>
+                  <div class="crest-text">Verified<br>Listing</div>
+                </div>
+              </div>
+              
+              <div class="premium-card-body">
+                <h4 class="body-label">About</h4>
+                <p class="body-desc" id="hero-card-desc">
+                  Aqua Wellness provides trusted water treatment for homes and businesses in Pathanamthitta. Alkaline Ionizers (ആൽക്കലൈൻ ഐയോണൈസറുകൾ) and high-quality water filtration.
+                </p>
+                <div class="premium-card-meta-row">
+                  <div class="meta-col">
+                    <span class="meta-label">Services</span>
+                    <span class="meta-val" id="hero-card-services">Water Ionizers</span>
+                  </div>
+                  <div class="meta-col">
+                    <span class="meta-label">Callback</span>
+                    <span class="meta-val" id="hero-card-callback">Malayalam / English</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="premium-card-actions">
+                <a href="tel:+918281770660" class="action-btn btn-call-wood" id="hero-card-call">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6.62 10.79a15.15 15.15 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.27 11.72 11.72 0 0 0 3.67.58 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.72 11.72 0 0 0 .58 3.67 1 1 0 0 1-.27 1.11z"/></svg>
+                  Direct Call
+                </a>
+                <a href="https://wa.me/918281770660" class="action-btn btn-whatsapp-wood" target="_blank" id="hero-card-wa">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm5.706-3.328l.41.243c1.517.902 3.53 1.378 5.586 1.38 5.553 0 10.07-4.512 10.074-10.061.002-2.69-1.043-5.216-2.942-7.119C16.993 3.212 14.47 2.164 11.8 2.164 6.242 2.164 1.726 6.68 1.722 12.235c-.001 2.126.559 4.198 1.622 5.992l.267.452-.998 3.645 3.722-.976z"/></svg>
+                  WhatsApp Quote
+                </a>
+                <a href="/contact/" class="action-btn btn-callback-wood" id="hero-card-callback-btn">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  Request Callback
+                </a>
+              </div>
+            </div>
+            <!-- Slideshow Dot Indicators -->
+            <div class="hero-slider-dots" id="hero-slider-dots"></div>
+          </div>
         </div>
-        <button id="search-submit" class="btn-search">Find a Pro</button>
       </div>
     </div>
   </section>
@@ -311,33 +328,140 @@
         Choose a category below to browse high-rated local providers in your area.
       </p>
 
-      <div class="grid grid-4">
-        <a href="/services/solar-installation/" class="card">
-          <div class="card-title">Solar Installation</div>
-          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">Residential & commercial solar
-            plants.</p>
-          <span style="color: var(--primary); font-weight: 700; font-size: 14px;">Browse Installers →</span>
+      <!-- Popular Services Section with Premium Arched Cards (3 Columns Desktop) -->
+      <div class="popular-services-grid">
+        <a href="/services/solar-installation/" class="arched-card">
+          <div class="arched-card-roof">
+            <svg class="roof-border-svg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40 L200,40 L0,40 Z" fill="#ffffff" stroke="none"/>
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40" fill="none" stroke="#D4AF37" stroke-width="3"/>
+            </svg>
+          </div>
+          <div class="arched-card-content">
+            <div class="arched-card-icon">
+              <!-- Solar Icon -->
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#D4AF37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            </div>
+            <h3 class="arched-card-title">Solar Installer</h3>
+            <p>Solar panel setups, on-grid & off-grid systems.</p>
+            <div class="arched-card-footer">Find out more &rarr;</div>
+          </div>
         </a>
 
-        <a href="/services/plumber/" class="card">
-          <div class="card-title">Plumber</div>
-          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">Emergency plumbing & piping work.
-          </p>
-          <span style="color: var(--primary); font-weight: 700; font-size: 14px;">Find Plumbers →</span>
+        <a href="/services/plumber/" class="arched-card">
+          <div class="arched-card-roof">
+            <svg class="roof-border-svg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40 L200,40 L0,40 Z" fill="#ffffff" stroke="none"/>
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40" fill="none" stroke="#D4AF37" stroke-width="3"/>
+            </svg>
+          </div>
+          <div class="arched-card-content">
+            <div class="arched-card-icon">
+              <!-- Plumber Icon -->
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#D4AF37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              </svg>
+            </div>
+            <h3 class="arched-card-title">Plumber</h3>
+            <p>Emergency plumbing, leaks & piping work.</p>
+            <div class="arched-card-footer">Find out more &rarr;</div>
+          </div>
         </a>
 
-        <a href="/services/electrician/" class="card">
-          <div class="card-title">Electrician</div>
-          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">Wiring, fault repair & maintenance.
-          </p>
-          <span style="color: var(--primary); font-weight: 700; font-size: 14px;">Find Electricians →</span>
+        <a href="/services/electrician/" class="arched-card">
+          <div class="arched-card-roof">
+            <svg class="roof-border-svg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40 L200,40 L0,40 Z" fill="#ffffff" stroke="none"/>
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40" fill="none" stroke="#D4AF37" stroke-width="3"/>
+            </svg>
+          </div>
+          <div class="arched-card-content">
+            <div class="arched-card-icon">
+              <!-- Electrician Icon -->
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#D4AF37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+              </svg>
+            </div>
+            <h3 class="arched-card-title">Electrician</h3>
+            <p>Wiring, fault repair & home installations.</p>
+            <div class="arched-card-footer">Find out more &rarr;</div>
+          </div>
         </a>
 
-        <a href="/services/ac-service/" class="card">
-          <div class="card-title">AC Service</div>
-          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">AC repair, cleaning & installation.
-          </p>
-          <span style="color: var(--primary); font-weight: 700; font-size: 14px;">Find AC Techs →</span>
+        <a href="/services/ac-service/" class="arched-card">
+          <div class="arched-card-roof">
+            <svg class="roof-border-svg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40 L200,40 L0,40 Z" fill="#ffffff" stroke="none"/>
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40" fill="none" stroke="#D4AF37" stroke-width="3"/>
+            </svg>
+          </div>
+          <div class="arched-card-content">
+            <div class="arched-card-icon">
+              <!-- AC Icon -->
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#D4AF37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+                <path d="M6 8h12"></path>
+                <path d="M8 12h8"></path>
+              </svg>
+            </div>
+            <h3 class="arched-card-title">AC Service</h3>
+            <p>AC repair, cleaning, gas refills & setup.</p>
+            <div class="arched-card-footer">Find out more &rarr;</div>
+          </div>
+        </a>
+
+        <a href="/services/cctv-installation/" class="arched-card">
+          <div class="arched-card-roof">
+            <svg class="roof-border-svg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40 L200,40 L0,40 Z" fill="#ffffff" stroke="none"/>
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40" fill="none" stroke="#D4AF37" stroke-width="3"/>
+            </svg>
+          </div>
+          <div class="arched-card-content">
+            <div class="arched-card-icon">
+              <!-- CCTV Icon -->
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#D4AF37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <h3 class="arched-card-title">CCTV Setup</h3>
+            <p>Camera setups, DVR/NVR & security faults.</p>
+            <div class="arched-card-footer">Find out more &rarr;</div>
+          </div>
+        </a>
+
+        <a href="/services/pest-control/" class="arched-card">
+          <div class="arched-card-roof">
+            <svg class="roof-border-svg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40 L200,40 L0,40 Z" fill="#ffffff" stroke="none"/>
+              <path d="M0,40 Q25,40 50,20 T100,0 T150,20 T200,40" fill="none" stroke="#D4AF37" stroke-width="3"/>
+            </svg>
+          </div>
+          <div class="arched-card-content">
+            <div class="arched-card-icon">
+              <!-- Bug Icon -->
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#D4AF37" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                <path d="M12 2v9M8 3l3 3M16 3l-3 3M4 14h16M4 18h16"></path>
+              </svg>
+            </div>
+            <h3 class="arched-card-title">Pest Control</h3>
+            <p>Termite, rodent & insect management.</p>
+            <div class="arched-card-footer">Find out more &rarr;</div>
+          </div>
         </a>
       </div>
 
@@ -347,97 +471,142 @@
     </div>
   </section>
 
-  <!-- ================= HOW IT WORKS ================= -->
-  <section class="section light-bg">
-    <div class="container">
-      <h2 style="text-align: center; margin-bottom: 40px; font-weight: 800;">How ServeKerala.in Works</h2>
-
-      <div class="grid grid-4">
-        <div class="card" style="padding: 24px;">
-          <div style="font-size: 32px; margin-bottom: 12px;">🔍</div>
-          <div class="card-title">1. Search Service</div>
-          <p style="color: var(--text-muted); font-size: 14px; font-weight: 400;">Specify what you need and select your
-            location.</p>
-        </div>
-        <div class="card" style="padding: 24px;">
-          <div style="font-size: 32px; margin-bottom: 12px;">⭐</div>
-          <div class="card-title">2. Compare Profiles</div>
-          <p style="color: var(--text-muted); font-size: 14px; font-weight: 400;">Browse ratings, reviews, verified
-            badges, and portfolios.</p>
-        </div>
-        <div class="card" style="padding: 24px;">
-          <div style="font-size: 32px; margin-bottom: 12px;">💬</div>
-          <div class="card-title">3. Contact Directly</div>
-          <p style="color: var(--text-muted); font-size: 14px; font-weight: 400;">Call or message providers directly via
-            WhatsApp.</p>
-        </div>
-        <div class="card" style="padding: 24px;">
-          <div style="font-size: 32px; margin-bottom: 12px;">💸</div>
-          <div class="card-title">4. Zero Fees</div>
-          <p style="color: var(--text-muted); font-size: 14px; font-weight: 400;">Enjoy direct communication with no
-            commission rates.</p>
-        </div>
+  <!-- ================= POPULAR LOCATIONS ================= -->
+  <section class="section popular-locations-section" style="background-color: var(--bg-surface); padding-top: 60px; padding-bottom: 60px; border-top: 1px solid rgba(212, 175, 55, 0.1); border-bottom: 1px solid rgba(212, 175, 55, 0.1);">
+    <div class="container" style="text-align: center;">
+      <h2 style="margin-bottom: 12px; font-weight: 800;">Popular Locations</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Browse trusted local service providers in your town or city</p>
+      
+      <div class="popular-locations-grid">
+        <a href="/pathanamthitta/thiruvalla/" class="location-pill">Thiruvalla</a>
+        <a href="/kottayam/kottayam/" class="location-pill">Kottayam</a>
+        <a href="/kottayam/changanacherry/" class="location-pill">Changanassery</a>
+        <a href="/pathanamthitta/adoor/" class="location-pill">Adoor</a>
+        <a href="/pathanamthitta/pathanamthitta/" class="location-pill">Pathanamthitta</a>
       </div>
     </div>
   </section>
 
   <!-- ================= FEATURED BUSINESSES ================= -->
-    <section class="section" style="padding-bottom: 20px;">
-      <div class="container">
-        <h2>Featured Verified Listings</h2>
-        <p style="color: var(--text-muted); margin-bottom: 30px;">
-          Top recommended professionals currently serving Kerala.
-        </p>
-  
-        <!-- Featured Listings Slider Wrapper -->
-        <div class="featured-slider-wrapper">
-          <!-- Prev Button -->
-          <button class="slider-arrow slider-arrow-prev" id="featured-slider-prev" aria-label="Previous Slide">
-            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-  
-          <div class="featured-slider-container" id="featured-slider-container">
-            <div class="featured-slider-track" id="featured-slider-track">
-              <!-- Dynamic featured listings will be injected here by home-loader.js -->
-            </div>
-          </div>
-  
-          <!-- Next Button -->
-          <button class="slider-arrow slider-arrow-next" id="featured-slider-next" aria-label="Next Slide">
-            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
-        </div>
-      </div>
-    </section>
+  <section class="section" style="padding-bottom: 20px;">
+    <div class="container">
+      <h2>Featured Local Providers</h2>
+      <p style="color: var(--text-muted); margin-bottom: 30px;">
+        Browse businesses currently listed in the directory.
+      </p>
 
-    <!-- ================= PREMIUM AUTO DRIVERS ================= -->
-    <section class="section" style="padding-top: 20px; background-color: var(--bg-surface);">
-      <div class="container">
-        <h2>Premium Auto Drivers</h2>
-        <p style="color: var(--text-muted); margin-bottom: 30px;">
-          Verified and highly recommended Auto Mithram drivers in your area.
-        </p>
-  
-        <!-- Featured Auto Slider Wrapper -->
-        <div class="featured-slider-wrapper">
-          <!-- Prev Button -->
-          <button class="slider-arrow slider-arrow-prev" id="auto-slider-prev" aria-label="Previous Slide">
-            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-  
-          <div class="featured-slider-container" id="auto-slider-container">
-            <div class="featured-slider-track" id="auto-slider-track">
-              <!-- Dynamic auto listings will be injected here by home-loader.js -->
-            </div>
+      <!-- Featured Listings Slider Wrapper -->
+      <div class="featured-slider-wrapper">
+        <!-- Prev Button -->
+        <button class="slider-arrow slider-arrow-prev" id="featured-slider-prev" aria-label="Previous Slide">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+
+        <div class="featured-slider-container" id="featured-slider-container">
+          <div class="featured-slider-track" id="featured-slider-track">
+            <!-- Dynamic featured listings will be injected here by home-loader.js -->
           </div>
+        </div>
+
+        <!-- Next Button -->
+        <button class="slider-arrow slider-arrow-next" id="featured-slider-next" aria-label="Next Slide">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
   
-          <!-- Next Button -->
-          <button class="slider-arrow slider-arrow-next" id="auto-slider-next" aria-label="Next Slide">
-            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
+  <!-- ================= UPCOMING EVENTS IN KERALA ================= -->
+  <section class="section home-events-section" style="padding-top: 50px; padding-bottom: 50px; background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-base) 100%); border-top: 1px solid rgba(212, 175, 55, 0.15);">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+        <div>
+          <span style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--secondary-text);">Kerala Community & Festivals</span>
+          <h2 style="margin: 4px 0 0 0; font-size: clamp(24px, 3.5vw, 32px); font-weight: 800; color: var(--primary);">Upcoming Events in Kerala</h2>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="/events/submit/" class="btn btn-outline" style="padding: 8px 16px; font-size: 13.5px; border-radius: 999px;">+ Post an Event</a>
+          <a href="/events/" class="btn btn-primary" style="padding: 8px 18px; font-size: 13.5px; border-radius: 999px;">Explore All Events &rarr;</a>
         </div>
       </div>
-    </section>
+      <p style="color: var(--text-muted); margin-bottom: 24px; max-width: 650px;">
+        Discover upcoming flower shows, expos, cultural gatherings, and sports tournaments across Kottayam, Pathanamthitta, Alappuzha, and Kollam.
+      </p>
+
+      <div class="events-grid" id="home-events-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+        <div style="padding: 40px; text-align: center; color: var(--text-muted); grid-column: 1 / -1;">
+          Loading upcoming events...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BROWSE BY DISTRICT ================= -->
+  <section class="section district-browse-section" style="padding-top: 60px; padding-bottom: 60px; background-color: var(--bg-base); border-top: 1px solid rgba(212, 175, 55, 0.1);">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 12px; font-weight: 800;">Browse by District</h2>
+      <p style="color: var(--text-muted); text-align: center; margin-bottom: 40px;">Find verified service providers in your region</p>
+      
+      <div class="district-browse-grid">
+        <a href="/pathanamthitta/" class="district-card">
+          <div class="district-card-icon">📍</div>
+          <h3 class="district-card-title">Pathanamthitta</h3>
+          <p>Plumbing, solar, AC & electrician pros serving Adoor, Thiruvalla, Ranni and more.</p>
+          <span class="district-card-link">Explore Listings &rarr;</span>
+        </a>
+        <a href="/kottayam/" class="district-card">
+          <div class="district-card-icon">📍</div>
+          <h3 class="district-card-title">Kottayam</h3>
+          <p>Find vetted local experts in Changanassery, Pala, Ettumanoor, and Kottayam town.</p>
+          <span class="district-card-link">Explore Listings &rarr;</span>
+        </a>
+        <a href="/alappuzha/" class="district-card">
+          <div class="district-card-icon">📍</div>
+          <h3 class="district-card-title">Alappuzha</h3>
+          <p>Browse verified specialists serving Alappuzha town, Cherthala, and Kayamkulam.</p>
+          <span class="district-card-link">Explore Listings &rarr;</span>
+        </a>
+        <a href="/kollam/" class="district-card">
+          <div class="district-card-icon">📍</div>
+          <h3 class="district-card-title">Kollam</h3>
+          <p>Get direct quotes from local providers in Kollam, Kottarakkara, and Punalur.</p>
+          <span class="district-card-link">Explore Listings &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= WHY SERVEKERALA? ================= -->
+  <section class="section why-servekerala-section" style="background-color: var(--bg-surface); border-top: 1px solid rgba(212, 175, 55, 0.1); border-bottom: 1px solid rgba(212, 175, 55, 0.1); padding-top: 60px; padding-bottom: 60px;">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 12px; font-weight: 800;">Why Choose ServeKerala?</h2>
+      <p style="color: var(--text-muted); text-align: center; margin-bottom: 45px;">Kerala's most trusted commission-free local service marketplace</p>
+
+      <div class="why-servekerala-grid">
+        <div class="why-servekerala-card">
+          <div class="why-icon">🛡️</div>
+          <h3 class="why-title">Verified Businesses</h3>
+          <p>Every service provider is checked for authenticity, reviews, and quality of work. Zero anonymous listings.</p>
+        </div>
+        <div class="why-servekerala-card">
+          <div class="why-icon">📞</div>
+          <h3 class="why-title">Direct Contact</h3>
+          <p>Connect directly with pros via phone call or WhatsApp. No automated system delays, no phone tag.</p>
+        </div>
+        <div class="why-servekerala-card">
+          <div class="why-icon">💸</div>
+          <h3 class="why-title">No Commission</h3>
+          <p>We charge 0% commission on leads or service fees. You pay the business directly—no markup or hidden platform cuts.</p>
+        </div>
+        <div class="why-servekerala-card">
+          <div class="why-icon">🏠</div>
+          <h3 class="why-title">Local Businesses</h3>
+          <p>Tailored specifically for towns and districts across Kerala, supporting independent local workers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- ================= TRUST BANNER ================= -->
   <section class="section" style="padding-bottom: 0;">
@@ -451,6 +620,7 @@
   </section>
 
   <!-- ================= FOR BUSINESS OWNERS ================= -->
+    <!-- ================= FOR BUSINESS OWNERS ================= -->
   <section class="business-cta">
     <div class="container">
       <h2>Grow Your Business with ServeKerala.in</h2>
@@ -464,19 +634,82 @@
   </section>
 
   <!-- ================= FOOTER ================= -->
+    <!-- ================= FOOTER ================= -->
+    <!-- ================= FOOTER ================= -->
   <footer class="site-footer">
-  <div class="container">
-    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
-    <nav class="footer-nav">
-      <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms/">Terms & Conditions</a>
-      <a href="/disclaimer/">Disclaimer</a>
-      <a href="/contact/">Contact Us</a>
-    </nav>
-  </div>
-</footer>
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace. Connecting you directly to verified local professionals without any middleman commission.
+        </p>
+        <div class="footer-badges">
+          <span class="trust-badge">✓ 100% Commission-Free</span>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Browse Services</a>
+          <a href="/events/">Local Events</a>
+          <a href="/contact/">Get in Touch</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>For Professionals</h4>
+        <p class="footer-cta-subtext">Are you a service provider? Register your business today to get high-quality WhatsApp leads.</p>
+        <a href="/list-your-business/?v=1.4" class="btn-footer-cta">List Your Business</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+      <nav class="footer-bottom-nav">
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms & Conditions</a>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/contact/">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
 
   <!-- Featured Listings Slider Logic Handled in home-loader.js -->
+
+
+  <!-- Events Loader & Home Hydration -->
+  <script src="/assets/js/events-loader.js?v=1.0" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof window.loadKeralaEvents === 'function') {
+        window.loadKeralaEvents(function(events) {
+          var container = document.getElementById('home-events-grid');
+          if (!container) return;
+          // Sort upcoming and pick top 3
+          var upcoming = events.slice(0, 3);
+          if (upcoming.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: 1 / -1;">No upcoming events right now. <a href="/events/submit/">Submit one</a>!</p>';
+            return;
+          }
+          container.innerHTML = upcoming.map(function(ev) {
+            return window.createEventCardHtml(ev);
+          }).join('');
+        });
+      }
+    });
+  </script>
 
 </body>
 

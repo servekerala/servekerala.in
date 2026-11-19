@@ -19,13 +19,14 @@
   <meta name="robots" content="noindex, nofollow" />
 
   <!-- Main CSS -->
-  <link rel="stylesheet" href="/assets/css/main.css?v=3.6">
+  <link rel="stylesheet" href="/assets/css/main.css?v=26.1">
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="/assets/js/admin.js?v=5.0" defer></script>
+  <script src="/assets/js/events-loader.js?v=1.0" defer></script>
+  <script src="/assets/js/admin.js?v=26.5" defer></script>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
   <script>
@@ -37,6 +38,8 @@
   </script>
   <!-- =============== END GOOGLE TAG MANAGER =============== -->
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/assets/js/i18n.js?v=26.0" defer></script>
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>
 </head>
 
 <body class="admin-page">
@@ -52,19 +55,11 @@
 <header class="site-header">
   <div class="container">
     <div class="logo">ServeKerala<span>.in</span></div>
-    <div class="header-search">
-      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
-      <button id="header-search-submit" class="btn-header-search">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-      </button>
-      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
-    </div>
+    
     <nav class="main-nav">
       <a href="/">Home</a>
       <a href="/services/?v=1.6">Services</a>
+      <a href="/events/">Events</a>
       <a href="/list-your-business/?v=1.6" class="nav-cta">List Your Business</a>
       <a href="/contact/?v=1.6">Contact</a>
     </nav>
@@ -76,7 +71,7 @@
   <div class="container">
 
     <!-- 1. LOGIN INTERFACE -->
-    <div id="login-container" class="login-container">
+    <div id="login-container" class="login-container" style="display:none !important;">
       <div class="login-card">
         <h2>Admin Console</h2>
         <div id="login-error-message" class="alert-box alert-error" style="display: none; margin-bottom: 16px;"></div>
@@ -95,7 +90,7 @@
     </div>
 
     <!-- 2. DASHBOARD INTERFACE (Hidden by default) -->
-    <div id="dashboard-container" class="admin-dashboard hidden">
+    <div id="dashboard-container" class="admin-dashboard">
       <div class="admin-header">
         <div>
           <h2>Moderation Dashboard</h2>
@@ -107,11 +102,13 @@
       <!-- Content Type Tabs -->
       <div class="admin-content-types" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap;">
         <button class="content-type-btn active" data-type="listings" style="padding: 8px 16px; border: none; background: var(--primary); color: white; border-radius: 4px; cursor: pointer; font-weight: 600;">Services</button>
-        <button class="content-type-btn" data-type="auto_mithram" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">Auto Mithram</button>
+        <button class="content-type-btn" data-type="customer_leads" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">🎯 Customer Leads (<span id="count-leads">0</span>)</button>
+        <button class="content-type-btn" data-type="events" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">🎉 Events (<span id="count-events">0</span>)</button>
         <button class="content-type-btn" data-type="business_pages" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">📄 Business Pages</button>
         <button class="content-type-btn" data-type="kpi_dashboard" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">📈 KPI Dashboard</button>
         <button class="content-type-btn" data-type="page_generator" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">🚀 Page Generator</button>
-        <button class="content-type-btn" data-type="location_settings" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600; margin-left: 10px;">📍 Locations</button>
+        <button class="content-type-btn" data-type="category_settings" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600; margin-left: 10px;">🏷️ Categories</button>
+        <button class="content-type-btn" data-type="location_settings" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">📍 Locations</button>
         <button class="content-type-btn" data-type="seo_settings" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600;">🔍 SEO Settings</button>
         <button class="content-type-btn" data-type="cms_settings" style="padding: 8px 16px; border: none; background: #e5e7eb; color: var(--text-dark); border-radius: 4px; cursor: pointer; font-weight: 600; margin-left: auto;">⚙️ CMS / Settings</button>
       </div>
@@ -133,6 +130,103 @@
         </button>
       </div>
 
+      
+      
+      <!-- Events Moderation Section (Shown when events tab active) -->
+      <div id="admin-events-container" style="display: none; background: #ffffff; padding: 24px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+          <div>
+            <h3 style="font-size: 20px; color: var(--primary); margin: 0 0 4px 0; font-weight: 800;">🎉 Community & Local Events Moderation</h3>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin: 0;">Review submissions, feature festivals, and publish local happenings across Kerala.</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="events-filter-status" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 13.5px; font-weight: 600;">
+              <option value="">All Statuses</option>
+              <option value="pending">⏳ Pending Review</option>
+              <option value="approved">✅ Approved / Active</option>
+              <option value="featured">⭐ Featured Only</option>
+              <option value="rejected">Archived</option>
+            </select>
+            <select id="events-filter-district" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 13.5px;">
+              <option value="">All Districts</option>
+              <option value="Kottayam">Kottayam</option>
+              <option value="Pathanamthitta">Pathanamthitta</option>
+              <option value="Alappuzha">Alappuzha</option>
+              <option value="Kollam">Kollam</option>
+              <option value="Ernakulam">Ernakulam</option>
+              <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+              <option value="Thrissur">Thrissur</option>
+              <option value="Kozhikode">Kozhikode</option>
+            </select>
+            <button id="btn-seed-sample-events" class="btn btn-outline" style="padding: 8px 14px; font-size: 13px; color: var(--primary); border-color: var(--primary);">📥 Seed 6 Sample Events</button>
+            <button id="btn-create-event-modal" class="btn btn-primary" style="padding: 8px 16px; font-size: 13.5px; font-weight: 700;">+ Add New Event</button>
+            <button id="btn-refresh-events" class="btn btn-outline" style="padding: 8px 14px; font-size: 13.5px;">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 12px;">Poster & Title</th>
+                <th style="padding: 12px;">Category & Location</th>
+                <th style="padding: 12px;">Dates & Timings</th>
+                <th style="padding: 12px;">Organizer Contact</th>
+                <th style="padding: 12px;">Status</th>
+                <th style="padding: 12px; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-events-tbody">
+              <tr>
+                <td colspan="6" style="padding: 30px; text-align: center; color: var(--text-muted);">Loading events...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Customer Leads Section (Shown when customer_leads tab active) -->
+      <div id="admin-leads-container" style="display: none; background: #ffffff; padding: 24px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+          <div>
+            <h3 style="font-size: 20px; color: var(--primary); margin: 0 0 4px 0; font-weight: 800;">🎯 Customer Quote Inquiries & Leads</h3>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin: 0;">Genuine callback & quote requests submitted by visitors across Kerala.</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="leads-filter-status" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 13.5px; font-weight: 600;">
+              <option value="">All Statuses</option>
+              <option value="new">🔥 New Inquiries</option>
+              <option value="contacted">📞 Contacted</option>
+              <option value="converted">✅ Converted</option>
+              <option value="closed">Closed</option>
+            </select>
+            <button id="btn-refresh-leads" class="btn btn-outline" style="padding: 8px 16px; font-size: 13.5px;">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 2px solid var(--border-color); color: var(--text-muted);">
+                <th style="padding: 12px;">Date / Time</th>
+                <th style="padding: 12px;">Customer Details</th>
+                <th style="padding: 12px;">Target Business</th>
+                <th style="padding: 12px;">Service & Town</th>
+                <th style="padding: 12px;">Timeline</th>
+                <th style="padding: 12px;">Notes</th>
+                <th style="padding: 12px;">Status</th>
+                <th style="padding: 12px; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-leads-tbody">
+              <tr>
+                <td colspan="8" style="padding: 30px; text-align: center; color: var(--text-muted);">Loading customer leads...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    
       <!-- Listings Grid (Used for Services & Auto Mithram & Business Pages) -->
       <div id="admin-listings-container" class="admin-listings">
         <!-- Rendered dynamically by admin.js -->
@@ -164,7 +258,7 @@
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label for="cms-contact-phone">Support Phone Number</label>
-              <input type="tel" id="cms-contact-phone" required placeholder="+919744482385">
+              <input type="tel" id="cms-contact-phone" required placeholder="+918281770660">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label for="cms-contact-wa">Support WhatsApp</label>
@@ -189,15 +283,49 @@
 
         </div>
 
-      
+      <!-- Service Categories Section (Dedicated Menu Tab) -->
+      <div id="admin-categories-container" class="admin-cms" style="display: none; background: var(--bg-base); padding: 30px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+        <h3 style="font-size: 20px; color: var(--primary); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">Service Categories Management</h3>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Manage active service categories available across ServeKerala platform.</p>
+        
+        <div style="background: #ffffff; padding: 24px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); width: 100%;">
+          <h5 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px;">Active Service Categories</h5>
+          <div id="category-list-container" style="max-height: 320px; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px;">
+            <!-- Categories rendered dynamically -->
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; background: var(--bg-base); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <strong style="font-size: 14px; color: var(--text-main);">Add New Category</strong>
+            <div style="display: flex; gap: 12px;">
+              <input type="text" id="new-category-name" placeholder="Display Name (e.g. Plumber)" style="flex: 1; padding: 10px 14px; font-size: 14px; border: 1.5px solid var(--border-color); border-radius: 6px; outline: none; background: #fff;">
+              <input type="text" id="new-category-id" placeholder="Slug/ID (e.g. plumbing)" style="flex: 1; padding: 10px 14px; font-size: 14px; border: 1.5px solid var(--border-color); border-radius: 6px; outline: none; background: #fff;">
+            </div>
+            <button type="button" id="btn-add-category" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px; font-weight: 700; border-radius: 6px; width: 100%; cursor: pointer;">+ Add Category</button>
+          </div>
+
+          <div style="margin-top:24px; padding-top:22px; border-top:1px solid var(--border-color);">
+            <h5 style="font-size:16px; font-weight:700; color:var(--primary); margin:0 0 6px;">Services businesses can select</h5>
+            <p style="font-size:13px; color:var(--text-muted); margin:0 0 16px;">Add accurate service options under the matching category. Businesses select these on their listing forms, and selections appear on their public profiles.</p>
+            <div id="service-catalog-list" style="max-height:320px; overflow-y:auto; margin-bottom:16px; border:1px solid var(--border-color); border-radius:6px; padding:12px;"></div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; background:var(--bg-base); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
+              <select id="new-service-category" aria-label="Service category" style="padding:10px 12px; border:1.5px solid var(--border-color); border-radius:6px; background:#fff;"><option value="">Select category</option></select>
+              <input type="text" id="new-service-name" maxlength="80" placeholder="Service name (e.g. Solar panel maintenance)" style="padding:10px 12px; border:1.5px solid var(--border-color); border-radius:6px; background:#fff;">
+              <input type="text" id="new-service-id" maxlength="80" placeholder="ID (auto-generated if blank)" style="padding:10px 12px; border:1.5px solid var(--border-color); border-radius:6px; background:#fff;">
+              <button type="button" id="btn-add-service" class="btn btn-primary" style="padding:10px 16px; font-weight:700; border-radius:6px; cursor:pointer;">+ Add Service Option</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Locations Section -->
       <div id="admin-locations-container" class="admin-cms" style="display: none; background: var(--bg-base); padding: 30px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
         <!-- Dynamic Settings Management -->
-        <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-top: 36px; margin-bottom: 12px; border-top: 1px solid var(--border-color); padding-top: 24px;">Manage Directory Parameters</h4>
+        <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-top: 12px; margin-bottom: 12px;">Manage Directory Parameters</h4>
         <div class="grid grid-2" style="gap: 30px; margin-top: 20px;">
           <!-- District Management -->
           <div style="background: #ffffff; padding: 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
-            <h5 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Main Districts</h5>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h5 style="font-size: 15px; font-weight: 700; color: var(--primary); margin: 0;">Main Districts</h5>
+            </div>
             <div id="district-list-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px;">
               <!-- Districts rendered dynamically -->
             </div>
@@ -207,23 +335,6 @@
             </div>
           </div>
 
-          <!-- Category Management -->
-          <div style="background: #ffffff; padding: 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
-            <h5 style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Service Categories</h5>
-            <div id="category-list-container" style="max-height: 200px; overflow-y: auto; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px;">
-              <!-- Categories rendered dynamically -->
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              <div style="display: flex; gap: 8px;">
-                <input type="text" id="new-category-name" placeholder="Display Name (e.g. Plumber)" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;">
-                <input type="text" id="new-category-id" placeholder="Slug/ID (e.g. plumbing)" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;">
-              </div>
-              <button type="button" id="btn-add-category" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 4px; width: 100%;">Add Category</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-2" style="gap: 30px; margin-top: 20px;">
           <!-- Town Management -->
           <div style="background: #ffffff; padding: 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -258,10 +369,12 @@
               <p style="font-size: 13px; color: var(--text-muted); padding: 4px;">Please select Town first.</p>
             </div>
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="new-locality-input" placeholder="e.g. KSRTC Stand" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;" disabled>
+              <input type="text" id="new-locality-input" placeholder="e.g. Thrickodithanam" style="flex: 1; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 4px; outline: none;" disabled>
               <button type="button" id="btn-add-locality" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 4px;" disabled>Add</button>
             </div>
           </div>
+
+          </div></div>
         </div>
       </div>
 
@@ -460,6 +573,103 @@
             </tbody>
           </table>
         </div>
+
+        <!-- ================= SERVICES DIRECTORY PERFORMANCE ================= -->
+        <h3 style="font-size: 20px; color: var(--primary); margin-top: 40px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">Services Directory Performance</h3>
+        
+        <!-- Summary Cards Grid -->
+        <div class="grid grid-4" style="gap: 16px; margin-bottom: 30px;">
+          <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">Total Views</div>
+            <div id="perf-summary-views" style="font-size: 28px; font-weight: 800; color: var(--primary);">0</div>
+          </div>
+          <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">WhatsApp Leads</div>
+            <div id="perf-summary-whatsapp" style="font-size: 28px; font-weight: 800; color: var(--primary);">0</div>
+          </div>
+          <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">Phone Calls</div>
+            <div id="perf-summary-calls" style="font-size: 28px; font-weight: 800; color: var(--primary);">0</div>
+          </div>
+          <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">Callback Requests</div>
+            <div id="perf-summary-callbacks" style="font-size: 28px; font-weight: 800; color: var(--primary);">0</div>
+          </div>
+        </div>
+
+        <!-- Filter Controls Block -->
+        <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 24px;">
+          <h4 style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">Filter Directory Performance</h4>
+          <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="perf-filter-district">District</label>
+              <select id="perf-filter-district" style="width:100%; height:38px; border: 1px solid var(--border-color); border-radius:4px; padding: 0 10px; background-color: #fff; color: var(--text-main);">
+                <option value="">All Districts</option>
+                <option value="kottayam">Kottayam</option>
+                <option value="pathanamthitta">Pathanamthitta</option>
+                <option value="alappuzha">Alappuzha</option>
+                <option value="kollam">Kollam</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="perf-filter-town">Town</label>
+              <input type="text" id="perf-filter-town" placeholder="e.g. Pala" style="width:100%; height:38px; border: 1px solid var(--border-color); border-radius:4px; padding: 0 10px; background-color: #fff; color: var(--text-main);" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="perf-filter-category">Category</label>
+              <select id="perf-filter-category" style="width:100%; height:38px; border: 1px solid var(--border-color); border-radius:4px; padding: 0 10px; background-color: #fff; color: var(--text-main);">
+                <option value="">All Categories</option>
+                <option value="solar">Solar Installation</option>
+                <option value="plumbing">Plumber</option>
+                <option value="electrical">Electrician</option>
+                <option value="ac">AC Service</option>
+                <option value="cctv">CCTV Installation</option>
+                <option value="cleaning">Home Cleaning</option>
+                <option value="pest">Pest Control</option>
+                <option value="water">Water Purifier Service</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="perf-filter-business">Business Name</label>
+              <input type="text" id="perf-filter-business" placeholder="Search business name" style="width:100%; height:38px; border: 1px solid var(--border-color); border-radius:4px; padding: 0 10px; background-color: #fff; color: var(--text-main);" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="perf-filter-start-date">Start Date</label>
+              <input type="date" id="perf-filter-start-date" style="width:100%; height:38px; border: 1px solid var(--border-color); border-radius:4px; padding: 0 10px; background-color: #fff; color: var(--text-main);" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="perf-filter-end-date">End Date</label>
+              <input type="date" id="perf-filter-end-date" style="width:100%; height:38px; border: 1px solid var(--border-color); border-radius:4px; padding: 0 10px; background-color: #fff; color: var(--text-main);" />
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px;">
+            <button type="button" class="btn btn-outline" id="btn-perf-clear-filters" style="padding: 8px 16px; font-size:14px;">Clear Filters</button>
+            <button type="button" class="btn btn-primary" id="btn-perf-apply-filters" style="padding: 8px 16px; font-size:14px;">Apply Filters</button>
+          </div>
+        </div>
+
+        <!-- Performance Table -->
+        <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">Business Performance Details</h4>
+        <div style="overflow-x: auto; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); margin-bottom: 30px;">
+          <table class="kpi-table" style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; color: var(--text-main);">
+            <thead>
+              <tr style="background: var(--bg-surface); border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 12px; border-right: 1px solid var(--border-color);">Business</th>
+                <th style="padding: 12px; border-right: 1px solid var(--border-color);">Category</th>
+                <th style="padding: 12px; border-right: 1px solid var(--border-color);">District</th>
+                <th style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center;">Views</th>
+                <th style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center;">WhatsApp</th>
+                <th style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center;">Calls</th>
+                <th style="padding: 12px; text-align: center;">Callbacks</th>
+              </tr>
+            </thead>
+            <tbody id="perf-table-body">
+              <tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading performance data...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </div>
@@ -481,6 +691,10 @@
         <div class="form-group">
           <label for="edit-bname">Business Name</label>
           <input type="text" id="edit-bname" required />
+        </div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label for="edit-listing-tier">Listing plan (admin managed)</label>
+          <select id="edit-listing-tier"><option value="regular">Regular (up to 10 services)</option><option value="premium">Premium (up to 100 services)</option></select>
         </div>
 
         <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
@@ -534,6 +748,10 @@
             <input type="email" id="edit-bemail" required />
           </div>
         </div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label for="edit-bowner-email">Business owner login email (optional)</label>
+          <input type="email" id="edit-bowner-email" placeholder="Verified Firebase account email" />
+        </div>
 
         <div class="form-group" style="margin-top: 16px;">
           <label for="edit-bdesc">Description</label>
@@ -562,77 +780,231 @@
 
 <!-- ================= EDIT MODAL OVERLAY (AUTO MITHRAM) ================= -->
 <div id="edit-modal-auto" class="modal-overlay">
-  <div class="modal-content">
+  <div class="modal-content" style="max-width: 680px; width: 92%;">
     <div class="modal-header">
-      <h3>Edit Auto Mithram Profile</h3>
+      <h3 style="margin:0; font-size:18px; color:var(--primary);">Edit Auto Mithram Profile</h3>
       <button class="modal-close" id="close-modal-btn-auto">&times;</button>
     </div>
     <form id="edit-auto-form">
       <input type="hidden" id="edit-auto-id" />
-      <div class="modal-body">
+      <div class="modal-body" style="padding: 20px;">
         
-        <div class="grid grid-2" style="gap: 16px;">
+        <div class="grid grid-3" style="gap: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="edit-auto-name">Driver Name</label>
-            <input type="text" id="edit-auto-name" required />
+            <label for="edit-auto-driver-name">Driver Name <span style="color:#dc2626;">*</span></label>
+            <input type="text" id="edit-auto-driver-name" required placeholder="e.g. Ramesh Kumar" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="edit-auto-vehicle">Vehicle Number</label>
-            <input type="text" id="edit-auto-vehicle" required />
-          </div>
-        </div>
-
-        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="edit-auto-dist">District</label>
-            <select id="edit-auto-dist">
-              <option value="kottayam">Kottayam</option>
-              <option value="pathanamthitta">Pathanamthitta</option>
-              <option value="alappuzha">Alappuzha</option>
-              <option value="kollam">Kollam</option>
-              <option value="other">Other District</option>
-            </select>
+            <label for="edit-auto-name">Auto Name (ഓട്ടോയുടെ പേര്)</label>
+            <input type="text" id="edit-auto-name" placeholder="e.g. Komban / Raja" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="edit-auto-town">Town</label>
-            <select id="edit-auto-town" required>
-              <!-- Dynamic options -->
-            </select>
-          </div>
-        </div>
-
-        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="edit-auto-locality">Locality</label>
-            <select id="edit-auto-locality" required>
-              <!-- Dynamic options -->
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="edit-auto-stand">Auto Stand Name</label>
-            <input type="text" id="edit-auto-stand" required />
+            <label for="edit-auto-vehicle">Vehicle Number <span style="color:#dc2626;">*</span></label>
+            <input type="text" id="edit-auto-vehicle" required placeholder="e.g. KL-31-E-8729" />
           </div>
         </div>
 
         <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="edit-auto-phone">Call Number</label>
+            <label for="edit-auto-dist">District <span style="color:#dc2626;">*</span></label>
+            <select id="edit-auto-dist" required>
+              <!-- Dynamic options -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-town">Town <span style="color:#dc2626;">*</span></label>
+            <select id="edit-auto-town" required>
+              <!-- Dynamic options -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-locality">Locality / Area <span style="color:#dc2626;">*</span></label>
+            <select id="edit-auto-locality" required>
+              <!-- Dynamic options -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-stand">Primary Permanent Stand <span style="color:#dc2626;">*</span></label>
+            <select id="edit-auto-stand" required>
+              <!-- Dynamic options -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-additional-select">Additional / Nearby Stands</label>
+            <select id="edit-auto-additional-select" style="margin-bottom: 8px;">
+              <option value="">Select Nearby Stands to Add</option>
+            </select>
+            <div id="edit-auto-additional-badges" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;"></div>
+            <input type="hidden" id="edit-auto-additional-stands" />
+          </div>
+        </div>
+
+        <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="edit-auto-phone">Call Number <span style="color:#dc2626;">*</span></label>
             <input type="tel" id="edit-auto-phone" required />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="edit-auto-wa">WhatsApp</label>
+            <label for="edit-auto-wa">WhatsApp <span style="color:#dc2626;">*</span></label>
             <input type="tel" id="edit-auto-wa" required />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label for="edit-auto-time">Available Hours</label>
-            <input type="text" id="edit-auto-time" />
+            <input type="text" id="edit-auto-time" placeholder="e.g. 24 Hours Available" />
           </div>
         </div>
 
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border-color);">
         <button type="button" class="btn btn-outline" id="cancel-modal-btn-auto" style="padding: 10px 20px; font-size: 14px;">Cancel</button>
         <button type="submit" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ================= CREATE / EDIT EVENT MODAL ================= -->
+<div id="modal-event" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="max-width: 760px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header">
+      <h3 id="modal-event-title" style="margin: 0; font-size: 18px; color: var(--primary); font-weight: 800;">Create / Edit Event</h3>
+      <button class="modal-close" id="close-modal-event" type="button">&times;</button>
+    </div>
+    <form id="form-event-editor" style="padding: 20px;">
+      <input type="hidden" id="event-edit-id" />
+
+      <!-- Row 1: Title & Slug -->
+      <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-title" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Event Title <span style="color:#dc2626;">*</span></label>
+          <input type="text" id="event-input-title" required placeholder="e.g. Central Travancore Flower Show 2026" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-slug" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">URL Slug <span style="color:#dc2626;">*</span> <small style="color:var(--text-muted); font-weight:normal;">(/events/your-slug/)</small></label>
+          <input type="text" id="event-input-slug" required placeholder="e.g. central-travancore-flower-show-2026" pattern="[a-z0-9\-]+" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+      </div>
+
+      <!-- Row 2: Category & District -->
+      <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-category" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Category <span style="color:#dc2626;">*</span></label>
+          <select id="event-input-category" required style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;">
+            <option value="expo">🛍️ Expo & Fair</option>
+            <option value="festival">🎪 Festival & Gathering</option>
+            <option value="food">🍲 Food & Carnival</option>
+            <option value="sports">⚽ Sports & Games</option>
+            <option value="cultural">🎭 Arts & Shows</option>
+            <option value="community">🤝 Community & Social</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-district" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">District <span style="color:#dc2626;">*</span></label>
+          <select id="event-input-district" required style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;">
+            <option value="Pathanamthitta">Pathanamthitta</option>
+            <option value="Kottayam">Kottayam</option>
+            <option value="Alappuzha">Alappuzha</option>
+            <option value="Kollam">Kollam</option>
+            <option value="Ernakulam">Ernakulam</option>
+            <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+            <option value="Thrissur">Thrissur</option>
+            <option value="Kozhikode">Kozhikode</option>
+            <option value="Malappuram">Malappuram</option>
+            <option value="Kannur">Kannur</option>
+            <option value="Palakkad">Palakkad</option>
+            <option value="Idukki">Idukki</option>
+            <option value="Wayanad">Wayanad</option>
+            <option value="Kasaragod">Kasaragod</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Row 3: Town & Venue -->
+      <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-town" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Town / City <span style="color:#dc2626;">*</span></label>
+          <input type="text" id="event-input-town" required placeholder="e.g. Thiruvalla" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-venue" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Venue / Landmark <span style="color:#dc2626;">*</span></label>
+          <input type="text" id="event-input-venue" required placeholder="e.g. Municipal Stadium Grounds, Thiruvalla" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+      </div>
+
+      <!-- Row 4: Dates & Timings -->
+      <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-startdate" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Start Date <span style="color:#dc2626;">*</span></label>
+          <input type="date" id="event-input-startdate" required style="width: 100%; padding: 9px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-enddate" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">End Date</label>
+          <input type="date" id="event-input-enddate" style="width: 100%; padding: 9px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-time" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Timings</label>
+          <input type="text" id="event-input-time" placeholder="e.g. 10:00 AM – 9:00 PM" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+      </div>
+
+      <!-- Row 5: Entry Type & Poster Image -->
+      <div class="grid grid-2" style="gap: 16px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-entry" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Entry Type / Ticket Fee</label>
+          <input type="text" id="event-input-entry" placeholder="e.g. Free Entry or ₹50 per person" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-poster" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Poster / Cover Image URL</label>
+          <input type="url" id="event-input-poster" placeholder="https://..." style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+      </div>
+
+      <!-- Row 6: Organizer & Contact -->
+      <div class="grid grid-3" style="gap: 16px; margin-bottom: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-organizer" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Organizer Name <span style="color:#dc2626;">*</span></label>
+          <input type="text" id="event-input-organizer" required placeholder="e.g. Agri-Horticultural Society" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-phone" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Contact Phone</label>
+          <input type="tel" id="event-input-phone" placeholder="9447123450" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="event-input-wa" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">WhatsApp Phone</label>
+          <input type="tel" id="event-input-wa" placeholder="9447123450" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;" />
+        </div>
+      </div>
+
+      <!-- Row 7: Description -->
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label for="event-input-desc" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Event Description <span style="color:#dc2626;">*</span></label>
+        <textarea id="event-input-desc" rows="4" required placeholder="Describe attractions, stalls, highlights, stage programs, parking info..." style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 13.5px;"></textarea>
+      </div>
+
+      <!-- Row 8: Status & Featured Checkbox -->
+      <div style="background: #f8fafc; padding: 14px 18px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <label for="event-input-status" style="font-size: 13.5px; font-weight: 700;">Status:</label>
+          <select id="event-input-status" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-weight: 600;">
+            <option value="approved">✅ Approved / Active</option>
+            <option value="pending">⏳ Pending Review</option>
+            <option value="rejected">Archived / Rejected</option>
+          </select>
+        </div>
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; cursor: pointer; color: var(--primary);">
+          <input type="checkbox" id="event-input-featured" style="width: 18px; height: 18px;" />
+          ⭐ Feature on Homepage & Top of Events Hub
+        </label>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+        <button type="button" class="btn btn-outline" id="btn-cancel-modal-event" style="padding: 10px 20px; font-size: 14px;">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-save-modal-event" style="padding: 10px 26px; font-size: 14px; font-weight: 700;">Save Event</button>
       </div>
     </form>
   </div>
@@ -653,11 +1025,11 @@
         <div class="grid grid-2" style="gap: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label for="bp-name">Business Name <span style="color:#dc2626;">*</span></label>
-            <input type="text" id="bp-name" required placeholder="e.g. Solis Green India" />
+            <input type="text" id="bp-name" required placeholder="e.g. Example Business" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label for="bp-slug">URL Slug <span style="color:#dc2626;">*</span> <span style="font-size:11px;font-weight:400;color:var(--text-muted);">(servekerala.in/business/<strong id="slug-preview">your-slug</strong>/)</span></label>
-            <input type="text" id="bp-slug" required placeholder="e.g. solis-green-india" pattern="[a-z0-9\-]+" title="Lowercase letters, numbers, and hyphens only" />
+            <input type="text" id="bp-slug" required placeholder="e.g. example-business" pattern="[a-z0-9\-]+" title="Lowercase letters, numbers, and hyphens only" />
           </div>
         </div>
 
@@ -675,6 +1047,11 @@
               <!-- Populated dynamically from activeDistricts -->
             </select>
           </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="bp-listing-tier">Listing plan (admin managed)</label>
+          <select id="bp-listing-tier"><option value="regular">Regular (up to 10 services)</option><option value="premium">Premium (up to 100 services)</option></select>
         </div>
 
         <!-- Row 3: Towns + Website -->
@@ -700,8 +1077,10 @@
             <input type="tel" id="bp-whatsapp" required placeholder="+919876543210" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="bp-email">Email (Optional)</label>
+            <label for="bp-email">Public Business Email (Optional)</label>
             <input type="email" id="bp-email" placeholder="business@example.com" />
+            <label for="bp-owner-email" style="margin-top:10px;">Business Owner Login Email (Optional)</label>
+            <input type="email" id="bp-owner-email" placeholder="Verified Firebase account email" />
           </div>
         </div>
 
@@ -711,19 +1090,25 @@
           <textarea id="bp-desc" rows="3" required placeholder="Describe the business, what they do, and who they serve..."></textarea>
         </div>
 
-        <!-- Row 6: Services + Why Choose -->
+        <!-- Row 6: Short Description & Established Year -->
         <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="bp-services">Services Offered <span style="font-size:11px;font-weight:400;color:var(--text-muted);">(one per line)</span></label>
-            <textarea id="bp-services" rows="5" placeholder="Residential Solar Installation&#10;Commercial Solar&#10;Subsidy Guidance&#10;Maintenance & Support"></textarea>
+            <label for="bp-shortdesc">Short Description / Tagline</label>
+            <input type="text" id="bp-shortdesc" placeholder="e.g. Certified solar installers in Kottayam" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="bp-whychoose">Why Choose Us <span style="font-size:11px;font-weight:400;color:var(--text-muted);">(one per line)</span></label>
-            <textarea id="bp-whychoose" rows="5" placeholder="10+ Years Experience&#10;Free Site Survey&#10;Subsidy Assistance&#10;Reliable After-Sales"></textarea>
+            <label for="bp-established">Established Year</label>
+            <input type="number" id="bp-established" placeholder="e.g. 2018" />
           </div>
         </div>
 
-        <!-- Row 7: Address + Map -->
+        <!-- Row 7: Why Choose Us -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="bp-whychoose">Why Choose Us (One per line)</label>
+          <textarea id="bp-whychoose" rows="3" placeholder="24/7 Emergency Support&#10;Certified Technicians&#10;Affordable Rates"></textarea>
+        </div>
+
+        <!-- Row 8: Address + Map -->
         <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label for="bp-address">Physical Address (Optional)</label>
@@ -735,19 +1120,121 @@
           </div>
         </div>
 
-        <!-- Row 8: Google Business Profile (Optional) -->
+        <!-- Row 9: Google Business Profile (Optional) -->
         <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="bp-gbp-rating">Google Rating (e.g. 5.0)</label>
+            <label for="bp-gbp-rating">Google Rating</label>
             <input type="number" id="bp-gbp-rating" step="0.1" min="1" max="5" placeholder="5.0" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="bp-gbp-reviews">Google Review Count</label>
+            <label for="bp-gbp-reviews">Google Reviews</label>
             <input type="number" id="bp-gbp-reviews" placeholder="112" />
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label for="bp-gbp-url">Google Review / GBP Link</label>
-            <input type="url" id="bp-gbp-url" placeholder="https://g.page/r/... or search link" />
+            <input type="url" id="bp-gbp-url" placeholder="https://g.page/r/..." />
+          </div>
+        </div>
+
+        <!-- Row 10: Branding Photos & URLs -->
+        <div class="grid grid-2" style="gap: 16px; margin-top: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-logo-url">Logo Image URL</label>
+            <input type="url" id="bp-logo-url" placeholder="https://... or select file below" />
+            <input type="file" id="bp-logo-file" accept="image/*" style="margin-top: 6px;" />
+            <div id="bp-logo-preview-container" class="preview-container">
+              <img id="bp-logo-preview" class="preview-thumbnail" style="display:none;" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-cover-url">Cover Image URL</label>
+            <input type="url" id="bp-cover-url" placeholder="https://... or select file below" />
+            <input type="file" id="bp-cover-file" accept="image/*" style="margin-top: 6px;" />
+            <div id="bp-cover-preview-container" class="preview-container">
+              <img id="bp-cover-preview" class="preview-thumbnail" style="display:none;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 11: Gallery Photos -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Business Gallery (JSON Array of {url, altText})</label>
+          <textarea id="bp-gallery-json" rows="3" placeholder='[{"url": "https://...", "altText": "Solar Panel"}]'></textarea>
+          <input type="file" id="bp-gallery-file" accept="image/*" multiple style="margin-top: 6px;" />
+          <div id="bp-gallery-preview-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;"></div>
+        </div>
+
+        <!-- Row 12: Structured Services selection -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Structured Services Offered</label>
+          <p class="owner-small" style="font-size:12px;color:var(--text-muted);">Select accurate services this business currently provides. The plan sets the selection limit.</p>
+          <div id="bp-services-checkboxes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; background: #f9fafb; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); max-height: 160px; overflow-y: auto;">
+            <span style="font-size:12px; color:var(--text-muted);">Please select a Category above to load services.</span>
+          </div>
+        </div>
+
+        <!-- Row 13: Service Coverage Towns -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Service Coverage Areas (Town IDs under selected District)</label>
+          <div id="bp-towns-checkboxes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; background: #f9fafb; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); max-height: 160px; overflow-y: auto;">
+            <span style="font-size:12px; color:var(--text-muted);">Select District above to load Towns.</span>
+          </div>
+        </div>
+
+        <!-- Row 14: Business Hours mon-sun -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label style="font-weight: 700; margin-bottom: 8px; display:block;">Business Hours</label>
+          <div id="bp-hours-container" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 16px;">
+            <style>
+              .bp-hours-row { display: grid; grid-template-columns: 100px 80px 100px 1fr; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+              .bp-hours-row:last-child { border-bottom: none; }
+              .bp-hours-row label { margin: 0; font-size: 13px; font-weight: 600; }
+              .bp-hours-row input[type="time"] { padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size:12px; }
+            </style>
+            <div class="bp-hours-row" data-day="monday"><label>Monday</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-closed"> Closed</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-24h"> 24h</label><div><input type="time" class="bp-hour-open" value="09:00"> to <input type="time" class="bp-hour-close" value="18:00"></div></div>
+            <div class="bp-hours-row" data-day="tuesday"><label>Tuesday</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-closed"> Closed</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-24h"> 24h</label><div><input type="time" class="bp-hour-open" value="09:00"> to <input type="time" class="bp-hour-close" value="18:00"></div></div>
+            <div class="bp-hours-row" data-day="wednesday"><label>Wednesday</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-closed"> Closed</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-24h"> 24h</label><div><input type="time" class="bp-hour-open" value="09:00"> to <input type="time" class="bp-hour-close" value="18:00"></div></div>
+            <div class="bp-hours-row" data-day="thursday"><label>Thursday</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-closed"> Closed</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-24h"> 24h</label><div><input type="time" class="bp-hour-open" value="09:00"> to <input type="time" class="bp-hour-close" value="18:00"></div></div>
+            <div class="bp-hours-row" data-day="friday"><label>Friday</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-closed"> Closed</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-24h"> 24h</label><div><input type="time" class="bp-hour-open" value="09:00"> to <input type="time" class="bp-hour-close" value="18:00"></div></div>
+            <div class="bp-hours-row" data-day="saturday"><label>Saturday</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-closed"> Closed</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-24h"> 24h</label><div><input type="time" class="bp-hour-open" value="09:00"> to <input type="time" class="bp-hour-close" value="13:00"></div></div>
+            <div class="bp-hours-row" data-day="sunday"><label>Sunday</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-closed" checked> Closed</label><label style="font-weight:normal;"><input type="checkbox" class="bp-hour-24h"> 24h</label><div><input type="time" class="bp-hour-open" disabled> to <input type="time" class="bp-hour-close" disabled></div></div>
+          </div>
+        </div>
+
+        <!-- Row 15: Verification status badges & Completeness score -->
+        <h4 style="font-size:14px; color:var(--primary); margin-top: 24px; margin-bottom:12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">Verification & Auditing</h4>
+        <div class="grid grid-4" style="gap: 16px; margin-bottom: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight:normal; cursor:pointer;"><input type="checkbox" id="bp-ver-phone" /> Phone Verified</label>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight:normal; cursor:pointer;"><input type="checkbox" id="bp-ver-location" /> Location Verified</label>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight:normal; cursor:pointer;"><input type="checkbox" id="bp-ver-business" /> Business Verified</label>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight:700;">Completeness Score: <span id="bp-completeness-text" style="color:var(--primary);">0%</span></label>
+          </div>
+        </div>
+
+        <!-- Row 16: SEO Metadata Override -->
+        <h4 style="font-size:14px; color:var(--primary); margin-top: 24px; margin-bottom:12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px;">Search Engine Optimization (SEO) Configuration</h4>
+        <div class="form-group">
+          <label for="bp-seo-title">Custom Title Tag Override</label>
+          <input type="text" id="bp-seo-title" placeholder="Custom page title" />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label for="bp-seo-desc">Custom Meta Description Override</label>
+          <textarea id="bp-seo-desc" rows="2" placeholder="Custom meta description content..."></textarea>
+        </div>
+        <div class="grid grid-2" style="gap: 16px; margin-top: 12px; margin-bottom:0;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="bp-seo-keywords">Custom Meta Keywords</label>
+            <input type="text" id="bp-seo-keywords" placeholder="keyword1, keyword2" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0; display:flex; align-items:center;">
+            <label style="font-weight:normal; cursor:pointer; margin-top: 18px;"><input type="checkbox" id="bp-seo-index" checked /> Allow Search Engines to Index Page</label>
           </div>
         </div>
 
@@ -758,6 +1245,45 @@
           <button type="button" class="btn btn-outline" id="cancel-modal-bp" style="padding: 10px 20px; font-size: 14px;">Cancel</button>
           <button type="submit" class="btn btn-primary" id="btn-save-bp" style="padding: 10px 24px; font-size: 14px;">Save Listing Page</button>
         </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Auto Stand Modal -->
+<div id="edit-stand-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+  <div class="modal-content" style="max-width: 500px; width: 100%; background: #ffffff; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; margin: auto;">
+    <div class="modal-header">
+      <h3 style="margin: 0; font-size: 18px; color: var(--primary);">✏️ Edit Auto Stand Coordinates</h3>
+      <button type="button" id="close-stand-modal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+    <form id="edit-stand-form">
+      <div class="modal-body" style="padding: 20px;">
+        <input type="hidden" id="edit-stand-dist">
+        <input type="hidden" id="edit-stand-town">
+        <input type="hidden" id="edit-stand-index">
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">Auto Stand Name</label>
+          <input type="text" id="edit-stand-name-input" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;">
+        </div>
+        <div class="grid grid-2" style="gap: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">Latitude</label>
+            <input type="text" id="edit-stand-lat-input" placeholder="e.g. 9.4447" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">Longitude</label>
+            <input type="text" id="edit-stand-lng-input" placeholder="e.g. 76.5367" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;">
+          </div>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 16px; line-height: 1.5; background: var(--bg-base); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+          💡 <strong>Tip:</strong> Right-click any location on Google Maps or OpenStreetMap to copy exact Latitude & Longitude coordinates.
+        </p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border-color);">
+        <button type="button" id="cancel-stand-modal" class="btn btn-outline" style="padding: 8px 16px;">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="padding: 8px 20px;">Save Changes</button>
       </div>
     </form>
   </div>

@@ -27,6 +27,16 @@ function getHtmlFiles(dir, fileList = []) {
 console.log('Generating sitemap.xml based on actual filesystem...');
 const htmlFiles = getHtmlFiles(rootDir);
 
+// Seed event slugs to index in Google
+const seedEventSlugs = [
+  'central-travancore-flower-show-2026',
+  'kottayam-mega-shopping-and-trade-expo',
+  'maramon-convention-2027',
+  'alappuzha-beach-carnival-food-fest',
+  'kollam-fest-cultural-extravaganza',
+  'adoor-all-kerala-sevens-football-tournament'
+];
+
 const dateStr = new Date().toISOString().split('T')[0];
 let xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
@@ -46,6 +56,7 @@ for (const relPath of htmlFiles) {
   // Determine priority based on depth
   let priority = '0.7';
   if (urlPath === '') priority = '1.0';
+  else if (urlPath.startsWith('events/')) priority = '0.9';
   else if (urlPath.split('/').length <= 2) priority = '0.9';
   else if (urlPath.split('/').length <= 3) priority = '0.8';
 
@@ -58,7 +69,20 @@ for (const relPath of htmlFiles) {
   </url>`;
 }
 
+// Add Seed Event Detail URLs
+for (const slug of seedEventSlugs) {
+  const eventUrl = `https://servekerala.in/events/${slug}/`;
+  xmlContent += `
+  <url>
+    <loc>${eventUrl}</loc>
+    <lastmod>${dateStr}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>`;
+}
+
 xmlContent += '\n</urlset>\n';
 
 fs.writeFileSync(sitemapPath, xmlContent, 'utf8');
-console.log(`Generated sitemap.xml with ${htmlFiles.length} URLs successfully!`);
+const totalUrls = htmlFiles.length + seedEventSlugs.length;
+console.log(`Generated sitemap.xml with ${totalUrls} URLs successfully!`);

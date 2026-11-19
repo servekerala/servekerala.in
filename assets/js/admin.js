@@ -22,6 +22,86 @@ if (typeof firebase !== 'undefined') {
   let activeCategories = [];
   let activeDistricts = [];
   let globalAutoConfig = {};
+  let activeServices = [];
+  let activeTowns = {};
+  const escapeDirectoryText = value => String(value || '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const normalizeServiceName = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+  const GLOBAL_CONFIG_FALLBACK = {
+    categories: [
+      { id: 'solar', name: 'Solar Installation' },
+      { id: 'plumbing', name: 'Plumber' },
+      { id: 'electrical', name: 'Electrician' },
+      { id: 'ac', name: 'AC Service' },
+      { id: 'cctv', name: 'CCTV Installation' },
+      { id: 'cleaning', name: 'Home Cleaning' },
+      { id: 'pest', name: 'Pest Control' },
+      { id: 'water', name: 'Water Purifier Service' }
+    ],
+    services: [
+      { id: 'on-grid-solar', categoryId: 'solar', name: 'On-Grid Solar Plant' },
+      { id: 'off-grid-solar', categoryId: 'solar', name: 'Off-Grid Solar System' },
+      { id: 'hybrid-solar', categoryId: 'solar', name: 'Hybrid Solar Setup' },
+      { id: 'solar-amc', categoryId: 'solar', name: 'Solar Maintenance & AMC' },
+      { id: 'pipe-leakage', categoryId: 'plumbing', name: 'Emergency Pipe Leakage' },
+      { id: 'fitting-installation', categoryId: 'plumbing', name: 'Bathroom Fittings & Taps' },
+      { id: 'drainage-cleaning', categoryId: 'plumbing', name: 'Drainage & Clog Clearing' },
+      { id: 'water-tank-install', categoryId: 'plumbing', name: 'Water Tank & Pump Setup' },
+      { id: 'house-wiring', categoryId: 'electrical', name: 'House Wiring & Rewiring' },
+      { id: 'inverter-install', categoryId: 'electrical', name: 'Inverter & Battery Setup' },
+      { id: 'appliance-repair', categoryId: 'electrical', name: 'Home Appliances & Fan Fitting' },
+      { id: 'mcb-db-fixing', categoryId: 'electrical', name: 'MCB & DB Board Repairs' },
+      { id: 'ac-cleaning', categoryId: 'ac', name: 'AC Deep Cleaning & Service' },
+      { id: 'ac-gas-refill', categoryId: 'ac', name: 'Gas Charging & Refill' },
+      { id: 'ac-installation', categoryId: 'ac', name: 'AC Installation/Removal' },
+      { id: 'ac-repair', categoryId: 'ac', name: 'AC Board & Fan Repair' },
+      { id: 'cctv-install', categoryId: 'cctv', name: 'Camera Mounting & Cabling' },
+      { id: 'nvr-dvr-config', categoryId: 'cctv', name: 'NVR/DVR Configuration' },
+      { id: 'cctv-repair', categoryId: 'cctv', name: 'CCTV Signal & Wiring Faults' },
+      { id: 'ip-camera-setup', categoryId: 'cctv', name: 'IP Camera & App Integration' },
+      { id: 'deep-house-clean', categoryId: 'cleaning', name: 'Deep House Cleaning' },
+      { id: 'sofa-carpet-clean', categoryId: 'cleaning', name: 'Sofa & Carpet Shampooing' },
+      { id: 'bathroom-cleaning', categoryId: 'cleaning', name: 'Deep Bathroom Cleaning' },
+      { id: 'water-tank-cleaning', categoryId: 'cleaning', name: 'Water Tank & Sump Cleaning' },
+      { id: 'termite-control', categoryId: 'pest', name: 'Termite Treatment' },
+      { id: 'cockroach-control', categoryId: 'pest', name: 'Cockroach & Ant Gel Treatment' },
+      { id: 'rodent-control', categoryId: 'pest', name: 'Rat & Rodent Control' },
+      { id: 'bedbug-control', categoryId: 'pest', name: 'Bed Bug Elimination' },
+      { id: 'filter-replacement', categoryId: 'water', name: 'Filter & Membrane Change' },
+      { id: 'purifier-repair', categoryId: 'water', name: 'RO/UV Purifier Repair' },
+      { id: 'new-purifier-install', categoryId: 'water', name: 'New Purifier Installation' },
+      { id: 'purifier-amc', categoryId: 'water', name: 'RO Annual Maintenance Contract' }
+    ],
+    districts: ['Kottayam', 'Pathanamthitta', 'Alappuzha', 'Kollam'],
+    towns: {
+      kottayam: [
+        { id: 'kottayam', name: 'Kottayam Town', areas: ['Kottayam Town', 'Kanjikuzhy', 'Muttambalam', 'Kumaranalloor', 'Gandhi Nagar'] },
+        { id: 'changanacherry', name: 'Changanacherry', areas: ['Changanacherry Town', 'Thangana', 'Kurisummoodu', 'Perunna', 'Mathumoola', 'Paippad'] },
+        { id: 'ettumanoor', name: 'Ettumanoor', areas: ['Ettumanoor Town', 'Athirampuzha', 'Neendoor', 'Peroor'] },
+        { id: 'pala', name: 'Pala', areas: ['Pala Town', 'Mutholy', 'Lalam', 'Pravithanam'] },
+        { id: 'vaikom', name: 'Vaikom', areas: ['Vadayar', 'T.V. Puram'] }
+      ],
+      pathanamthitta: [
+        { id: 'thiruvalla', name: 'Thiruvalla', areas: ['Thiruvalla Town', 'Kuttapuzha', 'Kaviyoor', 'Kuttoor', 'Manjadi', 'Ramanchira'] },
+        { id: 'adoor', name: 'Adoor', areas: ['Adoor Town', 'Parakode', 'Anandapally'] },
+        { id: 'ranni', name: 'Ranni', areas: ['Ranni Town', 'Pazhavangadi', 'Angadi'] },
+        { id: 'kozhencherry', name: 'Kozhencherry', areas: ['Kozhencherry Town', 'Thekkemala'] },
+        { id: 'pandalam', name: 'Pandalam', areas: ['Pandalam Town', 'Kurampala'] }
+      ],
+      alappuzha: [
+        { id: 'alappuzha', name: 'Alappuzha Town', areas: ['Alappuzha Town', 'Kalavoor', 'Punnapra'] },
+        { id: 'chengannur', name: 'Chengannur', areas: ['Chengannur Town', 'Kallissery'] },
+        { id: 'cherthala', name: 'Cherthala', areas: ['Cherthala Town', 'Arthunkal'] },
+        { id: 'kayamkulam', name: 'Kayamkulam', areas: ['Kayamkulam Town', 'Krishnapuram'] }
+      ],
+      kollam: [
+        { id: 'kollam', name: 'Kollam Town', areas: ['Kollam Town', 'Chathannoor'] },
+        { id: 'karunagappally', name: 'Karunagappally', areas: ['Karunagappally Town', 'Oachira'] },
+        { id: 'kottarakkara', name: 'Kottarakkara', areas: ['Kottarakkara Town', 'Pulamon'] },
+        { id: 'punalur', name: 'Punalur', areas: ['Punalur Town', 'Chemmanthoor'] }
+      ]
+    }
+  };
 
   function loadDirectoryParameters() {
     return Promise.all([
@@ -31,12 +111,21 @@ if (typeof firebase !== 'undefined') {
       let data = cmsDoc.exists ? cmsDoc.data() : {};
       
       if (!data.categories || !data.categories.length) {
-        activeCategories = [
-          { id: 'solar', name: 'Solar Installation' },
-          { id: 'plumbing', name: 'Plumber' }
-        ];
+        activeCategories = GLOBAL_CONFIG_FALLBACK.categories;
       } else {
         activeCategories = data.categories;
+      }
+
+      if (!data.services || !data.services.length) {
+        activeServices = GLOBAL_CONFIG_FALLBACK.services;
+      } else {
+        activeServices = data.services;
+      }
+
+      if (!data.towns) {
+        activeTowns = GLOBAL_CONFIG_FALLBACK.towns;
+      } else {
+        activeTowns = data.towns;
       }
 
       let pgData = pgDoc.exists ? pgDoc.data() : {};
@@ -95,6 +184,8 @@ if (typeof firebase !== 'undefined') {
   function renderParameterLists() {
     const districtContainer = document.getElementById('district-list-container');
     const categoryContainer = document.getElementById('category-list-container');
+    const serviceCatalogContainer = document.getElementById('service-catalog-list');
+    const serviceCategorySelect = document.getElementById('new-service-category');
     const townContainer = document.getElementById('town-list-container');
     const localityContainer = document.getElementById('locality-list-container');
 
@@ -137,7 +228,42 @@ if (typeof firebase !== 'undefined') {
         categoryContainer.querySelectorAll('.btn-delete-category').forEach(btn => {
           btn.addEventListener('click', (e) => {
             const idx = parseInt(e.currentTarget.getAttribute('data-index'));
+            const category = activeCategories[idx];
+            if (!category || !confirm(`Delete ${category.name} and its selectable service options?`)) return;
+            activeServices = activeServices.filter(service => service.categoryId !== category.id);
             activeCategories.splice(idx, 1);
+            saveDirectoryParameters();
+          });
+        });
+      }
+    }
+
+    if (serviceCategorySelect) {
+      const previousCategory = serviceCategorySelect.value;
+      serviceCategorySelect.innerHTML = '<option value="">Select category</option>' + activeCategories
+        .map(category => `<option value="${escapeDirectoryText(category.id)}">${escapeDirectoryText(category.name)}</option>`).join('');
+      if (activeCategories.some(category => category.id === previousCategory)) serviceCategorySelect.value = previousCategory;
+    }
+
+    if (serviceCatalogContainer) {
+      if (!activeServices.length) {
+        serviceCatalogContainer.innerHTML = '<p style="font-size:13px;color:var(--text-muted);margin:4px;">No service options configured yet.</p>';
+      } else {
+        serviceCatalogContainer.innerHTML = activeCategories.map(category => {
+          const services = activeServices.map((service, index) => ({service, index})).filter(entry => entry.service.categoryId === category.id);
+          if (!services.length) return '';
+          return `<section style="margin-bottom:14px;"><h6 style="margin:0 0 8px;color:var(--primary);font-size:14px;">${escapeDirectoryText(category.name)}</h6>${services.map(({service, index}) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 10px;background:var(--bg-base);border-radius:6px;margin-bottom:6px;font-size:14px;border:1px solid var(--border-color);">
+              <span><strong style="color:var(--text-main);">${escapeDirectoryText(service.name)}</strong> <span style="font-size:12px;color:var(--text-muted);">(${escapeDirectoryText(service.id)})</span></span>
+              <button type="button" class="btn-delete-service-option" data-index="${index}" aria-label="Remove ${escapeDirectoryText(service.name)}" style="background:none;border:none;color:#dc2626;font-size:18px;font-weight:bold;cursor:pointer;padding:0 4px;">&times;</button>
+            </div>`).join('')}</section>`;
+        }).join('') || '<p style="font-size:13px;color:var(--text-muted);margin:4px;">No service options configured yet.</p>';
+        serviceCatalogContainer.querySelectorAll('.btn-delete-service-option').forEach(button => {
+          button.addEventListener('click', event => {
+            const index = Number(event.currentTarget.getAttribute('data-index'));
+            const service = activeServices[index];
+            if (!service || !confirm(`Remove “${service.name}” from future service selections? Existing profiles will keep their saved service text.`)) return;
+            activeServices.splice(index, 1);
             saveDirectoryParameters();
           });
         });
@@ -215,7 +341,8 @@ if (typeof firebase !== 'undefined') {
     activeDistricts = Object.keys(globalAutoConfig);
     
     const p1 = db.collection('cms_settings').doc('global').update({
-      categories: activeCategories
+      categories: activeCategories,
+      services: activeServices
     });
     
     const p2 = db.collection('page_generator_config').doc('global').set({
@@ -255,6 +382,10 @@ if (typeof firebase !== 'undefined') {
     const countPendingSpan = document.getElementById('count-pending');
     const countApprovedSpan = document.getElementById('count-approved');
     const countRejectedSpan = document.getElementById('count-rejected');
+    const countLeadsSpan = document.getElementById('count-leads');
+    const leadsContainer = document.getElementById('admin-leads-container');
+    const countEventsSpan = document.getElementById('count-events');
+    const eventsContainer = document.getElementById('admin-events-container');
 
     // Edit Modal Elements (Business)
     const editModal = document.getElementById('edit-modal');
@@ -270,6 +401,7 @@ if (typeof firebase !== 'undefined') {
 
     // CMS Elements
     const cmsContainer = document.getElementById('admin-cms-container');
+    const categoriesContainer = document.getElementById('admin-categories-container');
     const locContainer = document.getElementById('admin-locations-container');
     const seoContainer = document.getElementById('admin-seo-container');
     const seoForm = document.getElementById('seo-settings-form');
@@ -363,6 +495,64 @@ if (typeof firebase !== 'undefined') {
         unsubscribeSnapshot(); // Stop listening to previous collection
       }
 
+      if (activeCollection === 'category_settings') {
+        listingsContainer.style.display = 'none';
+        statusTabs.style.display = 'none';
+        cmsContainer.style.display = 'none';
+        if (categoriesContainer) categoriesContainer.style.display = 'block';
+        if (locContainer) locContainer.style.display = 'none';
+        if (kpiContainer) kpiContainer.style.display = 'none';
+        if (seoContainer) seoContainer.style.display = 'none';
+        const pgContainer = document.getElementById('admin-page-generator-container');
+        if (pgContainer) pgContainer.style.display = 'none';
+        const bpBar = document.getElementById('business-pages-action-bar');
+        if (bpBar) bpBar.style.display = 'none';
+        if (leadsContainer) leadsContainer.style.display = 'none';
+        if (eventsContainer) eventsContainer.style.display = 'none';
+        renderParameterLists();
+        return;
+      } else if (categoriesContainer) {
+        categoriesContainer.style.display = 'none';
+      }
+
+      if (activeCollection === 'customer_leads') {
+        listingsContainer.style.display = 'none';
+        statusTabs.style.display = 'none';
+        cmsContainer.style.display = 'none';
+        if (locContainer) locContainer.style.display = 'none';
+        if (kpiContainer) kpiContainer.style.display = 'none';
+        if (seoContainer) seoContainer.style.display = 'none';
+        const pgContainer = document.getElementById('admin-page-generator-container');
+        if (pgContainer) pgContainer.style.display = 'none';
+        const bpBar = document.getElementById('business-pages-action-bar');
+        if (bpBar) bpBar.style.display = 'none';
+        if (eventsContainer) eventsContainer.style.display = 'none';
+        if (leadsContainer) leadsContainer.style.display = 'block';
+        loadCustomerLeads();
+        return;
+      } else if (leadsContainer) {
+        leadsContainer.style.display = 'none';
+      }
+
+      if (activeCollection === 'events') {
+        listingsContainer.style.display = 'none';
+        statusTabs.style.display = 'none';
+        cmsContainer.style.display = 'none';
+        if (locContainer) locContainer.style.display = 'none';
+        if (kpiContainer) kpiContainer.style.display = 'none';
+        if (seoContainer) seoContainer.style.display = 'none';
+        const pgContainer = document.getElementById('admin-page-generator-container');
+        if (pgContainer) pgContainer.style.display = 'none';
+        const bpBar = document.getElementById('business-pages-action-bar');
+        if (bpBar) bpBar.style.display = 'none';
+        if (leadsContainer) leadsContainer.style.display = 'none';
+        if (eventsContainer) eventsContainer.style.display = 'block';
+        loadAdminEvents();
+        return;
+      } else if (eventsContainer) {
+        eventsContainer.style.display = 'none';
+      }
+
       if (activeCollection === 'location_settings') {
         listingsContainer.style.display = 'none';
         statusTabs.style.display = 'none';
@@ -421,6 +611,7 @@ if (typeof firebase !== 'undefined') {
         const bpBar = document.getElementById('business-pages-action-bar');
         if (bpBar) bpBar.style.display = 'none';
         loadKPIReports();
+        loadDirectoryPerformance({});
         return;
       } else if (activeCollection === 'business_pages') {
         listingsContainer.style.display = 'grid';
@@ -783,6 +974,7 @@ if (typeof firebase !== 'undefined') {
 
       document.getElementById('edit-id').value = id;
       document.getElementById('edit-bname').value = doc.name;
+      document.getElementById('edit-listing-tier').value = doc.listingTier === 'premium' ? 'premium' : 'regular';
       document.getElementById('edit-bcat').value = doc.category;
       document.getElementById('edit-bweb').value = doc.website || '';
       document.getElementById('edit-bdist').value = doc.district;
@@ -790,6 +982,7 @@ if (typeof firebase !== 'undefined') {
       document.getElementById('edit-bphone').value = doc.phone;
       document.getElementById('edit-bwa').value = doc.whatsapp;
       document.getElementById('edit-bemail').value = doc.email;
+      document.getElementById('edit-bowner-email').value = doc.ownerEmail || '';
       document.getElementById('edit-bdesc').value = doc.description;
       document.getElementById('edit-bservices').value = doc.servicesOffered || '';
       document.getElementById('edit-bwhychoose').value = doc.whyChooseUs || '';
@@ -814,6 +1007,7 @@ if (typeof firebase !== 'undefined') {
 
         db.collection('listings').doc(id).update({
           name: document.getElementById('edit-bname').value.trim(),
+          listingTier: document.getElementById('edit-listing-tier').value === 'premium' ? 'premium' : 'regular',
           category: document.getElementById('edit-bcat').value,
           website: document.getElementById('edit-bweb').value.trim(),
           district: document.getElementById('edit-bdist').value,
@@ -821,6 +1015,7 @@ if (typeof firebase !== 'undefined') {
           phone: document.getElementById('edit-bphone').value.trim(),
           whatsapp: document.getElementById('edit-bwa').value.trim(),
           email: document.getElementById('edit-bemail').value.trim(),
+          ownerEmail: document.getElementById('edit-bowner-email').value.trim().toLowerCase(),
           description: document.getElementById('edit-bdesc').value.trim(),
           servicesOffered: document.getElementById('edit-bservices').value.trim(),
           whyChooseUs: document.getElementById('edit-bwhychoose').value.trim(),
@@ -862,9 +1057,277 @@ if (typeof firebase !== 'undefined') {
       });
     }
 
+    // ==================== DYNAMIC FORM LOGIC FOR ADMIN MODAL ====================
+    function renderAdminServicesCheckboxes(catId, checkedIds = []) {
+      const container = document.getElementById('bp-services-checkboxes');
+      if (!container) return;
+      if (!catId) {
+        container.innerHTML = '<span style="font-size:12px; color:var(--text-muted);">Please select a Category above to load services.</span>';
+        return;
+      }
+      const filtered = activeServices.filter(s => s.categoryId === catId);
+      if (filtered.length === 0) {
+        container.innerHTML = '<span style="font-size:12px; color:var(--text-muted);">No services found for this category.</span>';
+        return;
+      }
+      container.innerHTML = filtered.map(s => {
+        const checked = checkedIds.includes(s.id) ? 'checked' : '';
+        return `
+          <label style="display:flex; align-items:center; gap:6px; font-weight:normal; margin:0; font-size:12.5px; cursor:pointer;">
+            <input type="checkbox" name="bp-services-arr" value="${s.id}" ${checked} />
+            <span>${s.name}</span>
+          </label>
+        `;
+      }).join('');
+    }
+
+    function renderAdminTownsCheckboxes(distId, checkedIds = []) {
+      const container = document.getElementById('bp-towns-checkboxes');
+      if (!container) return;
+      if (!distId) {
+        container.innerHTML = '<span style="font-size:12px; color:var(--text-muted);">Select District above to load Towns.</span>';
+        return;
+      }
+      const towns = activeTowns[distId.toLowerCase()] || [];
+      if (towns.length === 0) {
+        container.innerHTML = '<span style="font-size:12px; color:var(--text-muted);">No towns found for this district.</span>';
+        return;
+      }
+      container.innerHTML = towns.map(t => {
+        const checked = checkedIds.includes(t.id) ? 'checked' : '';
+        return `
+          <label style="display:flex; align-items:center; gap:6px; font-weight:normal; margin:0; font-size:12.5px; cursor:pointer;">
+            <input type="checkbox" name="bp-towns-arr" value="${t.id}" ${checked} />
+            <span>${t.name}</span>
+          </label>
+        `;
+      }).join('');
+    }
+
+    function populateAdminHours(hours = {}) {
+      document.querySelectorAll('.bp-hours-row').forEach(row => {
+        const day = row.getAttribute('data-day');
+        const dayConfig = hours[day] || { closed: day === 'sunday', open: day !== 'sunday', open24Hours: false, openTime: '09:00', closeTime: '18:00' };
+        
+        const closedCheck = row.querySelector('.bp-hour-closed');
+        const open24hCheck = row.querySelector('.bp-hour-24h');
+        const openInput = row.querySelector('.bp-hour-open');
+        const closeInput = row.querySelector('.bp-hour-close');
+        
+        closedCheck.checked = !!dayConfig.closed;
+        open24hCheck.checked = !!dayConfig.open24Hours;
+        
+        if (dayConfig.closed) {
+          openInput.disabled = true;
+          closeInput.disabled = true;
+          openInput.value = '';
+          closeInput.value = '';
+        } else if (dayConfig.open24Hours) {
+          openInput.disabled = true;
+          closeInput.disabled = true;
+          openInput.value = '00:00';
+          closeInput.value = '23:59';
+        } else {
+          openInput.disabled = false;
+          closeInput.disabled = false;
+          openInput.value = dayConfig.openTime || '09:00';
+          closeInput.value = dayConfig.closeTime || '18:00';
+        }
+      });
+    }
+
+    // Attach hours toggle listeners once on load
+    document.querySelectorAll('.bp-hours-row').forEach(row => {
+      const closedCheck = row.querySelector('.bp-hour-closed');
+      const open24hCheck = row.querySelector('.bp-hour-24h');
+      const openInput = row.querySelector('.bp-hour-open');
+      const closeInput = row.querySelector('.bp-hour-close');
+
+      closedCheck.addEventListener('change', () => {
+        if (closedCheck.checked) {
+          open24hCheck.checked = false;
+          openInput.disabled = true;
+          closeInput.disabled = true;
+          openInput.value = '';
+          closeInput.value = '';
+        } else {
+          openInput.disabled = false;
+          closeInput.disabled = false;
+          openInput.value = '09:00';
+          closeInput.value = '18:00';
+        }
+        calculateCompletenessFromForm();
+      });
+
+      open24hCheck.addEventListener('change', () => {
+        if (open24hCheck.checked) {
+          closedCheck.checked = false;
+          openInput.disabled = true;
+          closeInput.disabled = true;
+          openInput.value = '00:00';
+          closeInput.value = '23:59';
+        } else {
+          openInput.disabled = false;
+          closeInput.disabled = false;
+          openInput.value = '09:00';
+          closeInput.value = '18:00';
+        }
+        calculateCompletenessFromForm();
+      });
+    });
+
+    function calculateCompletenessFromForm() {
+      let score = 0;
+      if (document.getElementById('bp-name').value.trim()) score += 10;
+      if (document.getElementById('bp-category').value) score += 10;
+      if (document.getElementById('bp-shortdesc').value.trim() && document.getElementById('bp-desc').value.trim()) score += 15;
+      if (document.getElementById('bp-district').value && document.getElementById('bp-towns').value.trim()) score += 10;
+      if (document.getElementById('bp-address').value.trim()) score += 10;
+      
+      const phone = document.getElementById('bp-phone').value.trim();
+      const wa = document.getElementById('bp-whatsapp').value.trim();
+      const email = document.getElementById('bp-email').value.trim();
+      if (phone && wa && email) score += 15;
+      
+      const logoUrl = document.getElementById('bp-logo-url').value.trim();
+      const coverUrl = document.getElementById('bp-cover-url').value.trim();
+      if (logoUrl || coverUrl) score += 10;
+      
+      let checkedDaysCount = 0;
+      document.querySelectorAll('.bp-hours-row').forEach(row => {
+        if (row.querySelector('.bp-hour-closed').checked || row.querySelector('.bp-hour-24h').checked || (row.querySelector('.bp-hour-open').value && row.querySelector('.bp-hour-close').value)) {
+          checkedDaysCount++;
+        }
+      });
+      if (checkedDaysCount === 7) score += 10;
+      
+      const servicesChecked = Array.from(document.querySelectorAll('input[name="bp-services-arr"]:checked'));
+      if (servicesChecked.length > 0) score += 10;
+      
+      const textEl = document.getElementById('bp-completeness-text');
+      if (textEl) {
+        textEl.textContent = `${score}%`;
+        if (score >= 85) textEl.style.color = '#16a34a';
+        else if (score >= 50) textEl.style.color = '#d97706';
+        else textEl.style.color = '#dc2626';
+      }
+      return score;
+    }
+
+    // Attach form listeners for real-time completeness updates
+    const bpFormElement = document.getElementById('form-business-page');
+    if (bpFormElement) {
+      bpFormElement.addEventListener('input', calculateCompletenessFromForm);
+      bpFormElement.addEventListener('change', calculateCompletenessFromForm);
+    }
+
+    // Attach File Upload change listeners for Admin Page
+    const bpLogoFile = document.getElementById('bp-logo-file');
+    if (bpLogoFile) {
+      bpLogoFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        const urlInput = document.getElementById('bp-logo-url');
+        const preview = document.getElementById('bp-logo-preview');
+        if (!file) return;
+        
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        urlInput.value = 'Uploading...';
+        
+        const path = `logos/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        storage.ref().child(path).put(file)
+          .then(snapshot => snapshot.ref.getDownloadURL())
+          .then(url => {
+            urlInput.value = url;
+            calculateCompletenessFromForm();
+          })
+          .catch(err => {
+            urlInput.value = '';
+            alert('Upload failed: ' + err.message);
+          });
+      });
+    }
+
+    const bpCoverFile = document.getElementById('bp-cover-file');
+    if (bpCoverFile) {
+      bpCoverFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        const urlInput = document.getElementById('bp-cover-url');
+        const preview = document.getElementById('bp-cover-preview');
+        if (!file) return;
+        
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        urlInput.value = 'Uploading...';
+        
+        const path = `covers/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        storage.ref().child(path).put(file)
+          .then(snapshot => snapshot.ref.getDownloadURL())
+          .then(url => {
+            urlInput.value = url;
+            calculateCompletenessFromForm();
+          })
+          .catch(err => {
+            urlInput.value = '';
+            alert('Upload failed: ' + err.message);
+          });
+      });
+    }
+
+    const bpGalleryFile = document.getElementById('bp-gallery-file');
+    if (bpGalleryFile) {
+      bpGalleryFile.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        const jsonText = document.getElementById('bp-gallery-json');
+        const previewContainer = document.getElementById('bp-gallery-preview-container');
+        if (files.length === 0) return;
+        
+        previewContainer.innerHTML = '';
+        let currentGallery = [];
+        try {
+          currentGallery = JSON.parse(jsonText.value || '[]');
+        } catch(err) {}
+        
+        let uploadPromises = files.map((file, idx) => {
+          const path = `gallery/${Date.now()}-${idx}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+          
+          const img = document.createElement('img');
+          img.className = 'preview-thumbnail';
+          img.src = URL.createObjectURL(file);
+          img.style.display = 'block';
+          previewContainer.appendChild(img);
+          
+          return storage.ref().child(path).put(file)
+            .then(snapshot => snapshot.ref.getDownloadURL())
+            .then(url => ({ url, altText: file.name }));
+        });
+        
+        Promise.all(uploadPromises).then(newImages => {
+          currentGallery = currentGallery.concat(newImages);
+          jsonText.value = JSON.stringify(currentGallery, null, 2);
+          calculateCompletenessFromForm();
+        });
+      });
+    }
+
     function openBusinessPageModal(docId) {
       const titleEl = document.getElementById('modal-bp-title');
       const docIdInput = document.getElementById('bp-doc-id');
+      const bpSlugInput = document.getElementById('bp-slug');
+      const bpCatSelect = document.getElementById('bp-category');
+      const bpDistSelect = document.getElementById('bp-district');
+
+      // Setup dynamic service/town rendering on category/district dropdown change
+      if (bpCatSelect) {
+        bpCatSelect.addEventListener('change', (e) => {
+          renderAdminServicesCheckboxes(e.target.value, []);
+        });
+      }
+      if (bpDistSelect) {
+        bpDistSelect.addEventListener('change', (e) => {
+          renderAdminTownsCheckboxes(e.target.value, []);
+        });
+      }
 
       if (docId) {
         // Edit mode
@@ -875,30 +1338,79 @@ if (typeof firebase !== 'undefined') {
         if (docIdInput) docIdInput.value = docId;
         if (bpSlugInput) { bpSlugInput.value = docId; bpSlugInput.disabled = true; }
         if (slugPreview) slugPreview.textContent = docId;
+
         document.getElementById('bp-name').value = doc.name || '';
+        document.getElementById('bp-listing-tier').value = doc.listingTier === 'premium' ? 'premium' : 'regular';
         document.getElementById('bp-category').value = doc.category || '';
-        document.getElementById('bp-district').value = doc.district || '';
+        document.getElementById('bp-district').value = doc.district ? doc.district.toLowerCase() : '';
         document.getElementById('bp-towns').value = doc.towns || '';
         document.getElementById('bp-phone').value = doc.phone || '';
         document.getElementById('bp-whatsapp').value = doc.whatsapp || '';
         document.getElementById('bp-email').value = doc.email || '';
+        document.getElementById('bp-owner-email').value = doc.ownerEmail || '';
         document.getElementById('bp-website').value = doc.website || '';
         document.getElementById('bp-desc').value = doc.description || '';
-        document.getElementById('bp-services').value = doc.servicesOffered || '';
         document.getElementById('bp-whychoose').value = doc.whyChooseUs || '';
         document.getElementById('bp-address').value = doc.address || '';
         document.getElementById('bp-mapurl').value = doc.mapUrl || '';
         document.getElementById('bp-gbp-rating').value = doc.gbpRating || '';
         document.getElementById('bp-gbp-reviews').value = doc.gbpReviews || '';
         document.getElementById('bp-gbp-url').value = doc.gbpUrl || '';
+
+        // Upgraded fields population
+        document.getElementById('bp-shortdesc').value = doc.shortDescription || '';
+        document.getElementById('bp-established').value = doc.establishedYear || '';
+        document.getElementById('bp-logo-url').value = doc.logo ? doc.logo.url || '' : '';
+        document.getElementById('bp-cover-url').value = doc.coverImage ? doc.coverImage.url || '' : '';
+        document.getElementById('bp-gallery-json').value = doc.gallery ? JSON.stringify(doc.gallery, null, 2) : '[]';
+
+        // Previews
+        const logoPreview = document.getElementById('bp-logo-preview');
+        if (doc.logo && doc.logo.url) { logoPreview.src = doc.logo.url; logoPreview.style.display = 'block'; }
+        else { logoPreview.style.display = 'none'; }
+
+        const coverPreview = document.getElementById('bp-cover-preview');
+        if (doc.coverImage && doc.coverImage.url) { coverPreview.src = doc.coverImage.url; coverPreview.style.display = 'block'; }
+        else { coverPreview.style.display = 'none'; }
+
+        // Render checkboxes with preselected values
+        renderAdminServicesCheckboxes(doc.category, doc.serviceIds || []);
+        renderAdminTownsCheckboxes(doc.district, doc.serviceAreas ? doc.serviceAreas.townIds || [] : []);
+
+        // Pop hours
+        populateAdminHours(doc.hours || {});
+
+        // Verifications
+        document.getElementById('bp-ver-phone').checked = doc.verification ? !!doc.verification.phoneVerified : false;
+        document.getElementById('bp-ver-location').checked = doc.verification ? !!doc.verification.locationVerified : false;
+        document.getElementById('bp-ver-business').checked = doc.verification ? !!doc.verification.businessVerified : false;
+
+        // SEO
+        document.getElementById('bp-seo-title').value = doc.seoTitle || '';
+        document.getElementById('bp-seo-desc').value = doc.seoDescription || '';
+        document.getElementById('bp-seo-keywords').value = doc.seoKeywords || '';
+        document.getElementById('bp-seo-index').checked = doc.allowIndexing !== false;
+
+        calculateCompletenessFromForm();
+
       } else {
         // Create mode
         if (titleEl) titleEl.textContent = 'Create Business Listing Page';
         if (btnGenerateHtml) btnGenerateHtml.style.display = 'none';
         if (docIdInput) docIdInput.value = '';
-        if (bpSlugInput) bpSlugInput.disabled = false;
+        if (bpSlugInput) { bpSlugInput.disabled = false; bpSlugInput.value = ''; }
         if (formBP) formBP.reset();
+        document.getElementById('bp-listing-tier').value = 'regular';
         if (slugPreview) slugPreview.textContent = 'your-slug';
+        
+        document.getElementById('bp-logo-preview').style.display = 'none';
+        document.getElementById('bp-cover-preview').style.display = 'none';
+        document.getElementById('bp-gallery-preview-container').innerHTML = '';
+
+        renderAdminServicesCheckboxes('', []);
+        renderAdminTownsCheckboxes('', []);
+        populateAdminHours({});
+        calculateCompletenessFromForm();
       }
 
       if (modalBP) modalBP.style.display = 'flex';
@@ -931,23 +1443,108 @@ if (typeof firebase !== 'undefined') {
         const ratingVal = document.getElementById('bp-gbp-rating').value.trim();
         const reviewsVal = document.getElementById('bp-gbp-reviews').value.trim();
 
+        // Package serviceIds and names
+        const serviceIds = Array.from(document.querySelectorAll('input[name="bp-services-arr"]:checked')).map(el => el.value);
+        const listingTier = document.getElementById('bp-listing-tier').value === 'premium' ? 'premium' : 'regular';
+        const serviceLimit = listingTier === 'premium' ? 100 : 10;
+        if (serviceIds.length > serviceLimit) {
+          alert(`Select up to ${serviceLimit} accurate services for this ${listingTier} listing.`);
+          return;
+        }
+        const serviceNames = activeServices.filter(s => serviceIds.includes(s.id)).map(s => s.name);
+
+        const townIds = Array.from(document.querySelectorAll('input[name="bp-towns-arr"]:checked')).map(el => el.value);
+
+        // Package hours
+        const hoursObj = {};
+        document.querySelectorAll('.bp-hours-row').forEach(row => {
+          const day = row.getAttribute('data-day');
+          const isClosed = row.querySelector('.bp-hour-closed').checked;
+          const is24h = row.querySelector('.bp-hour-24h').checked;
+          
+          hoursObj[day] = {
+            closed: isClosed,
+            open: !isClosed,
+            open24Hours: is24h,
+            openTime: (isClosed || is24h) ? '' : row.querySelector('.bp-hour-open').value,
+            closeTime: (isClosed || is24h) ? '' : row.querySelector('.bp-hour-close').value
+          };
+        });
+
+        // Package Gallery JSON
+        let galleryArray = [];
+        try {
+          galleryArray = JSON.parse(document.getElementById('bp-gallery-json').value || '[]');
+        } catch(err) {
+          alert('Invalid Business Gallery JSON. Please correct it.');
+          return;
+        }
+
+        const score = calculateCompletenessFromForm();
+        const categoryId = document.getElementById('bp-category').value;
+        const districtId = document.getElementById('bp-district').value;
+
+        const logoUrl = document.getElementById('bp-logo-url').value.trim();
+        const coverUrl = document.getElementById('bp-cover-url').value.trim();
+
         const data = {
           name: document.getElementById('bp-name').value.trim(),
-          category: document.getElementById('bp-category').value,
-          district: document.getElementById('bp-district').value,
+          listingTier: listingTier,
+          category: categoryId, // maintain compatibility
+          district: districtId.charAt(0).toUpperCase() + districtId.slice(1), // capitalized fallback
           towns: document.getElementById('bp-towns').value.trim(),
           phone: document.getElementById('bp-phone').value.trim(),
           whatsapp: document.getElementById('bp-whatsapp').value.trim(),
           email: document.getElementById('bp-email').value.trim(),
+          ownerEmail: document.getElementById('bp-owner-email').value.trim().toLowerCase(),
           website: document.getElementById('bp-website').value.trim(),
           description: document.getElementById('bp-desc').value.trim(),
-          servicesOffered: document.getElementById('bp-services').value.trim(),
+          
+          // Legacy fallbacks
+          servicesOffered: serviceNames.join('\n'),
           whyChooseUs: document.getElementById('bp-whychoose').value.trim(),
           address: document.getElementById('bp-address').value.trim(),
           mapUrl: document.getElementById('bp-mapurl').value.trim(),
           gbpRating: ratingVal ? parseFloat(ratingVal) : null,
           gbpReviews: reviewsVal ? parseInt(reviewsVal, 10) : null,
           gbpUrl: document.getElementById('bp-gbp-url').value.trim(),
+
+          // Upgraded Schema
+          categoryId: categoryId,
+          serviceIds: serviceIds,
+          shortDescription: document.getElementById('bp-shortdesc').value.trim(),
+          establishedYear: document.getElementById('bp-established').value.trim() ? parseInt(document.getElementById('bp-established').value.trim(), 10) : null,
+          
+          logo: logoUrl ? { url: logoUrl, altText: document.getElementById('bp-name').value.trim() + ' Logo' } : null,
+          coverImage: coverUrl ? { url: coverUrl, altText: document.getElementById('bp-name').value.trim() + ' Cover' } : null,
+          gallery: galleryArray,
+
+          districtId: districtId,
+          townId: townIds[0] || '', // primary town reference
+          areaIds: [],
+
+          serviceAreas: {
+            districtIds: [districtId],
+            townIds: townIds
+          },
+
+          hours: hoursObj,
+
+          verification: {
+            phoneVerified: document.getElementById('bp-ver-phone').checked,
+            locationVerified: document.getElementById('bp-ver-location').checked,
+            businessVerified: document.getElementById('bp-ver-business').checked,
+            verifiedAt: firebase.firestore.FieldValue.serverTimestamp()
+          },
+
+          // SEO Settings
+          seoTitle: document.getElementById('bp-seo-title').value.trim(),
+          seoDescription: document.getElementById('bp-seo-desc').value.trim(),
+          seoKeywords: document.getElementById('bp-seo-keywords').value.trim(),
+          allowIndexing: document.getElementById('bp-seo-index').checked,
+
+          status: 'approved',
+          completenessScore: score,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
@@ -1053,7 +1650,7 @@ if (typeof firebase !== 'undefined') {
   <script src="/assets/js/search.js?v=1.6" defer><\/script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"><\/script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"><\/script>
-  <script src="/assets/js/activity-tracker.js?v=1.6" defer><\/script>
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer><\/script>
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PP7859BT');<\/script>
   <script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'LocalBusiness',name,description:desc,url:`https://servekerala.in/business/${slug}/`,telephone:phone,address:{'@type':'PostalAddress',addressRegion:'Kerala',addressCountry:'IN',addressLocality:district}})}<\/script>
 </head>
@@ -1390,6 +1987,10 @@ ${whyHTML}
       const btnAddCategory = document.getElementById('btn-add-category');
       const newCategoryName = document.getElementById('new-category-name');
       const newCategoryId = document.getElementById('new-category-id');
+      const btnAddService = document.getElementById('btn-add-service');
+      const newServiceCategory = document.getElementById('new-service-category');
+      const newServiceName = document.getElementById('new-service-name');
+      const newServiceId = document.getElementById('new-service-id');
 
       // Add District
       if (btnAddDistrict && newDistrictInput) {
@@ -1423,6 +2024,37 @@ ${whyHTML}
               alert('Category ID already exists!');
             }
           }
+        });
+      }
+
+      if (newServiceName && newServiceId) {
+        newServiceName.addEventListener('input', () => {
+          if (!newServiceId.dataset.userEdited) {
+            newServiceId.value = newServiceName.value.trim().toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          }
+        });
+        newServiceId.addEventListener('input', () => { newServiceId.dataset.userEdited = 'true'; });
+      }
+      if (btnAddService && newServiceCategory && newServiceName && newServiceId) {
+        btnAddService.addEventListener('click', () => {
+          const categoryId = newServiceCategory.value;
+          const name = newServiceName.value.trim().replace(/\s+/g, ' ');
+          const id = newServiceId.value.trim().toLowerCase().replace(/\s+/g, '-');
+          if (!categoryId || !name || !id) return showDashboardStatus('Choose a category and enter a service name.', 'alert-error');
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) return showDashboardStatus('Service IDs can contain lowercase letters, numbers, and hyphens.', 'alert-error');
+          if (activeServices.some(service => String(service.id).toLowerCase() === id)) return showDashboardStatus('That service ID is already in use.', 'alert-error');
+          const normalizedName = normalizeServiceName(name);
+          const duplicate = activeServices.find(service => normalizeServiceName(service.name) === normalizedName);
+          if (duplicate) {
+            const existingCategory = activeCategories.find(category => category.id === duplicate.categoryId)?.name || 'another category';
+            newServiceName.focus();
+            return showDashboardStatus(`“${duplicate.name}” is already listed under ${existingCategory}. Choose a different service.`, 'alert-error');
+          }
+          activeServices.push({id, categoryId, name});
+          newServiceName.value = '';
+          newServiceId.value = '';
+          delete newServiceId.dataset.userEdited;
+          saveDirectoryParameters();
         });
       }
 
@@ -1583,6 +2215,205 @@ ${whyHTML}
           });
       });
     }
+
+    function loadDirectoryPerformance(filters = {}) {
+      const tbody = document.getElementById('perf-table-body');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading performance data...</td></tr>';
+      
+      // Load both approved listings and business_pages
+      Promise.all([
+        db.collection('listings').where('status', '==', 'approved').get(),
+        db.collection('business_pages').get()
+      ]).then(([listingsSnap, bizPagesSnap]) => {
+        let businesses = [];
+        listingsSnap.forEach(doc => {
+          const d = doc.data();
+          businesses.push({ id: doc.id, type: 'listing', ...d });
+        });
+        bizPagesSnap.forEach(doc => {
+          const d = doc.data();
+          businesses.push({ id: doc.id, type: 'business_page', ...d });
+        });
+        
+        const startDateVal = document.getElementById('perf-filter-start-date')?.value;
+        const endDateVal = document.getElementById('perf-filter-end-date')?.value;
+        
+        let eventQuery = db.collection('analytics_events');
+        if (startDateVal) {
+          const startTimestamp = firebase.firestore.Timestamp.fromDate(new Date(startDateVal + 'T00:00:00'));
+          eventQuery = eventQuery.where('timestamp', '>=', startTimestamp);
+        }
+        if (endDateVal) {
+          const endTimestamp = firebase.firestore.Timestamp.fromDate(new Date(endDateVal + 'T23:59:59'));
+          eventQuery = eventQuery.where('timestamp', '<=', endTimestamp);
+        }
+        
+        eventQuery.get().then(eventSnap => {
+          const aggregates = {};
+          eventSnap.forEach(doc => {
+            const evt = doc.data();
+            const bid = evt.business_id;
+            if (bid) {
+              if (!aggregates[bid]) {
+                aggregates[bid] = { views: 0, whatsapp: 0, calls: 0, callbacks: 0 };
+              }
+              if (evt.event_name === 'business_profile_view') aggregates[bid].views++;
+              else if (evt.event_name === 'whatsapp_click') aggregates[bid].whatsapp++;
+              else if (evt.event_name === 'phone_click') aggregates[bid].calls++;
+              else if (evt.event_name === 'callback_request') aggregates[bid].callbacks++;
+            }
+          });
+          
+          businesses.forEach(b => {
+            const agg = aggregates[b.id] || { views: 0, whatsapp: 0, calls: 0, callbacks: 0 };
+            b.profileViews = agg.views;
+            b.whatsappClicks = agg.whatsapp;
+            b.callClicks = agg.calls;
+            b.callbackRequests = agg.callbacks;
+          });
+          
+          renderPerformanceTable(businesses, filters);
+        }).catch(err => {
+          console.error("Error loading analytics events:", err);
+          tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #dc2626;">Error loading analytics events.</td></tr>';
+        });
+      }).catch(err => {
+        console.error("Error loading performance data:", err);
+        tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #dc2626;">Error loading businesses.</td></tr>';
+      });
+    }
+
+    function renderPerformanceTable(businesses, filters) {
+      const tbody = document.getElementById('perf-table-body');
+      if (!tbody) return;
+      
+      let filtered = businesses;
+      
+      const districtFilter = (filters.district || '').toLowerCase().trim();
+      const townFilter = (filters.town || '').toLowerCase().trim();
+      const categoryFilter = (filters.category || '').toLowerCase().trim();
+      const businessFilter = (filters.business || '').toLowerCase().trim();
+      
+      if (districtFilter) {
+        filtered = filtered.filter(b => (b.district || '').toLowerCase() === districtFilter);
+      }
+      if (townFilter) {
+        filtered = filtered.filter(b => {
+          const townsVal = typeof b.towns === 'string' ? b.towns : (b.town || '');
+          return townsVal.toLowerCase().includes(townFilter);
+        });
+      }
+      if (categoryFilter) {
+        filtered = filtered.filter(b => {
+          const cat = (b.category || '').toLowerCase();
+          return cat === categoryFilter || cat.includes(categoryFilter);
+        });
+      }
+      if (businessFilter) {
+        filtered = filtered.filter(b => (b.name || '').toLowerCase().includes(businessFilter));
+      }
+      
+      let totalViews = 0;
+      let totalWhatsApp = 0;
+      let totalCalls = 0;
+      let totalCallbacks = 0;
+      
+      filtered.forEach(b => {
+        totalViews += (b.profileViews || 0);
+        totalWhatsApp += (b.whatsappClicks || 0);
+        totalCalls += (b.callClicks || 0);
+        totalCallbacks += (b.callbackRequests || 0);
+      });
+      
+      document.getElementById('perf-summary-views').textContent = totalViews;
+      document.getElementById('perf-summary-whatsapp').textContent = totalWhatsApp;
+      document.getElementById('perf-summary-calls').textContent = totalCalls;
+      document.getElementById('perf-summary-callbacks').textContent = totalCallbacks;
+      
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted);">No matching businesses found.</td></tr>';
+        return;
+      }
+      
+      filtered.sort((a, b) => (b.profileViews || 0) - (a.profileViews || 0));
+      
+      tbody.innerHTML = filtered.map(b => {
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 12px; border-right: 1px solid var(--border-color); font-weight: 600;">${b.name}</td>
+            <td style="padding: 12px; border-right: 1px solid var(--border-color); text-transform: capitalize;">${b.category || 'N/A'}</td>
+            <td style="padding: 12px; border-right: 1px solid var(--border-color); font-weight: 500;">${b.district || 'Multiple'}</td>
+            <td style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center; font-weight: bold; color: var(--text-main);">${b.profileViews || 0}</td>
+            <td style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center; color: #16a34a; font-weight: 600;">${b.whatsappClicks || 0}</td>
+            <td style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center; color: #2563eb; font-weight: 600;">${b.callClicks || 0}</td>
+            <td style="padding: 12px; text-align: center; color: var(--text-muted);">${b.callbackRequests || 0}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Set up one-time filter bindings
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnApplyPerf = document.getElementById('btn-perf-apply-filters');
+      const btnClearPerf = document.getElementById('btn-perf-clear-filters');
+      
+      if (btnApplyPerf) {
+        btnApplyPerf.addEventListener('click', () => {
+          const filters = {
+            district: document.getElementById('perf-filter-district').value,
+            town: document.getElementById('perf-filter-town').value,
+            category: document.getElementById('perf-filter-category').value,
+            business: document.getElementById('perf-filter-business').value
+          };
+          loadDirectoryPerformance(filters);
+        });
+      }
+      
+      if (btnClearPerf) {
+        btnClearPerf.addEventListener('click', () => {
+          document.getElementById('perf-filter-district').value = '';
+          document.getElementById('perf-filter-town').value = '';
+          document.getElementById('perf-filter-category').value = '';
+          document.getElementById('perf-filter-business').value = '';
+          document.getElementById('perf-filter-start-date').value = '';
+          document.getElementById('perf-filter-end-date').value = '';
+          loadDirectoryPerformance({});
+        });
+      }
+    });
+
+    // Also try direct binding if elements are already loaded in the DOM
+    setTimeout(() => {
+      const btnApplyPerf = document.getElementById('btn-perf-apply-filters');
+      const btnClearPerf = document.getElementById('btn-perf-clear-filters');
+      if (btnApplyPerf && !btnApplyPerf.dataset.bound) {
+        btnApplyPerf.dataset.bound = 'true';
+        btnApplyPerf.addEventListener('click', () => {
+          const filters = {
+            district: document.getElementById('perf-filter-district').value,
+            town: document.getElementById('perf-filter-town').value,
+            category: document.getElementById('perf-filter-category').value,
+            business: document.getElementById('perf-filter-business').value
+          };
+          loadDirectoryPerformance(filters);
+        });
+      }
+      if (btnClearPerf && !btnClearPerf.dataset.bound) {
+        btnClearPerf.dataset.bound = 'true';
+        btnClearPerf.addEventListener('click', () => {
+          document.getElementById('perf-filter-district').value = '';
+          document.getElementById('perf-filter-town').value = '';
+          document.getElementById('perf-filter-category').value = '';
+          document.getElementById('perf-filter-business').value = '';
+          document.getElementById('perf-filter-start-date').value = '';
+          document.getElementById('perf-filter-end-date').value = '';
+          loadDirectoryPerformance({});
+        });
+      }
+    }, 1000);
+
 
   
     // ==================== SEO SETTINGS LOGIC ====================
@@ -1907,3 +2738,165 @@ document.addEventListener('input', function(e) {
         e.target.setSelectionRange(cursor + (newLength - oldLength), cursor + (newLength - oldLength));
     }
 });
+
+
+    // ==================== CUSTOMER LEADS ENGINE ====================
+    let cachedLeads = [];
+
+    function loadCustomerLeads() {
+      const tbody = document.getElementById('admin-leads-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="8" style="padding: 30px; text-align: center; color: var(--text-muted);">Fetching live inquiries from Firestore...</td></tr>';
+
+      db.collection('leads')
+        .get()
+        .then((snapshot) => {
+          cachedLeads = [];
+          snapshot.forEach(doc => {
+            cachedLeads.push({ id: doc.id, ...doc.data() });
+          });
+
+          // Sort descending by createdAt
+          cachedLeads.sort((a, b) => {
+            const timeA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
+            const timeB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
+            return timeB - timeA;
+          });
+
+          if (countLeadsSpan) {
+            const newCount = cachedLeads.filter(l => (l.status || 'new') === 'new').length;
+            countLeadsSpan.textContent = newCount;
+          }
+
+          renderLeadsTable();
+        })
+        .catch(err => {
+          console.error('Error fetching leads:', err);
+          tbody.innerHTML = '<tr><td colspan="8" style="padding: 20px; text-align: center; color: #dc2626;">Error loading leads. Check console.</td></tr>';
+        });
+    }
+
+    function renderLeadsTable() {
+      const tbody = document.getElementById('admin-leads-tbody');
+      const filterSelect = document.getElementById('leads-filter-status');
+      const filterVal = filterSelect ? filterSelect.value : '';
+
+      let list = cachedLeads;
+      if (filterVal) {
+        list = list.filter(l => (l.status || 'new') === filterVal);
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 15px;">No customer inquiries found for this filter.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(lead => {
+        let dateStr = 'Recent';
+        if (lead.createdAt) {
+          const date = lead.createdAt.toDate ? lead.createdAt.toDate() : new Date(lead.createdAt);
+          dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        const phoneClean = (lead.customerPhone || '').replace(/\D/g, '');
+        const waLink = `https://wa.me/91${phoneClean}?text=${encodeURIComponent('Hello ' + (lead.customerName || '') + ', following up on your inquiry on ServeKerala.in for ' + (lead.serviceNeeded || 'services') + '.')}`;
+
+        let urgencyBadge = '<span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:600;">Standard</span>';
+        if ((lead.urgency || '').includes('Urgent')) {
+          urgencyBadge = '<span style="background:#fee2e2; color:#dc2626; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700;">🔥 Urgent</span>';
+        } else if ((lead.urgency || '').includes('week')) {
+          urgencyBadge = '<span style="background:#dbeafe; color:#2563eb; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:600;">📅 This Week</span>';
+        }
+
+        const currentStatus = lead.status || 'new';
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.15s;">
+            <td style="padding: 12px; white-space: nowrap; color: var(--text-muted); font-size: 12.5px;">${dateStr}</td>
+            <td style="padding: 12px;">
+              <strong style="color: var(--primary); display: block; font-size: 14px;">${lead.customerName || 'Anonymous'}</strong>
+              <div style="margin-top: 4px; display: flex; gap: 6px; align-items: center;">
+                <a href="tel:${lead.customerPhone}" style="color: #2563eb; text-decoration: none; font-weight: 600;">📞 ${lead.customerPhone}</a>
+                <a href="${waLink}" target="_blank" rel="noopener" style="color: #16a34a; text-decoration: none; font-weight: 700; background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-size: 11.5px;">💬 WhatsApp</a>
+              </div>
+            </td>
+            <td style="padding: 12px;">
+              <div style="font-weight: 600; color: var(--text-dark);">${lead.businessName || 'General Lead'}</div>
+              <small style="color: var(--text-muted); font-size: 11.5px;">ID: ${lead.businessId || 'N/A'}</small>
+            </td>
+            <td style="padding: 12px;">
+              <div style="font-weight: 600;">${lead.serviceNeeded || 'Service'}</div>
+              <div style="color: var(--text-muted); font-size: 12px;">📍 ${lead.customerLocation || lead.businessTown || 'Kerala'}</div>
+            </td>
+            <td style="padding: 12px;">${urgencyBadge}</td>
+            <td style="padding: 12px; max-width: 220px; color: var(--text-dark); font-size: 13px;">${lead.notes || '<span style="color:var(--text-muted);font-style:italic;">No extra notes</span>'}</td>
+            <td style="padding: 12px;">
+              <select class="sk-lead-status-select" data-id="${lead.id}" style="padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12.5px; font-weight: 600; background: ${currentStatus === 'new' ? '#fef3c7' : (currentStatus === 'converted' ? '#dcfce7' : '#ffffff')};">
+                <option value="new" ${currentStatus === 'new' ? 'selected' : ''}>🔥 New</option>
+                <option value="contacted" ${currentStatus === 'contacted' ? 'selected' : ''}>📞 Contacted</option>
+                <option value="converted" ${currentStatus === 'converted' ? 'selected' : ''}>✅ Converted</option>
+                <option value="closed" ${currentStatus === 'closed' ? 'selected' : ''}>Closed</option>
+              </select>
+            </td>
+            <td style="padding: 12px; text-align: center;">
+              <button type="button" class="btn btn-outline btn-delete-lead" data-id="${lead.id}" style="padding: 4px 8px; font-size: 12px; color: #dc2626; border-color: #fca5a5;">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Bind status changes
+      tbody.querySelectorAll('.sk-lead-status-select').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+          const id = e.target.getAttribute('data-id');
+          const newStatus = e.target.value;
+          db.collection('leads').doc(id).update({ status: newStatus }).then(() => {
+            showDashboardStatus('Lead status updated to ' + newStatus, 'alert-success');
+            const target = cachedLeads.find(l => l.id === id);
+            if (target) target.status = newStatus;
+            e.target.style.background = newStatus === 'new' ? '#fef3c7' : (newStatus === 'converted' ? '#dcfce7' : '#ffffff');
+          }).catch(err => {
+            console.error('Update error:', err);
+            alert('Failed to update lead status.');
+          });
+        });
+      });
+
+      // Bind delete
+      tbody.querySelectorAll('.btn-delete-lead').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          if (confirm('Are you sure you want to delete this customer inquiry?')) {
+            db.collection('leads').doc(id).delete().then(() => {
+              cachedLeads = cachedLeads.filter(l => l.id !== id);
+              renderLeadsTable();
+              showDashboardStatus('Lead deleted.', 'alert-success');
+            }).catch(err => {
+              console.error(err);
+              alert('Could not delete lead.');
+            });
+          }
+        });
+      });
+    }
+
+    // Bind Filter & Refresh
+    document.addEventListener('DOMContentLoaded', () => {
+      const filterSelect = document.getElementById('leads-filter-status');
+      const refreshBtn = document.getElementById('btn-refresh-leads');
+      if (filterSelect) filterSelect.addEventListener('change', renderLeadsTable);
+      if (refreshBtn) refreshBtn.addEventListener('click', loadCustomerLeads);
+    });
+    
+    // Auto-initialize for server-authenticated dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof loadDirectoryParameters === 'function') {
+        loadDirectoryParameters().then(() => {
+          if (typeof initializeDashboard === 'function') {
+            initializeDashboard();
+          }
+        });
+      }
+    });
+  

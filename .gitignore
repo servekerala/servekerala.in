@@ -11,6 +11,8 @@ Thumbs.db
 
 # Scratch/temp files
 scratch/
+scratch-*
+scripts/scratch-*
 
 # Environment files (never commit secrets!)
 .env

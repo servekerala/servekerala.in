@@ -31,7 +31,6 @@ https.get(URL, (res) => {
       
       const seo = {
         home: extractFields(response.fields.home),
-        auto: extractFields(response.fields.auto),
         services: extractFields(response.fields.services),
         googleSiteVerification: response.fields.googleSiteVerification ? response.fields.googleSiteVerification.stringValue : ''
       };
@@ -64,11 +63,6 @@ https.get(URL, (res) => {
       // Inject Home Page
       if (seo.home) {
         injectTags('index.html', seo.home);
-      }
-      
-      // Inject Auto Mithram Page
-      if (seo.auto) {
-        injectTags('auto-mithram/index.html', seo.auto);
       }
       
       // Inject Services Page

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Sign In | ServeKerala.in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/assets/css/main.css?v=27.0">
+
+  <!-- Firebase SDKs for client auth sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #0B3B2C;
+      --primary-dark: #062319;
+      --secondary: #D4AF37;
+      --accent: #16A34A;
+      --bg-dark: #081C15;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body.admin-login-body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at 50% 20%, #114232 0%, #081C15 70%, #030d0a 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 24px;
+      color: #f8fafc;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background grid */
+    body.admin-login-body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    .login-container-card {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 40px rgba(11, 59, 44, 0.4);
+      padding: 40px 36px;
+      z-index: 10;
+      animation: fadeInScale 0.3s ease-out forwards;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .login-brand {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .login-brand-logo {
+      height: 48px;
+      width: auto;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+    }
+
+    .login-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      color: #facc15;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    .login-badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .login-subtitle {
+      font-size: 13.5px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .login-form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .login-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+    }
+
+    .login-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .login-input-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 16px;
+      color: #64748b;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(2, 6, 23, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 12px 14px 12px 42px;
+      font-size: 14px;
+      color: #ffffff;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .login-input::placeholder {
+      color: #64748b;
+    }
+
+    .login-input:focus {
+      border-color: var(--secondary);
+      background: rgba(2, 6, 23, 0.85);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+    }
+
+    .btn-toggle-pwd {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px;
+      transition: color 0.15s;
+    }
+
+    .btn-toggle-pwd:hover {
+      color: #ffffff;
+    }
+
+    .btn-login-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #15803d 0%, #0b3b2c 100%);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: #ffffff;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      box-shadow: 0 4px 14px rgba(11, 59, 44, 0.5);
+    }
+
+    .btn-login-submit:hover:not(:disabled) {
+      background: linear-gradient(135deg, #16a34a 0%, #0f4c39 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(11, 59, 44, 0.7);
+    }
+
+    .btn-login-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .login-alert {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-bottom: 20px;
+      display: none;
+      text-align: left;
+    }
+
+    .login-alert-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+
+    .login-alert-success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      color: #86efac;
+    }
+
+    .login-footer-links {
+      margin-top: 28px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 20px;
+    }
+
+    .login-footer-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .login-footer-links a:hover {
+      color: var(--secondary);
+    }
+
+    .security-badge {
+      margin-top: 16px;
+      font-size: 11.5px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+
+<body class="admin-login-body">
+
+  <div class="login-container-card">
+    <div class="login-brand">
+      <a href="/" aria-label="ServeKerala.in">
+        <img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" class="login-brand-logo">
+      </a>
+      <div>
+        <span class="login-badge">Protected Console</span>
+      </div>
+      <h1 class="login-title">Administrator Sign In</h1>
+      <p class="login-subtitle">
+        Enter your admin credentials to access verified directory leads, event moderation & settings.
+      </p>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="login-alert" class="login-alert"></div>
+
+    <!-- Professional Login Form -->
+    <form id="server-login-form">
+      <div class="login-form-group">
+        <label for="admin-user-input" class="login-label">Email or Username</label>
+        <div class="login-input-wrap">
+          <span class="login-input-icon">👤</span>
+          <input 
+            type="text" 
+            id="admin-user-input" 
+            class="login-input" 
+            placeholder="admin or servekerala.in@gmail.com" 
+            required 
+            autocomplete="username"
+            autofocus
+          >
+        </div>
+      </div>
+
+      <div class="login-form-group">
+        <label for="admin-pass-input" class="login-label">Password</label>
+        <div class="login-input-wrap">
+          <span class="login-input-icon">🔒</span>
+          <input 
+            type="password" 
+            id="admin-pass-input" 
+            class="login-input" 
+            placeholder="••••••••••••" 
+            required 
+            autocomplete="current-password"
+          >
+          <button type="button" id="toggle-pwd-btn" class="btn-toggle-pwd">Show</button>
+        </div>
+      </div>
+
+      <button type="submit" id="btn-submit-login" class="btn-login-submit">
+        <span>Sign In to Dashboard</span>
+        <span>&rarr;</span>
+      </button>
+    </form>
+
+    <div class="login-footer-links">
+      <a href="/">
+        <span>&larr;</span> Back to Public Website
+      </a>
+      <div class="security-badge">
+        <span>🛡️</span> Server-Level Authenticated Session (256-bit Encrypted)
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Password toggle
+    const pwdInput = document.getElementById('admin-pass-input');
+    const pwdBtn = document.getElementById('toggle-pwd-btn');
+    if (pwdBtn && pwdInput) {
+      pwdBtn.addEventListener('click', () => {
+        const isPwd = pwdInput.type === 'password';
+        pwdInput.type = isPwd ? 'text' : 'password';
+        pwdBtn.textContent = isPwd ? 'Hide' : 'Show';
+      });
+    }
+
+    // Submit handler
+    const form = document.getElementById('server-login-form');
+    const alertBox = document.getElementById('login-alert');
+    const submitBtn = document.getElementById('btn-submit-login');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('admin-user-input').value.trim();
+      const password = document.getElementById('admin-pass-input').value;
+
+      alertBox.style.display = 'none';
+      alertBox.className = 'login-alert';
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Verifying credentials...</span>';
+
+      try {
+        const response = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          alertBox.textContent = '✓ Access granted. Loading management dashboard...';
+          alertBox.className = 'login-alert login-alert-success';
+          alertBox.style.display = 'block';
+
+          // Client-side Firebase Auth sync (for seamless Firestore interaction)
+          if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const fbEmail = username.includes('@') ? username : 'servekerala.in@gmail.com';
+            firebase.auth().signInWithEmailAndPassword(fbEmail, password).catch(() => {});
+          }
+
+          setTimeout(() => {
+            window.location.href = data.redirect || '/admin/';
+          }, 400);
+        } else {
+          alertBox.textContent = data.error || 'Incorrect username or password. Please try again.';
+          alertBox.className = 'login-alert login-alert-error';
+          alertBox.style.display = 'block';
+          pwdInput.value = '';
+          pwdInput.focus();
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Sign In to Dashboard</span><span>&rarr;</span>';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        alertBox.textContent = 'Server connection error. Please make sure the server is running.';
+        alertBox.className = 'login-alert login-alert-error';
+        alertBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Sign In to Dashboard</span><span>&rarr;</span>';
+      }
+    });
+  </script>
+</body>
+</html>
+

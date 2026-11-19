@@ -21,8 +21,9 @@
   <meta name="author" content="ServeKerala.in" />
 
   <!-- Main CSS -->
-  <link rel="stylesheet" href="/assets/css/main.css?v=2.6">
+  <link rel="stylesheet" href="/assets/css/main.css?v=26.1">
   <script src="/assets/js/search.js?v=2.3" defer></script>
+  <script src="/assets/js/i18n.js?v=26.0" defer></script>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
   <script>
@@ -34,6 +35,7 @@
   </script>
   <!-- =============== END GOOGLE TAG MANAGER =============== -->
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>
 </head>
 
 <body>
@@ -49,20 +51,11 @@
 <header class="site-header">
   <div class="container">
     <a href="/" class="logo" aria-label="ServeKerala.in Home"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;"></a>
-    <div class="header-search">
-      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
-      <button id="header-search-submit" class="btn-header-search">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-      </button>
-      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
-    </div>
+    
     <nav class="main-nav">
       <a href="/">Home</a>
       <a href="/services/" class="active">Services</a>
-      <a href="/auto-mithram/">Auto Mithram</a>
+      <a href="/events/">Events</a>
       <a href="/list-your-business/" class="nav-cta">List Your Business</a>
       <a href="/contact/">Contact</a>
     </nav>
@@ -80,7 +73,7 @@
   <div class="mobile-nav-links">
     <a href="/">🏠 Home</a>
     <a href="/services/" class="active">🔧 Services</a>
-    <a href="/auto-mithram/">🛺 Auto Mithram</a>
+      <a href="/events/">🎉 Events</a>
     <a href="/contact/">📞 Contact</a>
     <a href="/list-your-business/" class="nav-cta">List Your Business</a>
   </div>
@@ -187,9 +180,9 @@
           <span style="font-weight: 700; color: var(--primary); font-size: 15px; display: block; margin-bottom: 4px;">Alappuzha</span>
           <span style="color: var(--text-muted); font-size: 13px;">Solar · Services</span>
         </a>
-        <a href="/auto-mithram/" class="card" style="padding: 16px 20px; text-align: center; height: auto; border-radius: 12px; border-color: rgba(217,119,6,0.2); background: var(--accent-light);">
-          <span style="font-weight: 700; color: var(--accent-hover); font-size: 15px; display: block; margin-bottom: 4px;">🛺 Auto Mithram</span>
-          <span style="color: var(--text-muted); font-size: 13px;">All Kerala Auto Stands</span>
+        <a href="/kollam/" class="card" style="padding: 16px 20px; text-align: center; height: auto; border-radius: 12px; border-color: rgba(6,78,59,0.15);">
+          <span style="font-weight: 700; color: var(--primary); font-size: 15px; display: block; margin-bottom: 4px;">Kollam</span>
+          <span style="color: var(--text-muted); font-size: 13px;">Solar · Services</span>
         </a>
       </div>
     </div>
@@ -198,30 +191,72 @@
 </section>
 
 <!-- ================= BUSINESS CTA ================= -->
-<section class="business-cta">
-  <div class="container">
-    <h2>List Your Business on ServeKerala.in</h2>
-    <p>
-      Connect directly with local customers searching for services in your area. Free verified listings available.
-    </p>
-    <a href="/list-your-business/?v=1.4" class="btn-accent">
-      Get Listed Today
-    </a>
-  </div>
-</section>
+  <!-- ================= FOR BUSINESS OWNERS ================= -->
+    <!-- ================= FOR BUSINESS OWNERS ================= -->
+  <section class="business-cta">
+    <div class="container">
+      <h2>Grow Your Business with ServeKerala.in</h2>
+      <p>
+        Get High-Quality Local Leads Directly to Your WhatsApp. No commission fees, no hidden charges. Just direct customer inquiries.
+      </p>
+      <a href="/list-your-business/?v=1.4" class="btn-accent">
+        Start Getting Leads Today
+      </a>
+    </div>
+  </section>
 
 <!-- ================= FOOTER ================= -->
-<footer class="site-footer">
-  <div class="container">
-    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
-    <nav class="footer-nav">
-      <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms/">Terms & Conditions</a>
-      <a href="/disclaimer/">Disclaimer</a>
-      <a href="/contact/">Contact Us</a>
-    </nav>
-  </div>
-</footer>
+  <!-- ================= FOOTER ================= -->
+    <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace. Connecting you directly to verified local professionals without any middleman commission.
+        </p>
+        <div class="footer-badges">
+          <span class="trust-badge">✓ 100% Commission-Free</span>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Browse Services</a>
+          <a href="/events/">Local Events</a>
+          <a href="/contact/">Get in Touch</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>For Professionals</h4>
+        <p class="footer-cta-subtext">Are you a service provider? Register your business today to get high-quality WhatsApp leads.</p>
+        <a href="/list-your-business/?v=1.4" class="btn-footer-cta">List Your Business</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+      <nav class="footer-bottom-nav">
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms & Conditions</a>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/contact/">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
 
 </body>
 </html>

@@ -20,7 +20,7 @@
   <meta name="keywords" content="Privacy Policy, ServeKerala.in, user data, cookies, personal information">
   
   <!-- Main CSS -->
-  <link rel="stylesheet" href="/assets/css/main.css?v=2.6">
+  <link rel="stylesheet" href="/assets/css/main.css?v=26.1">
   <script src="/assets/js/search.js?v=2.3" defer></script>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
@@ -33,6 +33,8 @@
   </script>
   <!-- =============== END GOOGLE TAG MANAGER =============== -->
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/assets/js/i18n.js?v=26.0" defer></script>
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>
 </head>
 
 <body>
@@ -48,16 +50,7 @@
 <header class="site-header">
   <div class="container">
     <a href="/" class="logo" aria-label="ServeKerala.in Home"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;"></a>
-        <div class="header-search">
-      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
-      <button id="header-search-submit" class="btn-header-search">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-      </button>
-      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
-    </div>
+        
     <nav class="main-nav">
       <a href="/">Home</a>
       <a href="/services/?v=1.4">Services</a>
@@ -78,21 +71,10 @@
   <div class="mobile-nav-links">
     <a href="/">Home</a>
     <a href="/services/">Services</a>
-    <a href="/auto-mithram/">Auto Mithram</a>
     <a href="/contact/">Contact</a>
     <a href="/list-your-business/" class="nav-cta">List Your Business</a>
   </div>
 </div>
-<script>(function(){var h=document.getElementById('hamburger-btn'),o=document.getElementById('mobile-nav-overlay'),d=document.getElementById('mobile-nav-drawer'),c=document.getElementById('mobile-nav-close');function op(){h.classList.add('open');o.classList.add('visible');d.classList.add('open');document.body.style.overflow='hidden';}function cl(){h.classList.remove('open');o.classList.remove('visible');d.classList.remove('open');document.body.style.overflow='';}h.addEventListener('click',function(){d.classList.contains('open')?cl():op();});c.addEventListener('click',cl);o.addEventListener('click',cl);})();</script>
-
-<!-- ================= BREADCRUMBS ================= -->
-<div class="breadcrumb-container">
-  <div class="container">
-    <nav class="breadcrumb">
-      <a href="/">Home</a>
-      <span class="separator"></span>
-      <span class="current">Privacy Policy</span>
-    </nav>
 <script>(function(){var h=document.getElementById('hamburger-btn'),o=document.getElementById('mobile-nav-overlay'),d=document.getElementById('mobile-nav-drawer'),c=document.getElementById('mobile-nav-close');function op(){h.classList.add('open');o.classList.add('visible');d.classList.add('open');document.body.style.overflow='hidden';}function cl(){h.classList.remove('open');o.classList.remove('visible');d.classList.remove('open');document.body.style.overflow='';}h.addEventListener('click',function(){d.classList.contains('open')?cl():op();});c.addEventListener('click',cl);o.addEventListener('click',cl);})();</script>
 
 <!-- ================= BREADCRUMBS ================= -->
@@ -135,6 +117,8 @@
       <li>To operate the search autocomplete redirect directory.</li>
       <li>To process support questions and list submissions.</li>
       <li>To analyze and monitor traffic performance (via Google Analytics and GTM).</li>
+      <li>To send quote requests to the selected business and let its verified account view the request so it can respond.</li>
+      <li>To show business owners aggregated counts of profile views and contact actions; owner reports do not identify individual visitors.</li>
       <li>To identify and prevent fraudulent activities or fake registrations.</li>
     </ul>
 
@@ -164,7 +148,7 @@
 </h2>
 
 <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
-  By submitting a business listing, service provider profile, or Auto Mithram driver registration, you expressly authorize ServeKerala.in to publicly display information provided by you, including but not limited to:
+  By submitting a business listing, service provider profile, you expressly authorize ServeKerala.in to publicly display information provided by you, including but not limited to:
 </p>
 
 <ul style="margin-left: 20px; margin-bottom: 24px; font-size: 15px; color: var(--text-muted); line-height: 1.8;">
@@ -173,7 +157,6 @@
   <li>Phone number and WhatsApp number.</li>
   <li>Location, district, town, and service area.</li>
   <li>Photographs, logos, and listing images.</li>
-  <li>Auto stand information and vehicle details (Auto Mithram).</li>
 </ul>
 
 <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;">
@@ -223,6 +206,7 @@
     <h2 style="font-size: 22px; font-weight: 800; margin-top: 30px; margin-bottom: 12px; color: var(--primary);">5. Data Sharing and Disclosure</h2>
     <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 12px;">We never rent, lease, or sell listing owner data to marketing organizations. We may share information:</p>
     <ul style="margin-left: 20px; margin-bottom: 24px; font-size: 15px; color: var(--text-muted); line-height: 1.8;">
+      <li>With the business you choose when you submit a quote request, so it can contact you about that request.</li>
       <li>To conform to statutory legal requirements or comply with court processes.</li>
       <li>To defend the safety, security, and assets of our visitors or directory publishers.</li>
       <li>With authorized service administrators aiding website maintenance.</li>
@@ -282,17 +266,56 @@
 </section>
 
 <!-- ================= FOOTER ================= -->
-<footer class="site-footer">
-  <div class="container">
-    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
-    <nav class="footer-nav">
-      <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms/">Terms & Conditions</a>
-      <a href="/disclaimer/">Disclaimer</a>
-      <a href="/contact/">Contact Us</a>
-    </nav>
-  </div>
-</footer>
+  <!-- ================= FOOTER ================= -->
+    <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace. Connecting you directly to verified local professionals without any middleman commission.
+        </p>
+        <div class="footer-badges">
+          <span class="trust-badge">✓ 100% Commission-Free</span>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Browse Services</a>
+          <a href="/contact/">Get in Touch</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>For Professionals</h4>
+        <p class="footer-cta-subtext">Are you a service provider? Register your business today to get high-quality WhatsApp leads.</p>
+        <a href="/list-your-business/?v=1.4" class="btn-footer-cta">List Your Business</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+      <nav class="footer-bottom-nav">
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms & Conditions</a>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/contact/">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
 
 </body>
 </html>

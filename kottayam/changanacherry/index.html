@@ -4,13 +4,15 @@
   <meta charset="UTF-8" />
   <title>Local Services in Changanacherry | ServeKerala</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Find verified local service providers in Changanacherry, Kottayam. Browse plumbers, electricians, solar installers and auto stands. Zero commission." />
+  <meta name="description" content="Browse local service categories and provider listings in Changanacherry, Kottayam. Contact businesses directly to confirm availability." />
   <meta name="author" content="ServeKerala.in" />
   <link rel="canonical" href="https://servekerala.in/kottayam/changanacherry/" />
   
 
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="/assets/css/main.css?v=2.6">
+  <!-- Google Fonts Preconnect & Main CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/assets/css/main.css?v=26.1">
   <script src="/assets/js/search.js?v=2.3" defer></script>
 
   <!-- Firebase SDKs -->
@@ -26,6 +28,8 @@
     })(window,document,'script','dataLayer','GTM-PP7859BT');
   </script>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/assets/js/i18n.js?v=26.0" defer></script>
+  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>
 </head>
 
 <body>
@@ -40,20 +44,10 @@
 <header class="site-header">
   <div class="container">
     <a href="/" class="logo" aria-label="ServeKerala.in Home"><img src="/assets/images/logo.png?v=2" alt="ServeKerala.in Logo" style="height: 45px; width: auto;"></a>
-    <div class="header-search">
-      <input type="text" id="header-search-input" placeholder="Search service or city..." autocomplete="off">
-      <button id="header-search-submit" class="btn-header-search">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-      </button>
-      <div id="header-search-dropdown" class="suggestions-dropdown"></div>
-    </div>
+    
     <nav class="main-nav">
       <a href="/">Home</a>
       <a href="/services/">Services</a>
-      <a href="/auto-mithram/">Auto Mithram</a>
       <a href="/list-your-business/" class="nav-cta">List Your Business</a>
       <a href="/contact/">Contact</a>
     </nav>
@@ -71,7 +65,6 @@
   <div class="mobile-nav-links">
     <a href="/">🏠 Home</a>
     <a href="/services/">🔧 Services</a>
-    <a href="/auto-mithram/">🛺 Auto Mithram</a>
     <a href="/contact/">📞 Contact</a>
     <a href="/list-your-business/" class="nav-cta">List Your Business</a>
   </div>
@@ -95,9 +88,9 @@
 <section class="section">
   <div class="container">
     <div style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 48px; border-radius: 24px; margin-bottom: 40px; text-align: center; color: white;">
-        <h1 style="font-size: 40px; font-weight: 800; margin-bottom: 16px;">Verified Services in Changanacherry</h1>
+        <h1 style="font-size: 40px; font-weight: 800; margin-bottom: 16px;">Local Services in Changanacherry</h1>
         <p style="font-size: 18px; opacity: 0.9; max-width: 700px; margin: 0 auto; line-height: 1.6;">
-          Find top-rated professionals for your home and business needs across Changanacherry, Kottayam. Choose a service below to see available providers.
+          Browse service categories and available local business listings in Changanacherry, Kottayam. Contact providers directly to confirm coverage and availability.
         </p>
     </div>
 
@@ -145,41 +138,77 @@
             <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Find water purifier technicians in Changanacherry</p>
           </a>
           
-        <a href="/auto/kottayam/changanacherry/" class="card" style="padding: 24px; text-align: left; height: auto; border-radius: 16px; border: 1px solid rgba(217,119,6,0.3); text-decoration: none; background: var(--accent-light);">
-          <h3 style="font-size: 18px; color: var(--accent-hover); margin-bottom: 8px;">🛺 Auto Mithram</h3>
-          <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Find local Auto stands in Changanacherry</p>
-        </a>
-        
     </div>
 
   </div>
 </section>
 
 <!-- ================= BUSINESS CTA ================= -->
-<section class="business-cta">
-  <div class="container">
-    <h2>Run a Business in Changanacherry?</h2>
-    <p>
-      Connect directly with local customers searching for your services. Get High-Quality Local Leads Directly to Your WhatsApp. No commission fees, no hidden charges.
-    </p>
-    <a href="/list-your-business/?v=1.4" class="btn-accent">
-      Start Getting Leads Today
-    </a>
-  </div>
-</section>
+  <!-- ================= FOR BUSINESS OWNERS ================= -->
+    <!-- ================= FOR BUSINESS OWNERS ================= -->
+  <section class="business-cta">
+    <div class="container">
+      <h2>Grow Your Business with ServeKerala.in</h2>
+      <p>
+        Get High-Quality Local Leads Directly to Your WhatsApp. No commission fees, no hidden charges. Just direct customer inquiries.
+      </p>
+      <a href="/list-your-business/?v=1.4" class="btn-accent">
+        Start Getting Leads Today
+      </a>
+    </div>
+  </section>
 
 <!-- ================= FOOTER ================= -->
-<footer class="site-footer">
-  <div class="container">
-    <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
-    <nav class="footer-nav">
-      <a href="/privacy-policy/">Privacy Policy</a>
-      <a href="/terms/">Terms & Conditions</a>
-      <a href="/disclaimer/">Disclaimer</a>
-      <a href="/contact/">Contact Us</a>
-    </nav>
-  </div>
-</footer>
+  <!-- ================= FOOTER ================= -->
+    <!-- ================= FOOTER ================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">ServeKerala<span>.in</span></div>
+        <p class="footer-tagline">
+          Kerala's premier local marketplace. Connecting you directly to verified local professionals without any middleman commission.
+        </p>
+        <div class="footer-badges">
+          <span class="trust-badge">✓ 100% Commission-Free</span>
+        </div>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Explore Directory</h4>
+        <nav class="footer-links">
+          <a href="/">Home</a>
+          <a href="/services/">Browse Services</a>
+          <a href="/contact/">Get in Touch</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>Top Coverage</h4>
+        <nav class="footer-links">
+          <a href="/kottayam/">Kottayam</a>
+          <a href="/pathanamthitta/">Pathanamthitta</a>
+          <a href="/alappuzha/">Alappuzha</a>
+          <a href="/kollam/">Kollam</a>
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h4>For Professionals</h4>
+        <p class="footer-cta-subtext">Are you a service provider? Register your business today to get high-quality WhatsApp leads.</p>
+        <a href="/list-your-business/?v=1.4" class="btn-footer-cta">List Your Business</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 ServeKerala.in. All rights reserved.</p>
+      <nav class="footer-bottom-nav">
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms & Conditions</a>
+        <a href="/disclaimer/">Disclaimer</a>
+        <a href="/contact/">Contact Us</a>
+      </nav>
+    </div>
+  </footer>
 
 </body>
 </html>

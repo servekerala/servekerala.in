@@ -84,12 +84,12 @@ const services = [
 function generateFaqs(servicePlural, town, district) {
   return `
     <details style="background: var(--bg-surface); padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); cursor: pointer;">
-      <summary style="font-weight: 600; color: var(--text-main); font-size: 16px;">Are these ${servicePlural} in ${town} verified?</summary>
-      <p style="color: var(--text-muted); margin-top: 12px; line-height: 1.6; font-size: 15px;">Yes, ServeKerala.in verifies the contact details and operational status of all listed ${servicePlural} operating in and around ${town}, ${district}. Look for the "✓ Verified" badge on their profile.</p>
+      <summary style="font-weight: 600; color: var(--text-main); font-size: 16px;">How should I confirm a provider is right for my job?</summary>
+      <p style="color: var(--text-muted); margin-top: 12px; line-height: 1.6; font-size: 15px;">Review the provider's profile and contact them directly to confirm service coverage, availability, pricing, and any qualifications needed for your job.</p>
     </details>
     <details style="background: var(--bg-surface); padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); cursor: pointer;">
-      <summary style="font-weight: 600; color: var(--text-main); font-size: 16px;">How do I contact a professional in ${town}?</summary>
-      <p style="color: var(--text-muted); margin-top: 12px; line-height: 1.6; font-size: 15px;">You can contact them directly without any middlemen! Click the "Call" or "WhatsApp" button on their profile card below to instantly connect with them regarding your requirements.</p>
+      <summary style="font-weight: 600; color: var(--text-main); font-size: 16px;">How do I contact a provider?</summary>
+      <p style="color: var(--text-muted); margin-top: 12px; line-height: 1.6; font-size: 15px;">When a listing is available, use its call or WhatsApp option to contact the business directly. If no listing appears yet, browse a nearby town or check back later.</p>
     </details>
     <details style="background: var(--bg-surface); padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); cursor: pointer;">
       <summary style="font-weight: 600; color: var(--text-main); font-size: 16px;">Do you charge any commission for booking?</summary>
@@ -147,9 +147,9 @@ async function generatePages() {
         const middleFile = path.join(middleDir, 'index.html');
         
         const title = `${displayService} in ${district} | ServeKerala`;
-        const metaDesc = `Find and hire the best ${servicePlural} across ${district}. Browse towns and connect with local professionals directly.`;
-        const h1 = `Top Rated ${servicePlural} in ${district}`;
-        const introText = `Looking for reliable <strong>${servicePlural.toLowerCase()} in ${district}</strong>? Choose your specific town below to see a list of verified local experts available in your area.`;
+        const metaDesc = `Browse ${servicePlural.toLowerCase()} by town in ${district}. View available business profiles and contact providers directly.`;
+        const h1 = `${servicePlural} in ${district}`;
+        const introText = `Browse towns in ${district} to find local ${servicePlural.toLowerCase()}. Listing availability varies by town; contact each provider directly to confirm service coverage and availability.`;
         
         const districtTownsHtml = towns.map(t => {
           return `
@@ -193,16 +193,17 @@ async function generatePages() {
         const displayServiceTown = (serviceId === 'solar' || serviceId === 'cctv' || serviceId === 'ac' || serviceId === 'cleaning' || serviceId === 'pest' || serviceId === 'water') ? serviceName : servicePlural;
         
         const titleTown = `${displayServiceTown} in ${town} | ServeKerala`;
-        const metaDesc = `Find and hire the best ${servicePlural} in ${town}, ${district}. Compare ratings, contact providers directly through WhatsApp and phone. Zero commission.`;
-        const h1 = `Top Rated ${servicePlural} in ${town}`;
+        const placeName = town.toLowerCase() === district.toLowerCase() ? town : `${town}, ${district}`;
+        const metaDesc = `Browse local ${servicePlural.toLowerCase()} in ${town}. View available business profiles and contact providers directly.`;
+        const h1 = `${servicePlural} in ${town}`;
         
         // Unique Intro to avoid thin content
         const introText = `
           <p style="margin-bottom: 16px;">
-            Finding reliable and professional <strong>${servicePlural.toLowerCase()} in ${town}, ${district}</strong> doesn't have to be difficult. Whether you need urgent assistance or planning a major project, ServeKerala connects you directly with verified local experts. 
+            Browse local <strong>${servicePlural.toLowerCase()} in ${placeName}</strong>. Check each profile for the services and contact options provided by the business.
           </p>
           <p style="margin-bottom: 16px;">
-            We have curated a list of the top-rated ${serviceName.toLowerCase()} professionals actively serving the <strong>${town}</strong> area. Compare profiles, check verified badges, and contact providers directly through WhatsApp or a phone call. Because we are an open marketplace, you pay absolutely zero commission fees—negotiate directly with the local experts!
+            Listings may vary by area. Contact a provider directly to confirm service coverage, availability, pricing, and any qualifications needed for your project. ServeKerala does not charge customers a booking commission.
           </p>
         `;
         
@@ -213,26 +214,10 @@ async function generatePages() {
         
         const schema = {
           "@context": "https://schema.org",
-          "@type": "Service",
-          "name": servicePlural + " in " + town + ", " + district,
-          "serviceType": serviceName,
-          "provider": {
-            "@type": "LocalBusiness",
-            "name": "ServeKerala.in Verified " + servicePlural,
-            "areaServed": {
-              "@type": "City",
-              "name": town,
-              "containedInPlace": {
-                "@type": "AdministrativeArea",
-                "name": district
-              }
-            }
-          },
-          "areaServed": {
-            "@type": "City",
-            "name": town
-          },
-          "description": metaDesc
+          "@type": "CollectionPage",
+          "name": servicePlural + " in " + placeName,
+          "description": metaDesc,
+          "url": `https://servekerala.in/${districtId}/${serviceSlug}/${townSlug}/`
         };
 
         const schemaScript = `<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>`;
@@ -285,9 +270,9 @@ async function generatePages() {
         }
         const targetFile = path.join(targetDir, 'index.html');
         const title = `Local Services in ${town} | ServeKerala`;
-        const metaDesc = `Find verified local service providers in ${town}, ${district}. Browse plumbers, electricians, solar installers and auto stands. Zero commission.`;
-        const h1 = `Verified Services in ${town}`;
-        const introText = `Find top-rated professionals for your home and business needs across ${town}, ${district}. Choose a service below to see available providers.`;
+        const metaDesc = `Browse local service categories and provider listings in ${town}, ${district}. Contact businesses directly to confirm availability.`;
+        const h1 = `Local Services in ${town}`;
+        const introText = `Browse service categories and available local business listings in ${town}, ${district}. Contact providers directly to confirm coverage and availability.`;
         
         let townServicesHtml = services.map(s => {
           return `
@@ -297,14 +282,6 @@ async function generatePages() {
           </a>
           `;
         }).join('');
-        
-        // Add Auto Mithram card
-        townServicesHtml += `
-        <a href="/auto/${districtId}/${townSlug}/" class="card" style="padding: 24px; text-align: left; height: auto; border-radius: 16px; border: 1px solid rgba(217,119,6,0.3); text-decoration: none; background: var(--accent-light);">
-          <h3 style="font-size: 18px; color: var(--accent-hover); margin-bottom: 8px;">🛺 Auto Mithram</h3>
-          <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Find local Auto stands in ${town}</p>
-        </a>
-        `;
         
         let html = townHubTemplate
           .replace(/\{\{TITLE\}\}/g, title)
@@ -332,9 +309,9 @@ async function generatePages() {
       }
       const targetFile = path.join(targetDir, 'index.html');
       const title = `Local Services in ${district} | ServeKerala`;
-      const metaDesc = `Find verified local service providers in ${district}. Browse plumbers, electricians, solar installers and more. Zero commission, contact directly.`;
-      const h1 = `Verified Services in ${district}`;
-      const introText = `Find top-rated professionals for your home and business needs across ${district}. Choose a service below to see available providers.`;
+      const metaDesc = `Browse local service categories and provider listings in ${district}. Contact businesses directly to confirm availability.`;
+      const h1 = `Local Services in ${district}`;
+      const introText = `Browse service categories and available local business listings across ${district}. Select a town or service to view current listings.`;
       
       let districtServicesHtml = services.map(s => {
         return `
@@ -344,14 +321,6 @@ async function generatePages() {
         </a>
         `;
       }).join('');
-      
-      // Add Auto Mithram card
-      districtServicesHtml += `
-      <a href="/auto-mithram/" class="card" style="padding: 24px; text-align: left; height: auto; border-radius: 16px; border: 1px solid rgba(217,119,6,0.3); text-decoration: none; background: var(--accent-light);">
-        <h3 style="font-size: 18px; color: var(--accent-hover); margin-bottom: 8px;">🛺 Auto Mithram</h3>
-        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Find local Auto stands in ${district}</p>
-      </a>
-      `;
       
       const districtTownsHtml = towns.map(t => {
         return `<li><a href="/${districtId}/${t.toLowerCase()}/" style="color: var(--primary); text-decoration: none;">➜ ${t}</a></li>`;

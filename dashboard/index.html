@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Business Dashboard | ServeKerala.in</title>
+  <link rel="stylesheet" href="/assets/css/main.css?v=26.1">
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="/assets/js/business-dashboard.js?v=1.7" defer></script>
+  <style>
+    .owner-wrap{max-width:1060px;margin:40px auto;padding:0 18px}.owner-card{background:#fff;border:1px solid #dce5df;border-radius:16px;padding:clamp(20px,4vw,36px);box-shadow:0 10px 32px #12351b0c}.owner-narrow{max-width:480px;margin:8vh auto}.owner-muted{color:#52645a;line-height:1.55}.owner-form{display:grid;gap:16px}.owner-form label{display:grid;gap:6px;font-weight:650;color:#1b382a}.owner-form input,.owner-form textarea{width:100%;padding:12px;border:1px solid #b9c8be;border-radius:9px;font:inherit;color:#17251c;background:#fff}.owner-form input:focus,.owner-form textarea:focus{outline:3px solid #0b3b2c26;border-color:#0b3b2c}.owner-actions{display:flex;gap:10px;flex-wrap:wrap}.owner-status{min-height:24px;margin:14px 0;color:#194d35;font-weight:600}.owner-status.error{color:#a12d24}.owner-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}.owner-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:24px 0}.owner-stat{padding:18px;border:1px solid #dce5df;border-radius:12px;background:#f8fbf8}.owner-stat strong{display:block;font-size:28px;color:#0b3b2c}.owner-stat span{font-size:13px;color:#52645a}.owner-list{display:grid;gap:12px;margin:18px 0}.owner-profile{border:1px solid #dce5df;padding:16px;border-radius:12px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.owner-section{margin-top:24px}.owner-notice{background:#fff8e7;border:1px solid #f0d48b;border-radius:10px;padding:14px;color:#5c491b;font-size:14px;line-height:1.5}.owner-small{font-size:13px;color:#52645a}.owner-image-preview{display:block;max-width:180px;max-height:120px;object-fit:contain;border:1px solid #dce5df;border-radius:8px;padding:4px;margin-top:8px}.owner-image-status{min-height:20px;font-size:13px;color:#52645a}@media(max-width:600px){.owner-wrap{margin:20px auto}.owner-actions>*{flex:1}.owner-profile .btn{width:100%}}
+    .owner-service-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;max-height:260px;overflow:auto;padding:12px;border:1px solid #dce5df;border-radius:10px;background:#f8fbf8}.owner-service-option{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid #e1e9e3;border-radius:8px;background:#fff;font-size:14px;font-weight:500;color:#17251c}.owner-service-option input{width:17px;min-width:17px;margin:2px 0 0;accent-color:#0b3b2c}.owner-service-option-empty{grid-column:1/-1;padding:4px;color:#52645a;font-size:13px}
+  </style>
+</head>
+<body>
+  <main class="owner-wrap">
+    <section id="auth-panel" class="owner-card owner-narrow">
+      <h1 style="color:#0b3b2c;margin-top:0">Business owner sign in</h1>
+      <p class="owner-muted">Manage your ServeKerala profile and see customer enquiries. Use the verified email address already listed on your business profile.</p>
+      <form id="auth-form" class="owner-form">
+        <label>Email address<input id="owner-email" type="email" autocomplete="email" required></label>
+        <label>Password<input id="owner-password" type="password" autocomplete="current-password" minlength="8" required></label>
+        <div class="owner-actions"><button class="btn btn-primary" type="submit" data-auth-mode="signin">Sign in</button><button class="btn btn-outline" type="submit" data-auth-mode="signup">Create account</button></div>
+      </form>
+      <button id="reset-password" class="btn btn-outline" type="button" style="margin-top:12px">Forgot password?</button>
+      <p id="auth-status" class="owner-status" role="status" aria-live="polite"></p>
+      <p class="owner-small">New accounts need email verification before profile access. If the profile uses a different email, contact ServeKerala support to update it.</p>
+    </section>
+
+    <section id="verify-panel" class="owner-card owner-narrow" hidden>
+      <h1 style="color:#0b3b2c;margin-top:0">Verify your email</h1>
+      <p class="owner-muted">We sent a verification link to <strong id="verify-email"></strong>. Verify it, then return here and continue.</p>
+      <div class="owner-actions"><button id="refresh-verification" class="btn btn-primary">I verified my email</button><button id="resend-verification" class="btn btn-outline">Resend email</button><button id="verify-signout" class="btn btn-outline">Sign out</button></div>
+      <p id="verify-status" class="owner-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="dashboard-panel" hidden>
+      <div class="owner-card">
+        <div class="owner-top"><div><h1 style="color:#0b3b2c;margin:0">Your business dashboard</h1><p id="signed-in-email" class="owner-muted"></p></div><button id="owner-signout" class="btn btn-outline">Sign out</button></div>
+        <div class="owner-notice">Profile edits update your public listing. Your profile URL, approval, verification badge, and search indexing settings are managed by ServeKerala to protect listing quality.</div>
+        <div id="profile-list" class="owner-list"></div>
+        <p id="dashboard-status" class="owner-status" role="status" aria-live="polite"></p>
+        <section id="edit-section" class="owner-section" hidden>
+          <h2 id="edit-heading" style="color:#0b3b2c">Edit business profile</h2>
+          <div class="owner-grid">
+            <div class="owner-stat"><strong id="metric-views">—</strong><span>Profile views · 30 days</span></div>
+            <div class="owner-stat"><strong id="metric-calls">—</strong><span>Call clicks · 30 days</span></div>
+            <div class="owner-stat"><strong id="metric-whatsapp">—</strong><span>WhatsApp clicks · 30 days</span></div>
+            <div class="owner-stat"><strong id="metric-website">—</strong><span>Website visits · 30 days</span></div>
+            <div class="owner-stat"><strong id="metric-inquiries">—</strong><span>Quote enquiries · 30 days</span></div>
+          </div>
+          <p class="owner-small">Counts are based on interactions ServeKerala recorded in the past 30 days. They show contact intent and may not equal completed calls or sales.</p>
+          <div class="owner-section">
+            <h3 style="color:#0b3b2c">Recent enquiries</h3>
+            <div id="owner-leads" class="owner-list"><p class="owner-small">Select a profile to load enquiries.</p></div>
+          </div>
+          <div class="owner-section">
+            <h3 style="color:#0b3b2c">Where visitors came from</h3>
+            <div id="owner-sources" class="owner-list"><p class="owner-small">Traffic source information will appear as visitors arrive.</p></div>
+          </div>
+          <form id="profile-form" class="owner-form">
+            <label>Business name<input id="profile-name" maxlength="100" required></label>
+            <label>Short introduction<input id="profile-short" maxlength="180"></label>
+            <label>About your business<textarea id="profile-description" rows="6" maxlength="3000"></textarea></label>
+            <div><strong>Services you provide</strong><p class="owner-small">Choose accurate services from ServeKerala’s approved options. Your listing plan sets the limit; selected services appear on your public profile.</p><div id="profile-service-options" class="owner-service-options" role="group" aria-label="Select services offered"><span class="owner-service-option-empty">Loading service options…</span></div><p id="profile-service-selection-status" class="owner-small" aria-live="polite">Loading your listing limit…</p></div>
+            <label>Other genuine services or details <span class="owner-small">Optional. Add specific services that are not in the list, one per line. These are shown on your profile.</span><textarea id="profile-services" rows="4" maxlength="1500"></textarea></label>
+            <label>Service towns or areas<input id="profile-towns" maxlength="300"></label>
+            <label>Phone number<input id="profile-phone" type="tel" maxlength="24"></label>
+            <label>WhatsApp number<input id="profile-whatsapp" type="tel" maxlength="24"></label>
+            <label>Website<input id="profile-website" type="url" maxlength="300" placeholder="https://example.com"></label>
+            <label>Business address<input id="profile-address" maxlength="300"></label>
+            <label>Why customers choose you<textarea id="profile-why" rows="4" maxlength="1200"></textarea></label>
+            <label>Business logo<input id="profile-logo-file" type="file" accept="image/jpeg,image/png,image/webp"><span class="owner-small">Choose a JPG, PNG, or WebP image up to 20 MB. Large images are optimized before upload.</span><img id="profile-logo-preview" class="owner-image-preview" alt="Current business logo preview" hidden><span id="profile-logo-status" class="owner-image-status" role="status" aria-live="polite"></span></label>
+            <label>Cover image<input id="profile-cover-file" type="file" accept="image/jpeg,image/png,image/webp"><span class="owner-small">Choose a JPG, PNG, or WebP image up to 20 MB. Large images are optimized before upload. A clear photo of your work or team helps customers recognize your business.</span><img id="profile-cover-preview" class="owner-image-preview" alt="Current cover image preview" hidden><span id="profile-cover-status" class="owner-image-status" role="status" aria-live="polite"></span></label>
+            <label>SEO page title<input id="profile-seo-title" maxlength="65"><span class="owner-small">Keep it clear and accurate. About 50–60 characters works well.</span></label>
+            <label>SEO description<textarea id="profile-seo-description" rows="3" maxlength="160"></textarea><span class="owner-small">A useful summary for search results, up to 160 characters.</span></label>
+            <p class="owner-small">Add important search phrases naturally in your services, towns, and business description. Google does not use the hidden “meta keywords” tag for rankings, so repeating a keyword list there will not help.</p>
+            <div class="owner-actions"><button class="btn btn-primary" id="save-profile" type="submit">Save profile</button><a id="view-profile" class="btn btn-outline" target="_blank" rel="noopener">View public profile</a></div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
