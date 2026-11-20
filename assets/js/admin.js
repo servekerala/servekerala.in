@@ -31,7 +31,7 @@ if (typeof firebase !== 'undefined') {
   let globalAutoConfig = {};
   let activeServices = [];
   let activeTowns = {};
-  const escapeDirectoryText = value => String(value || '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const escapeDirectoryText = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const normalizeServiceName = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
   const GLOBAL_CONFIG_FALLBACK = {
@@ -116,7 +116,7 @@ if (typeof firebase !== 'undefined') {
       db.collection('page_generator_config').doc('global').get()
     ]).then(([cmsDoc, pgDoc]) => {
       let data = cmsDoc.exists ? cmsDoc.data() : {};
-      
+
       if (!data.categories || !data.categories.length) {
         activeCategories = GLOBAL_CONFIG_FALLBACK.categories;
       } else {
@@ -145,7 +145,7 @@ if (typeof firebase !== 'undefined') {
 
       populateDropdowns();
       renderParameterLists();
-      if(window.setupHierarchicalDirectoryUI) window.setupHierarchicalDirectoryUI();
+      if (window.setupHierarchicalDirectoryUI) window.setupHierarchicalDirectoryUI();
     }).catch(err => {
       console.error("Error loading params:", err);
     });
@@ -166,13 +166,13 @@ if (typeof firebase !== 'undefined') {
 
     if (bcatSelect) bcatSelect.innerHTML = activeCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     if (bpCatSelect) bpCatSelect.innerHTML = activeCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-    
+
     const distOptions = '<option value="">Select District</option>' + activeDistricts.map(d => `<option value="${d.toLowerCase()}">${d}</option>`).join('') + '<option value="Multiple">Multiple (Enter Towns Below)</option>';
-    
+
     if (bdistSelect) bdistSelect.innerHTML = distOptions;
     if (bpDistSelect) bpDistSelect.innerHTML = distOptions;
     if (editAutoDist) editAutoDist.innerHTML = distOptions + '<option value="other">Other District</option>';
-    
+
     if (manageTownDist) {
       const prevTownDist = manageTownDist.value;
       manageTownDist.innerHTML = distOptions;
@@ -183,7 +183,7 @@ if (typeof firebase !== 'undefined') {
       manageLocDist.innerHTML = distOptions;
       if (prevLocDist) manageLocDist.value = prevLocDist;
     }
-    
+
     if (editAutoTown) editAutoTown.innerHTML = '';
     if (editAutoLocality) editAutoLocality.innerHTML = '';
   }
@@ -257,9 +257,9 @@ if (typeof firebase !== 'undefined') {
         serviceCatalogContainer.innerHTML = '<p style="font-size:13px;color:var(--text-muted);margin:4px;">No service options configured yet.</p>';
       } else {
         serviceCatalogContainer.innerHTML = activeCategories.map(category => {
-          const services = activeServices.map((service, index) => ({service, index})).filter(entry => entry.service.categoryId === category.id);
+          const services = activeServices.map((service, index) => ({ service, index })).filter(entry => entry.service.categoryId === category.id);
           if (!services.length) return '';
-          return `<section style="margin-bottom:14px;"><h6 style="margin:0 0 8px;color:var(--primary);font-size:14px;">${escapeDirectoryText(category.name)}</h6>${services.map(({service, index}) => `
+          return `<section style="margin-bottom:14px;"><h6 style="margin:0 0 8px;color:var(--primary);font-size:14px;">${escapeDirectoryText(category.name)}</h6>${services.map(({ service, index }) => `
             <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 10px;background:var(--bg-base);border-radius:6px;margin-bottom:6px;font-size:14px;border:1px solid var(--border-color);">
               <span><strong style="color:var(--text-main);">${escapeDirectoryText(service.name)}</strong> <span style="font-size:12px;color:var(--text-muted);">(${escapeDirectoryText(service.id)})</span></span>
               <button type="button" class="btn-delete-service-option" data-index="${index}" aria-label="Remove ${escapeDirectoryText(service.name)}" style="background:none;border:none;color:#dc2626;font-size:18px;font-weight:bold;cursor:pointer;padding:0 4px;">&times;</button>
@@ -314,7 +314,7 @@ if (typeof firebase !== 'undefined') {
     const selLocDistVal = document.getElementById('manage-locality-district-select')?.value;
     const selLocDistKey = activeDistricts.find(d => d.toLowerCase() === selLocDistVal);
     const selLocTownKey = document.getElementById('manage-locality-town-select')?.value;
-    
+
     if (localityContainer) {
       if (!selLocTownKey) {
         localityContainer.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); padding: 4px;">Please select Town first.</p>';
@@ -346,12 +346,12 @@ if (typeof firebase !== 'undefined') {
 
   function saveDirectoryParameters() {
     activeDistricts = Object.keys(globalAutoConfig);
-    
+
     const p1 = db.collection('cms_settings').doc('global').update({
       categories: activeCategories,
       services: activeServices
     });
-    
+
     const p2 = db.collection('page_generator_config').doc('global').set({
       auto_mithram: globalAutoConfig
     }, { merge: true });
@@ -360,7 +360,7 @@ if (typeof firebase !== 'undefined') {
       localStorage.removeItem('cms_settings'); // Clear cache
       populateDropdowns();
       renderParameterLists();
-      
+
       const autoTextarea = document.getElementById('pg-auto-config');
       if (autoTextarea) autoTextarea.value = JSON.stringify(globalAutoConfig, null, 2);
 
@@ -379,8 +379,7 @@ if (typeof firebase !== 'undefined') {
     const loginError = document.getElementById('login-error-message');
     const signoutBtn = document.getElementById('admin-signout-btn');
     const userEmailSpan = document.getElementById('admin-user-email');
-    const adminNavAccount = document.getElementById('admin-nav-account');
-    
+
     const contentTypeBtns = document.querySelectorAll('.content-type-btn');
     const tabBtns = document.querySelectorAll('.admin-tab-btn');
     const listingsContainer = document.getElementById('admin-listings-container');
@@ -423,26 +422,26 @@ if (typeof firebase !== 'undefined') {
     let unsubscribeSnapshot = null;
 
     // ==================== AUTH OBSERVATION ====================
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        // Logged In
-        loginContainer.classList.add('hidden');
-        dashboardContainer.classList.remove('hidden');
-        userEmailSpan.textContent = user.email;
-        adminNavAccount.hidden = false;
+    // Server session (sk_admin_session) is already validated by edge middleware and server.
+    // Ensure dashboard container is visible and active on /admin.
+    if (dashboardContainer) dashboardContainer.classList.remove('hidden');
+    if (loginContainer) loginContainer.classList.add('hidden');
+    if (adminNavAccount) adminNavAccount.hidden = false;
+    if (userEmailSpan) userEmailSpan.textContent = 'servekerala.in@gmail.com';
+
+    if (auth) {
+      auth.onAuthStateChanged((user) => {
+        if (user && user.email) {
+          if (userEmailSpan) userEmailSpan.textContent = user.email;
+        } else {
+          if (userEmailSpan) userEmailSpan.textContent = 'servekerala.in@gmail.com';
+        }
         initializeDashboard();
         loadDirectoryParameters().catch(err => console.warn('Directory parameters fallback:', err));
-      } else {
-        // Logged Out
-        adminNavAccount.hidden = true;
-        dashboardContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-        loginForm.reset();
-        if (unsubscribeSnapshot) {
-          unsubscribeSnapshot();
-        }
-      }
-    });
+      });
+    } else {
+      initializeDashboard();
+    }
 
     // ==================== LOGIN / SIGNOUT ====================
     if (loginForm) {
@@ -522,11 +521,6 @@ if (typeof firebase !== 'undefined') {
 
     // ==================== DASHBOARD LOAD & SNAPSHOT ====================
     function initializeDashboard() {
-      const performanceSummary = document.getElementById('admin-click-summary');
-      if (performanceSummary) {
-        performanceSummary.style.display = ['listings', 'business_pages', 'auto_mithram'].includes(activeCollection) ? 'flex' : 'none';
-      }
-
       if (unsubscribeSnapshot) {
         unsubscribeSnapshot(); // Stop listening to previous collection
       }
@@ -612,7 +606,7 @@ if (typeof firebase !== 'undefined') {
         if (bpBar) bpBar.style.display = 'none';
         loadCmsSettings();
         return;
-                  } else if (activeCollection === 'page_generator') {
+      } else if (activeCollection === 'page_generator') {
         listingsContainer.style.display = 'none';
         statusTabs.style.display = 'none';
         cmsContainer.style.display = 'none';
@@ -966,18 +960,18 @@ if (typeof firebase !== 'undefined') {
 
     function updateListingStatus(id, status) {
       db.collection(activeCollection).doc(id).update({ status: status })
-      .then(() => {
-        showDashboardStatus(`Item successfully moved to ${status}.`, 'alert-success');
-      })
-      .catch((error) => {
-        console.error('Error updating status:', error);
-        showDashboardStatus('Failed to update status. Try refreshing.', 'alert-error');
-      });
+        .then(() => {
+          showDashboardStatus(`Item successfully moved to ${status}.`, 'alert-success');
+        })
+        .catch((error) => {
+          console.error('Error updating status:', error);
+          showDashboardStatus('Failed to update status. Try refreshing.', 'alert-error');
+        });
     }
 
     // ==================== UI TOGGLES (CONTENT TYPE & STATUS TABS) ====================
     contentTypeBtns.forEach(btn => {
-      btn.addEventListener('click', function(e) {
+      btn.addEventListener('click', function (e) {
         e.preventDefault();
         const targetBtn = this || e.currentTarget || (e.target && e.target.closest('.content-type-btn'));
         if (!targetBtn) return;
@@ -1006,7 +1000,7 @@ if (typeof firebase !== 'undefined') {
     });
 
     // ==================== EDIT MODALS ====================
-    
+
     // BUSINESS MODAL
     function openEditModal(id) {
       const doc = allDocuments.find(d => d.id === id);
@@ -1062,14 +1056,14 @@ if (typeof firebase !== 'undefined') {
           address: document.getElementById('edit-baddress').value.trim(),
           mapUrl: document.getElementById('edit-bmap').value.trim()
         })
-        .then(() => {
-          closeEditModal();
-          showDashboardStatus('Listing updated successfully.', 'alert-success');
-        })
-        .catch((error) => {
-          console.error('Error updating details:', error);
-          showDashboardStatus('Failed to save listing edits.', 'alert-error');
-        });
+          .then(() => {
+            closeEditModal();
+            showDashboardStatus('Listing updated successfully.', 'alert-success');
+          })
+          .catch((error) => {
+            console.error('Error updating details:', error);
+            showDashboardStatus('Failed to save listing edits.', 'alert-error');
+          });
       });
     }
 
@@ -1148,15 +1142,15 @@ if (typeof firebase !== 'undefined') {
       document.querySelectorAll('.bp-hours-row').forEach(row => {
         const day = row.getAttribute('data-day');
         const dayConfig = hours[day] || { closed: day === 'sunday', open: day !== 'sunday', open24Hours: false, openTime: '09:00', closeTime: '18:00' };
-        
+
         const closedCheck = row.querySelector('.bp-hour-closed');
         const open24hCheck = row.querySelector('.bp-hour-24h');
         const openInput = row.querySelector('.bp-hour-open');
         const closeInput = row.querySelector('.bp-hour-close');
-        
+
         closedCheck.checked = !!dayConfig.closed;
         open24hCheck.checked = !!dayConfig.open24Hours;
-        
+
         if (dayConfig.closed) {
           openInput.disabled = true;
           closeInput.disabled = true;
@@ -1223,16 +1217,16 @@ if (typeof firebase !== 'undefined') {
       if (document.getElementById('bp-shortdesc').value.trim() && document.getElementById('bp-desc').value.trim()) score += 15;
       if (document.getElementById('bp-district').value && document.getElementById('bp-towns').value.trim()) score += 10;
       if (document.getElementById('bp-address').value.trim()) score += 10;
-      
+
       const phone = document.getElementById('bp-phone').value.trim();
       const wa = document.getElementById('bp-whatsapp').value.trim();
       const email = document.getElementById('bp-email').value.trim();
       if (phone && wa && email) score += 15;
-      
+
       const logoUrl = document.getElementById('bp-logo-url').value.trim();
       const coverUrl = document.getElementById('bp-cover-url').value.trim();
       if (logoUrl || coverUrl) score += 10;
-      
+
       let checkedDaysCount = 0;
       document.querySelectorAll('.bp-hours-row').forEach(row => {
         if (row.querySelector('.bp-hour-closed').checked || row.querySelector('.bp-hour-24h').checked || (row.querySelector('.bp-hour-open').value && row.querySelector('.bp-hour-close').value)) {
@@ -1240,10 +1234,10 @@ if (typeof firebase !== 'undefined') {
         }
       });
       if (checkedDaysCount === 7) score += 10;
-      
+
       const servicesChecked = Array.from(document.querySelectorAll('input[name="bp-services-arr"]:checked'));
       if (servicesChecked.length > 0) score += 10;
-      
+
       const textEl = document.getElementById('bp-completeness-text');
       if (textEl) {
         textEl.textContent = `${score}%`;
@@ -1269,11 +1263,11 @@ if (typeof firebase !== 'undefined') {
         const urlInput = document.getElementById('bp-logo-url');
         const preview = document.getElementById('bp-logo-preview');
         if (!file) return;
-        
+
         preview.src = URL.createObjectURL(file);
         preview.style.display = 'block';
         urlInput.value = 'Uploading...';
-        
+
         const path = `logos/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
         storage.ref().child(path).put(file)
           .then(snapshot => snapshot.ref.getDownloadURL())
@@ -1295,11 +1289,11 @@ if (typeof firebase !== 'undefined') {
         const urlInput = document.getElementById('bp-cover-url');
         const preview = document.getElementById('bp-cover-preview');
         if (!file) return;
-        
+
         preview.src = URL.createObjectURL(file);
         preview.style.display = 'block';
         urlInput.value = 'Uploading...';
-        
+
         const path = `covers/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
         storage.ref().child(path).put(file)
           .then(snapshot => snapshot.ref.getDownloadURL())
@@ -1321,27 +1315,27 @@ if (typeof firebase !== 'undefined') {
         const jsonText = document.getElementById('bp-gallery-json');
         const previewContainer = document.getElementById('bp-gallery-preview-container');
         if (files.length === 0) return;
-        
+
         previewContainer.innerHTML = '';
         let currentGallery = [];
         try {
           currentGallery = JSON.parse(jsonText.value || '[]');
-        } catch(err) {}
-        
+        } catch (err) { }
+
         let uploadPromises = files.map((file, idx) => {
           const path = `gallery/${Date.now()}-${idx}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-          
+
           const img = document.createElement('img');
           img.className = 'preview-thumbnail';
           img.src = URL.createObjectURL(file);
           img.style.display = 'block';
           previewContainer.appendChild(img);
-          
+
           return storage.ref().child(path).put(file)
             .then(snapshot => snapshot.ref.getDownloadURL())
             .then(url => ({ url, altText: file.name }));
         });
-        
+
         Promise.all(uploadPromises).then(newImages => {
           currentGallery = currentGallery.concat(newImages);
           jsonText.value = JSON.stringify(currentGallery, null, 2);
@@ -1442,7 +1436,7 @@ if (typeof firebase !== 'undefined') {
         if (formBP) formBP.reset();
         document.getElementById('bp-listing-tier').value = 'regular';
         if (slugPreview) slugPreview.textContent = 'your-slug';
-        
+
         document.getElementById('bp-logo-preview').style.display = 'none';
         document.getElementById('bp-cover-preview').style.display = 'none';
         document.getElementById('bp-gallery-preview-container').innerHTML = '';
@@ -1501,7 +1495,7 @@ if (typeof firebase !== 'undefined') {
           const day = row.getAttribute('data-day');
           const isClosed = row.querySelector('.bp-hour-closed').checked;
           const is24h = row.querySelector('.bp-hour-24h').checked;
-          
+
           hoursObj[day] = {
             closed: isClosed,
             open: !isClosed,
@@ -1515,7 +1509,7 @@ if (typeof firebase !== 'undefined') {
         let galleryArray = [];
         try {
           galleryArray = JSON.parse(document.getElementById('bp-gallery-json').value || '[]');
-        } catch(err) {
+        } catch (err) {
           alert('Invalid Business Gallery JSON. Please correct it.');
           return;
         }
@@ -1539,7 +1533,7 @@ if (typeof firebase !== 'undefined') {
           ownerEmail: document.getElementById('bp-owner-email').value.trim().toLowerCase(),
           website: document.getElementById('bp-website').value.trim(),
           description: document.getElementById('bp-desc').value.trim(),
-          
+
           // Legacy fallbacks
           servicesOffered: serviceNames.join('\n'),
           whyChooseUs: document.getElementById('bp-whychoose').value.trim(),
@@ -1554,7 +1548,7 @@ if (typeof firebase !== 'undefined') {
           serviceIds: serviceIds,
           shortDescription: document.getElementById('bp-shortdesc').value.trim(),
           establishedYear: document.getElementById('bp-established').value.trim() ? parseInt(document.getElementById('bp-established').value.trim(), 10) : null,
-          
+
           logo: logoUrl ? { url: logoUrl, altText: document.getElementById('bp-name').value.trim() + ' Logo' } : null,
           coverImage: coverUrl ? { url: coverUrl, altText: document.getElementById('bp-name').value.trim() + ' Cover' } : null,
           gallery: galleryArray,
@@ -1644,13 +1638,13 @@ if (typeof firebase !== 'undefined') {
       const services = doc.servicesOffered ? doc.servicesOffered.split('\n').filter(Boolean) : [];
       const whyList = doc.whyChooseUs ? doc.whyChooseUs.split('\n').filter(Boolean) : [];
 
-      
+
       const schemaTypeMap = { plumbing: 'Plumber', electrical: 'Electrician', ac: 'HVACBusiness' };
       const schemaType = schemaTypeMap[category] || 'LocalBusiness';
 
       const catIcons = { solar: '☀️', plumbing: '🔧', electrical: '⚡', ac: '❄️', cctv: '📷', cleaning: '🧹', pest: '🐛', water: '💧', default: '🏢' };
       const icon = catIcons[category] || catIcons.default;
-      const whyIcons = ['⭐','🔒','💡','🚀','🎯','🏆','✅','💎'];
+      const whyIcons = ['⭐', '🔒', '💡', '🚀', '🎯', '🏆', '✅', '💎'];
 
       const servicesHTML = services.length ? `
   <!-- SERVICES -->
@@ -1669,7 +1663,7 @@ if (typeof firebase !== 'undefined') {
     <div class="container">
       <h2>Why Choose ${name}?</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:20px;">
-        ${whyList.map((w, i) => `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;text-align:center;"><div style="font-size:28px;margin-bottom:8px;">${whyIcons[i%8]}</div><p style="font-size:14px;font-weight:600;margin:0;">${w}</p></div>`).join('')}
+        ${whyList.map((w, i) => `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;text-align:center;"><div style="font-size:28px;margin-bottom:8px;">${whyIcons[i % 8]}</div><p style="font-size:14px;font-weight:600;margin:0;">${w}</p></div>`).join('')}
       </div>
     </div>
   </section>` : '';
@@ -1692,7 +1686,7 @@ if (typeof firebase !== 'undefined') {
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"><\/script>
   <script src="/assets/js/activity-tracker.js?v=1.7" defer><\/script>
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PP7859BT');<\/script>
-  <script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@type':'LocalBusiness',name,description:desc,url:`https://servekerala.in/business/${slug}/`,telephone:phone,address:{'@type':'PostalAddress',addressRegion:'Kerala',addressCountry:'IN',addressLocality:district}})}<\/script>
+  <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'LocalBusiness', name, description: desc, url: `https://servekerala.in/business/${slug}/`, telephone: phone, address: { '@type': 'PostalAddress', addressRegion: 'Kerala', addressCountry: 'IN', addressLocality: district } })}<\/script>
 </head>
 <body>
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PP7859BT" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -1733,7 +1727,7 @@ if (typeof firebase !== 'undefined') {
         <p style="color:rgba(255,255,255,0.82);font-size:17px;margin:0;line-height:1.6;max-width:680px;">${desc}</p>
         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;">
           ${district ? `<span style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;">📍 ${district}, Kerala</span>` : ''}
-          ${category ? `<span style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;">💼 ${category.charAt(0).toUpperCase()+category.slice(1)}</span>` : ''}
+          ${category ? `<span style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;">💼 ${category.charAt(0).toUpperCase() + category.slice(1)}</span>` : ''}
           <span style="background:rgba(134,239,172,0.2);border:1px solid rgba(134,239,172,0.4);padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;color:#bbf7d0;">✅ Verified Listing</span>
         </div>
       </div>
@@ -1750,8 +1744,8 @@ if (typeof firebase !== 'undefined') {
     <h2>Contact ${name}</h2>
     <div class="grid grid-3" style="margin-top:20px;">
       ${phone ? `<div class="info-box" style="text-align:center;"><h3>📞 Phone</h3><p><a href="tel:${phone}" onclick="if(typeof dataLayer!=='undefined')dataLayer.push({event:'business_click',business_name:'${name}',action_type:'call'});if(typeof trackListingClick==='function')trackListingClick('/business/${slug}/','call');"><strong>Call Now</strong></a></p></div>` : ''}
-      ${wa ? `<div class="info-box" style="text-align:center;"><h3>💬 WhatsApp</h3><p><a href="https://wa.me/${wa.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" onclick="if(typeof dataLayer!=='undefined')dataLayer.push({event:'business_click',business_name:'${name}',action_type:'whatsapp'});if(typeof trackListingClick==='function')trackListingClick('/business/${slug}/','whatsapp');"><strong>Chat on WhatsApp</strong></a></p></div>` : ''}
-      ${email ? `<div class="info-box" style="text-align:center;"><h3>✉️ Email</h3><p><a href="mailto:${email}">${email}</a></p></div>` : `<div class="info-box"><h3>Business Type</h3><p>${category ? category.charAt(0).toUpperCase()+category.slice(1) : 'Local Service'}</p></div>`}
+      ${wa ? `<div class="info-box" style="text-align:center;"><h3>💬 WhatsApp</h3><p><a href="https://wa.me/${wa.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener" onclick="if(typeof dataLayer!=='undefined')dataLayer.push({event:'business_click',business_name:'${name}',action_type:'whatsapp'});if(typeof trackListingClick==='function')trackListingClick('/business/${slug}/','whatsapp');"><strong>Chat on WhatsApp</strong></a></p></div>` : ''}
+      ${email ? `<div class="info-box" style="text-align:center;"><h3>✉️ Email</h3><p><a href="mailto:${email}">${email}</a></p></div>` : `<div class="info-box"><h3>Business Type</h3><p>${category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Local Service'}</p></div>`}
     </div>
   </div>
 </section>
@@ -1766,7 +1760,7 @@ ${whyHTML}
       <div>
         ${address ? `<h2 style="margin-bottom:16px;">Location</h2><p style="font-size:16px;color:var(--text-muted);">${address}</p>${mapHTML}${gbpButtonHTML}` : ''}
         ${towns ? `<p style="margin-top:20px;"><strong>Service Areas:</strong> ${towns}</p>` : ''}
-        ${website ? `<p style="margin-top:16px;"><strong>Official Website:</strong> <a href="${website}" target="_blank" rel="noopener" style="color:var(--primary);">${website.replace(/^https?:\/\//,'')}</a></p>` : ''}
+        ${website ? `<p style="margin-top:16px;"><strong>Official Website:</strong> <a href="${website}" target="_blank" rel="noopener" style="color:var(--primary);">${website.replace(/^https?:\/\//, '')}</a></p>` : ''}
       </div>
       <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:24px;text-align:center;">
         <div style="font-size:40px;margin-bottom:10px;">🛡️</div>
@@ -1814,14 +1808,14 @@ ${whyHTML}
       const distSelect = document.getElementById('edit-auto-dist');
       const townSelect = document.getElementById('edit-auto-town');
       const localitySelect = document.getElementById('edit-auto-locality');
-      
+
       if (!distSelect || !townSelect || !localitySelect) return;
-      
+
       // Populate Districts
       const districts = Object.keys(globalAutoConfig);
       distSelect.innerHTML = '<option value="">Select District</option>' + districts.map(d => `<option value="${d.toLowerCase()}">${d}</option>`).join('');
       distSelect.innerHTML += '<option value="other">Other District</option>';
-      
+
       function updateTowns() {
         const distVal = distSelect.value;
         if (distVal === 'other' || distVal === '') {
@@ -1829,7 +1823,7 @@ ${whyHTML}
           localitySelect.innerHTML = '<option value="">Select Locality</option>';
           return;
         }
-        
+
         const distKey = Object.keys(globalAutoConfig).find(d => d.toLowerCase() === (distVal || '').toLowerCase());
         if (distKey && globalAutoConfig[distKey]) {
           const towns = Object.keys(globalAutoConfig[distKey]);
@@ -1839,12 +1833,12 @@ ${whyHTML}
         }
         updateLocalities();
       }
-      
+
       function updateLocalities() {
         const distVal = distSelect.value;
         const townVal = townSelect.value;
         const distKey = Object.keys(globalAutoConfig).find(d => d.toLowerCase() === (distVal || '').toLowerCase());
-        
+
         if (distKey && townVal && globalAutoConfig[distKey] && globalAutoConfig[distKey][townVal]) {
           const locs = globalAutoConfig[distKey][townVal];
           localitySelect.innerHTML = '<option value="">Select Locality</option>' + locs.map(l => `<option value="${l}">${l}</option>`).join('');
@@ -1852,13 +1846,13 @@ ${whyHTML}
           localitySelect.innerHTML = '<option value="">Select Locality</option>';
         }
       }
-      
+
       if (!distSelect.hasAttribute('data-bound')) {
         distSelect.setAttribute('data-bound', 'true');
         distSelect.addEventListener('change', updateTowns);
         townSelect.addEventListener('change', updateLocalities);
       }
-      
+
       // Set initial values
       distSelect.value = selectedDist || '';
       updateTowns();
@@ -1884,14 +1878,14 @@ ${whyHTML}
       document.getElementById('edit-auto-id').value = id;
       document.getElementById('edit-auto-name').value = doc.driverName || '';
       document.getElementById('edit-auto-vehicle').value = doc.vehicleNumber || '';
-      
+
       const parts = (doc.standLocation || "").split(',').map(s => s.trim());
       const selectedDist = doc.district || 'other';
       const selectedTown = doc.town || parts[2] || parts[1] || '';
       const selectedLocality = doc.locality || parts[1] || '';
-      
+
       setupDynamicEditAutoDropdowns(selectedDist, selectedTown, selectedLocality);
-      
+
       document.getElementById('edit-auto-stand').value = doc.autoStand || parts[0] || '';
       document.getElementById('edit-auto-phone').value = doc.phone || '';
       document.getElementById('edit-auto-wa').value = doc.whatsapp || '';
@@ -1930,14 +1924,14 @@ ${whyHTML}
           whatsapp: document.getElementById('edit-auto-wa').value.trim(),
           availableHours: document.getElementById('edit-auto-time').value.trim()
         })
-        .then(() => {
-          closeEditAutoModal();
-          showDashboardStatus('Auto Mithram profile updated.', 'alert-success');
-        })
-        .catch((error) => {
-          console.error('Error updating details:', error);
-          showDashboardStatus('Failed to save edits.', 'alert-error');
-        });
+          .then(() => {
+            closeEditAutoModal();
+            showDashboardStatus('Auto Mithram profile updated.', 'alert-success');
+          })
+          .catch((error) => {
+            console.error('Error updating details:', error);
+            showDashboardStatus('Failed to save edits.', 'alert-error');
+          });
       });
     }
 
@@ -1963,7 +1957,7 @@ ${whyHTML}
     if (cmsForm) {
       cmsForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        
+
         if (btnSaveCms) {
           btnSaveCms.disabled = true;
           btnSaveCms.textContent = 'Saving...';
@@ -1980,21 +1974,21 @@ ${whyHTML}
         };
 
         db.collection('cms_settings').doc('global').set(newSettings, { merge: true })
-        .then(() => {
-          // Clear the localStorage cache so the frontend fetches the fresh data across all tabs
-          localStorage.removeItem('cms_settings');
-          showDashboardStatus('Global settings updated successfully! Refresh main site to see changes.', 'alert-success');
-        })
-        .catch((error) => {
-          console.error('Error saving CMS settings:', error);
-          showDashboardStatus('Failed to save CMS settings.', 'alert-error');
-        })
-        .finally(() => {
-          if (btnSaveCms) {
-            btnSaveCms.disabled = false;
-            btnSaveCms.textContent = 'Save Global Settings';
-          }
-        });
+          .then(() => {
+            // Clear the localStorage cache so the frontend fetches the fresh data across all tabs
+            localStorage.removeItem('cms_settings');
+            showDashboardStatus('Global settings updated successfully! Refresh main site to see changes.', 'alert-success');
+          })
+          .catch((error) => {
+            console.error('Error saving CMS settings:', error);
+            showDashboardStatus('Failed to save CMS settings.', 'alert-error');
+          })
+          .finally(() => {
+            if (btnSaveCms) {
+              btnSaveCms.disabled = false;
+              btnSaveCms.textContent = 'Save Global Settings';
+            }
+          });
       });
     }
 
@@ -2010,12 +2004,12 @@ ${whyHTML}
     }
 
     // Bind Parameter Add Buttons
-    
-    window.setupHierarchicalDirectoryUI = function() {
+
+    window.setupHierarchicalDirectoryUI = function () {
       const manageTownDist = document.getElementById('manage-town-district-select');
       const newTownInput = document.getElementById('new-town-input');
       const btnAddTown = document.getElementById('btn-add-town');
-      
+
       const manageLocDist = document.getElementById('manage-locality-district-select');
       const manageLocTown = document.getElementById('manage-locality-town-select');
       const newLocalityInput = document.getElementById('new-locality-input');
@@ -2090,7 +2084,7 @@ ${whyHTML}
             newServiceName.focus();
             return showDashboardStatus(`“${duplicate.name}” is already listed under ${existingCategory}. Choose a different service.`, 'alert-error');
           }
-          activeServices.push({id, categoryId, name});
+          activeServices.push({ id, categoryId, name });
           newServiceName.value = '';
           newServiceId.value = '';
           delete newServiceId.dataset.userEdited;
@@ -2147,7 +2141,7 @@ ${whyHTML}
           manageLocTown.dispatchEvent(new Event('change'));
         });
       }
-      
+
       if (manageLocTown) {
         manageLocTown.addEventListener('change', () => {
           if (manageLocTown.value) {
@@ -2180,22 +2174,22 @@ ${whyHTML}
         });
       }
     };
-    
+
     // Bind the old parameter add buttons is now handled by setupHierarchicalDirectoryUI
     // ==================== KPI DASHBOARD ====================
     const kpiForm = document.getElementById('kpi-report-form');
     const kpiTableBody = document.getElementById('kpi-table-body');
-    
+
     function loadKPIReports() {
       if (!kpiTableBody) return;
       kpiTableBody.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading reports...</td></tr>';
-      
+
       db.collection('kpi_reports').orderBy('weekStart', 'desc').get().then((snapshot) => {
         if (snapshot.empty) {
           kpiTableBody.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">No reports logged yet.</td></tr>';
           return;
         }
-        
+
         let html = '';
         snapshot.forEach(doc => {
           const data = doc.data();
@@ -2215,16 +2209,16 @@ ${whyHTML}
         kpiTableBody.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: #dc2626;">Error loading reports.</td></tr>';
       });
     }
-    
+
     if (kpiForm) {
       kpiForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const weekStart = document.getElementById('kpi-week').value;
         if (!weekStart) return;
-        
+
         const btnSave = document.getElementById('btn-save-kpi');
         if (btnSave) { btnSave.disabled = true; btnSave.textContent = 'Saving...'; }
-        
+
         const data = {
           weekStart: weekStart,
           users: parseInt(document.getElementById('kpi-users').value) || 0,
@@ -2239,7 +2233,7 @@ ${whyHTML}
           newDistricts: parseInt(document.getElementById('kpi-new-districts').value) || 0,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
-        
+
         db.collection('kpi_reports').doc(weekStart).set(data)
           .then(() => {
             showDashboardStatus('KPI Report saved successfully.', 'alert-success');
@@ -2274,10 +2268,10 @@ ${whyHTML}
 
       // 1. Fetch businesses, analytics_events, and leads concurrently
       Promise.all([
-        db.collection('listings').where('status', '==', 'approved').get().catch(() => ({ forEach: () => {} })),
-        db.collection('business_pages').get().catch(() => ({ forEach: () => {} })),
-        db.collection('analytics_events').get().catch(() => ({ forEach: () => {} })),
-        db.collection('leads').get().catch(() => ({ forEach: () => {} }))
+        db.collection('listings').where('status', '==', 'approved').get().catch(() => ({ forEach: () => { } })),
+        db.collection('business_pages').get().catch(() => ({ forEach: () => { } })),
+        db.collection('analytics_events').get().catch(() => ({ forEach: () => { } })),
+        db.collection('leads').get().catch(() => ({ forEach: () => { } }))
       ]).then(([listingsSnap, bizPagesSnap, eventsSnap, leadsSnap]) => {
         let businesses = [];
         listingsSnap.forEach(doc => {
@@ -2756,7 +2750,7 @@ ${whyHTML}
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `ServeKerala_Performance_Report_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute('download', `ServeKerala_Performance_Report_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -2860,7 +2854,7 @@ ${whyHTML}
     }, 1000);
 
 
-  
+
     // ==================== SEO SETTINGS LOGIC ====================
     function loadSeoSettings() {
       db.collection('site_seo').doc('global').get().then((doc) => {
@@ -2891,7 +2885,7 @@ ${whyHTML}
     if (seoForm) {
       seoForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        
+
         const btnSaveSeo = document.getElementById('btn-save-seo');
         if (btnSaveSeo) {
           btnSaveSeo.disabled = true;
@@ -2942,140 +2936,140 @@ ${whyHTML}
     };
 
     const defaultAutoConfig = {
-  "pathanamthitta": {
-    "thiruvalla": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "pushpagiri-medical-college",
-      "believers-medical-college",
-      "government-hospital"
-    ],
-    "adoor": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "pathanamthitta": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "kozhencherry": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "pandalam": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "ranni": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ]
-  },
-  "kottayam": {
-    "kottayam": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "medical-college",
-      "district-hospital"
-    ],
-    "changanassery": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "ettumanoor": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "pala": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "vaikom": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ]
-  },
-  "alappuzha": {
-    "alappuzha": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "district-hospital",
-      "medical-college"
-    ],
-    "cherthala": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "kayamkulam": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "haripad": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "mavelikkara": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ]
-  },
-  "kollam": {
-    "kollam": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "district-hospital"
-    ],
-    "karunagappally": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "kottarakkara": [
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "punalur": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ],
-    "paravur": [
-      "railway-station",
-      "ksrtc-bus-stand",
-      "private-bus-stand",
-      "government-hospital"
-    ]
-  }
-};
+      "pathanamthitta": {
+        "thiruvalla": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "pushpagiri-medical-college",
+          "believers-medical-college",
+          "government-hospital"
+        ],
+        "adoor": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "pathanamthitta": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "kozhencherry": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "pandalam": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "ranni": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ]
+      },
+      "kottayam": {
+        "kottayam": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "medical-college",
+          "district-hospital"
+        ],
+        "changanassery": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "ettumanoor": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "pala": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "vaikom": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ]
+      },
+      "alappuzha": {
+        "alappuzha": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "district-hospital",
+          "medical-college"
+        ],
+        "cherthala": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "kayamkulam": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "haripad": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "mavelikkara": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ]
+      },
+      "kollam": {
+        "kollam": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "district-hospital"
+        ],
+        "karunagappally": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "kottarakkara": [
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "punalur": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ],
+        "paravur": [
+          "railway-station",
+          "ksrtc-bus-stand",
+          "private-bus-stand",
+          "government-hospital"
+        ]
+      }
+    };
 
     function loadPageGeneratorSettings() {
       db.collection('page_generator_config').doc('global').get().then((doc) => {
         const data = doc.exists ? doc.data() : {};
-        
+
         const serviceData = data.service_directory || defaultServiceConfig;
         const autoData = data.auto_mithram || defaultAutoConfig;
 
@@ -3094,14 +3088,14 @@ ${whyHTML}
     if (btnSavePageGen) {
       btnSavePageGen.addEventListener('click', (e) => {
         e.preventDefault();
-        
+
         btnSavePageGen.disabled = true;
         btnSavePageGen.textContent = 'Saving...';
 
         try {
           const serviceVal = document.getElementById('pg-service-config').value;
           const autoVal = document.getElementById('pg-auto-config').value;
-          
+
           const serviceConfig = JSON.parse(serviceVal);
           const autoConfig = JSON.parse(autoVal);
 
@@ -3126,134 +3120,134 @@ ${whyHTML}
     }
   });
 
-    function formatVehicleNumber(val) {
-      let v = val.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-      let result = '';
-      
-      let stateCode = v.match(/^[A-Z]{1,2}/);
-      if (stateCode) {
-        result += stateCode[0];
-        v = v.substring(stateCode[0].length);
-      } else if (v.length > 0) {
-        return v;
-      }
-      
-      if (v.length > 0) {
-        result += '-';
-        let rtoCode = v.match(/^\d{1,2}/);
-        if (rtoCode) {
-          result += rtoCode[0];
-          v = v.substring(rtoCode[0].length);
-        } else {
-          let letters = v.match(/^[A-Z]+/);
-          if(letters) return result + v;
-        }
-      }
-      
-      if (v.length > 0) {
-        let series = v.match(/^[A-Z]{1,3}/);
-        if (series) {
-          result += series[0];
-          v = v.substring(series[0].length);
-        }
-      }
-      
-      if (v.length > 0) {
-        result += '-';
-        let num = v.match(/^\d{1,4}/);
-        if (num) {
-          result += num[0];
-        } else {
-          result += v;
-        }
-      }
-      
-      return result;
+  function formatVehicleNumber(val) {
+    let v = val.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    let result = '';
+
+    let stateCode = v.match(/^[A-Z]{1,2}/);
+    if (stateCode) {
+      result += stateCode[0];
+      v = v.substring(stateCode[0].length);
+    } else if (v.length > 0) {
+      return v;
     }
 
-document.addEventListener('input', function(e) {
+    if (v.length > 0) {
+      result += '-';
+      let rtoCode = v.match(/^\d{1,2}/);
+      if (rtoCode) {
+        result += rtoCode[0];
+        v = v.substring(rtoCode[0].length);
+      } else {
+        let letters = v.match(/^[A-Z]+/);
+        if (letters) return result + v;
+      }
+    }
+
+    if (v.length > 0) {
+      let series = v.match(/^[A-Z]{1,3}/);
+      if (series) {
+        result += series[0];
+        v = v.substring(series[0].length);
+      }
+    }
+
+    if (v.length > 0) {
+      result += '-';
+      let num = v.match(/^\d{1,4}/);
+      if (num) {
+        result += num[0];
+      } else {
+        result += v;
+      }
+    }
+
+    return result;
+  }
+
+  document.addEventListener('input', function (e) {
     if (e.target && e.target.id === 'edit-auto-vehicle') {
-        let cursor = e.target.selectionStart;
-        let oldLength = e.target.value.length;
-        e.target.value = formatVehicleNumber(e.target.value);
-        let newLength = e.target.value.length;
-        e.target.setSelectionRange(cursor + (newLength - oldLength), cursor + (newLength - oldLength));
+      let cursor = e.target.selectionStart;
+      let oldLength = e.target.value.length;
+      e.target.value = formatVehicleNumber(e.target.value);
+      let newLength = e.target.value.length;
+      e.target.setSelectionRange(cursor + (newLength - oldLength), cursor + (newLength - oldLength));
     }
-});
+  });
 
 
-    // ==================== CUSTOMER LEADS ENGINE ====================
-    let cachedLeads = [];
+  // ==================== CUSTOMER LEADS ENGINE ====================
+  let cachedLeads = [];
 
-    function loadCustomerLeads() {
-      const tbody = document.getElementById('admin-leads-tbody');
-      if (!tbody) return;
+  function loadCustomerLeads() {
+    const tbody = document.getElementById('admin-leads-tbody');
+    if (!tbody) return;
 
-      tbody.innerHTML = '<tr><td colspan="8" style="padding: 30px; text-align: center; color: var(--text-muted);">Fetching live inquiries from Firestore...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="padding: 30px; text-align: center; color: var(--text-muted);">Fetching live inquiries from Firestore...</td></tr>';
 
-      db.collection('leads')
-        .get()
-        .then((snapshot) => {
-          cachedLeads = [];
-          snapshot.forEach(doc => {
-            cachedLeads.push({ id: doc.id, ...doc.data() });
-          });
-
-          // Sort descending by createdAt
-          cachedLeads.sort((a, b) => {
-            const timeA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
-            const timeB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
-            return timeB - timeA;
-          });
-
-          if (countLeadsSpan) {
-            const newCount = cachedLeads.filter(l => (l.status || 'new') === 'new').length;
-            countLeadsSpan.textContent = newCount;
-          }
-
-          renderLeadsTable();
-        })
-        .catch(err => {
-          console.error('Error fetching leads:', err);
-          tbody.innerHTML = '<tr><td colspan="8" style="padding: 20px; text-align: center; color: #dc2626;">Error loading leads. Check console.</td></tr>';
+    db.collection('leads')
+      .get()
+      .then((snapshot) => {
+        cachedLeads = [];
+        snapshot.forEach(doc => {
+          cachedLeads.push({ id: doc.id, ...doc.data() });
         });
+
+        // Sort descending by createdAt
+        cachedLeads.sort((a, b) => {
+          const timeA = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime() / 1000 : 0);
+          const timeB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
+          return timeB - timeA;
+        });
+
+        if (countLeadsSpan) {
+          const newCount = cachedLeads.filter(l => (l.status || 'new') === 'new').length;
+          countLeadsSpan.textContent = newCount;
+        }
+
+        renderLeadsTable();
+      })
+      .catch(err => {
+        console.error('Error fetching leads:', err);
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 20px; text-align: center; color: #dc2626;">Error loading leads. Check console.</td></tr>';
+      });
+  }
+
+  function renderLeadsTable() {
+    const tbody = document.getElementById('admin-leads-tbody');
+    const filterSelect = document.getElementById('leads-filter-status');
+    const filterVal = filterSelect ? filterSelect.value : '';
+
+    let list = cachedLeads;
+    if (filterVal) {
+      list = list.filter(l => (l.status || 'new') === filterVal);
     }
 
-    function renderLeadsTable() {
-      const tbody = document.getElementById('admin-leads-tbody');
-      const filterSelect = document.getElementById('leads-filter-status');
-      const filterVal = filterSelect ? filterSelect.value : '';
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 15px;">No customer inquiries found for this filter.</td></tr>';
+      return;
+    }
 
-      let list = cachedLeads;
-      if (filterVal) {
-        list = list.filter(l => (l.status || 'new') === filterVal);
+    tbody.innerHTML = list.map(lead => {
+      let dateStr = 'Recent';
+      if (lead.createdAt) {
+        const date = lead.createdAt.toDate ? lead.createdAt.toDate() : new Date(lead.createdAt);
+        dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       }
 
-      if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 15px;">No customer inquiries found for this filter.</td></tr>';
-        return;
+      const phoneClean = (lead.customerPhone || '').replace(/\D/g, '');
+      const waLink = `https://wa.me/91${phoneClean}?text=${encodeURIComponent('Hello ' + (lead.customerName || '') + ', following up on your inquiry on ServeKerala.in for ' + (lead.serviceNeeded || 'services') + '.')}`;
+
+      let urgencyBadge = '<span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:600;">Standard</span>';
+      if ((lead.urgency || '').includes('Urgent')) {
+        urgencyBadge = '<span style="background:#fee2e2; color:#dc2626; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700;">🔥 Urgent</span>';
+      } else if ((lead.urgency || '').includes('week')) {
+        urgencyBadge = '<span style="background:#dbeafe; color:#2563eb; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:600;">📅 This Week</span>';
       }
 
-      tbody.innerHTML = list.map(lead => {
-        let dateStr = 'Recent';
-        if (lead.createdAt) {
-          const date = lead.createdAt.toDate ? lead.createdAt.toDate() : new Date(lead.createdAt);
-          dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        }
+      const currentStatus = lead.status || 'new';
 
-        const phoneClean = (lead.customerPhone || '').replace(/\D/g, '');
-        const waLink = `https://wa.me/91${phoneClean}?text=${encodeURIComponent('Hello ' + (lead.customerName || '') + ', following up on your inquiry on ServeKerala.in for ' + (lead.serviceNeeded || 'services') + '.')}`;
-
-        let urgencyBadge = '<span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:600;">Standard</span>';
-        if ((lead.urgency || '').includes('Urgent')) {
-          urgencyBadge = '<span style="background:#fee2e2; color:#dc2626; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700;">🔥 Urgent</span>';
-        } else if ((lead.urgency || '').includes('week')) {
-          urgencyBadge = '<span style="background:#dbeafe; color:#2563eb; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:600;">📅 This Week</span>';
-        }
-
-        const currentStatus = lead.status || 'new';
-
-        return `
+      return `
           <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.15s;">
             <td style="padding: 12px; white-space: nowrap; color: var(--text-muted); font-size: 12.5px;">${dateStr}</td>
             <td style="padding: 12px;">
@@ -3286,67 +3280,67 @@ document.addEventListener('input', function(e) {
             </td>
           </tr>
         `;
-      }).join('');
+    }).join('');
 
-      // Bind status changes
-      tbody.querySelectorAll('.sk-lead-status-select').forEach(sel => {
-        sel.addEventListener('change', (e) => {
-          const id = e.target.getAttribute('data-id');
-          const newStatus = e.target.value;
-          db.collection('leads').doc(id).update({ status: newStatus }).then(() => {
-            showDashboardStatus('Lead status updated to ' + newStatus, 'alert-success');
-            const target = cachedLeads.find(l => l.id === id);
-            if (target) target.status = newStatus;
-            e.target.style.background = newStatus === 'new' ? '#fef3c7' : (newStatus === 'converted' ? '#dcfce7' : '#ffffff');
-          }).catch(err => {
-            console.error('Update error:', err);
-            alert('Failed to update lead status.');
-          });
+    // Bind status changes
+    tbody.querySelectorAll('.sk-lead-status-select').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const id = e.target.getAttribute('data-id');
+        const newStatus = e.target.value;
+        db.collection('leads').doc(id).update({ status: newStatus }).then(() => {
+          showDashboardStatus('Lead status updated to ' + newStatus, 'alert-success');
+          const target = cachedLeads.find(l => l.id === id);
+          if (target) target.status = newStatus;
+          e.target.style.background = newStatus === 'new' ? '#fef3c7' : (newStatus === 'converted' ? '#dcfce7' : '#ffffff');
+        }).catch(err => {
+          console.error('Update error:', err);
+          alert('Failed to update lead status.');
         });
       });
-
-      // Bind delete
-      tbody.querySelectorAll('.btn-delete-lead').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const id = e.currentTarget.getAttribute('data-id');
-          if (confirm('Are you sure you want to delete this customer inquiry?')) {
-            db.collection('leads').doc(id).delete().then(() => {
-              cachedLeads = cachedLeads.filter(l => l.id !== id);
-              renderLeadsTable();
-              showDashboardStatus('Lead deleted.', 'alert-success');
-            }).catch(err => {
-              console.error(err);
-              alert('Could not delete lead.');
-            });
-          }
-        });
-      });
-    }
-
-    // Bind Filter & Refresh
-    document.addEventListener('DOMContentLoaded', () => {
-      const filterSelect = document.getElementById('leads-filter-status');
-      const refreshBtn = document.getElementById('btn-refresh-leads');
-      if (filterSelect) filterSelect.addEventListener('change', renderLeadsTable);
-      if (refreshBtn) refreshBtn.addEventListener('click', loadCustomerLeads);
     });
-    
-    // Auto-initialize for server-authenticated dashboard
-    function autoInitDashboard() {
-      if (typeof initializeDashboard === 'function') {
-        initializeDashboard();
-      }
-      if (typeof loadDirectoryParameters === 'function') {
-        loadDirectoryParameters().catch(e => console.warn(e));
-      }
-    }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', autoInitDashboard);
-    } else {
-      autoInitDashboard();
+    // Bind delete
+    tbody.querySelectorAll('.btn-delete-lead').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        if (confirm('Are you sure you want to delete this customer inquiry?')) {
+          db.collection('leads').doc(id).delete().then(() => {
+            cachedLeads = cachedLeads.filter(l => l.id !== id);
+            renderLeadsTable();
+            showDashboardStatus('Lead deleted.', 'alert-success');
+          }).catch(err => {
+            console.error(err);
+            alert('Could not delete lead.');
+          });
+        }
+      });
+    });
+  }
+
+  // Bind Filter & Refresh
+  document.addEventListener('DOMContentLoaded', () => {
+    const filterSelect = document.getElementById('leads-filter-status');
+    const refreshBtn = document.getElementById('btn-refresh-leads');
+    if (filterSelect) filterSelect.addEventListener('change', renderLeadsTable);
+    if (refreshBtn) refreshBtn.addEventListener('click', loadCustomerLeads);
+  });
+
+  // Auto-initialize for server-authenticated dashboard
+  function autoInitDashboard() {
+    if (typeof initializeDashboard === 'function') {
+      initializeDashboard();
     }
+    if (typeof loadDirectoryParameters === 'function') {
+      loadDirectoryParameters().catch(e => console.warn(e));
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoInitDashboard);
+  } else {
+    autoInitDashboard();
+  }
 } else {
   console.error('Firebase SDK not loaded inside the browser.');
 }
-  
+
