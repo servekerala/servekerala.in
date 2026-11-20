@@ -27,7 +27,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/assets/js/events-loader.js?v=1.0" defer></script>
-  <script src="/assets/js/admin.js?v=26.8" defer></script>
+  <script src="/assets/js/admin.js?v=27.0" defer></script>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
   <script>
@@ -111,6 +111,10 @@
       font-family: inherit !important;
       user-select: none;
       text-decoration: none !important;
+    }
+
+    .admin-content-types .content-type-btn * {
+      pointer-events: none !important;
     }
 
     .admin-content-types .content-type-btn:hover {
@@ -207,34 +211,34 @@
       <div class="admin-menu-bar-container">
         <div class="admin-content-types">
           <button class="content-type-btn active" data-type="listings" title="Services Directory Moderation">
-            <span>🛠️</span> <span>Services</span>
+            <span data-type="listings">🛠️</span> <span data-type="listings">Services</span>
           </button>
           <button class="content-type-btn" data-type="customer_leads" title="Customer Leads">
-            <span>🎯</span> <span>Leads</span> <span class="btn-badge" id="count-leads">0</span>
+            <span data-type="customer_leads">🎯</span> <span data-type="customer_leads">Leads</span> <span class="btn-badge" id="count-leads" data-type="customer_leads">0</span>
           </button>
           <button class="content-type-btn" data-type="events" title="Events Moderation">
-            <span>🎉</span> <span>Events</span> <span class="btn-badge" id="count-events">0</span>
+            <span data-type="events">🎉</span> <span data-type="events">Events</span> <span class="btn-badge" id="count-events" data-type="events">0</span>
           </button>
           <button class="content-type-btn" data-type="business_pages" title="Business Listing Pages">
-            <span>📄</span> <span>Pages</span>
+            <span data-type="business_pages">📄</span> <span data-type="business_pages">Pages</span>
           </button>
           <button class="content-type-btn" data-type="kpi_dashboard" title="Executive Analytics & KPI Dashboard">
-            <span>📈</span> <span>KPIs</span>
+            <span data-type="kpi_dashboard">📈</span> <span data-type="kpi_dashboard">KPIs</span>
           </button>
           <button class="content-type-btn" data-type="page_generator" title="SEO Landing Page Generator">
-            <span>🚀</span> <span>Generator</span>
+            <span data-type="page_generator">🚀</span> <span data-type="page_generator">Generator</span>
           </button>
           <button class="content-type-btn" data-type="category_settings" title="Category Settings">
-            <span>🏷️</span> <span>Categories</span>
+            <span data-type="category_settings">🏷️</span> <span data-type="category_settings">Categories</span>
           </button>
           <button class="content-type-btn" data-type="location_settings" title="Location Settings">
-            <span>📍</span> <span>Locations</span>
+            <span data-type="location_settings">📍</span> <span data-type="location_settings">Locations</span>
           </button>
           <button class="content-type-btn" data-type="seo_settings" title="SEO Metadata Settings">
-            <span>🔍</span> <span>SEO</span>
+            <span data-type="seo_settings">🔍</span> <span data-type="seo_settings">SEO</span>
           </button>
           <button class="content-type-btn" data-type="cms_settings" title="CMS & Platform Settings">
-            <span>⚙️</span> <span>Settings</span>
+            <span data-type="cms_settings">⚙️</span> <span data-type="cms_settings">Settings</span>
           </button>
         </div>
       </div>

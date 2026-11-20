@@ -13,11 +13,18 @@ const firebaseConfig = {
   measurementId: "G-P3J3NLRKDL"
 };
 
+let auth = null;
+let db = null;
+
 // Initialize Firebase
 if (typeof firebase !== 'undefined') {
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+  if (!firebase.apps || !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  auth = firebase.auth();
+  db = firebase.firestore();
+  window.auth = auth;
+  window.db = db;
 
   let activeCategories = [];
   let activeDistricts = [];
@@ -421,9 +428,8 @@ if (typeof firebase !== 'undefined') {
         loginContainer.classList.add('hidden');
         dashboardContainer.classList.remove('hidden');
         userEmailSpan.textContent = user.email;
-        loadDirectoryParameters().then(() => {
-          initializeDashboard();
-        });
+        initializeDashboard();
+        loadDirectoryParameters().catch(err => console.warn('Directory parameters fallback:', err));
       } else {
         // Logged Out
         dashboardContainer.classList.add('hidden');
@@ -941,9 +947,13 @@ if (typeof firebase !== 'undefined') {
 
     // ==================== UI TOGGLES (CONTENT TYPE & STATUS TABS) ====================
     contentTypeBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const targetBtn = e.currentTarget || e.target.closest('.content-type-btn');
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetBtn = this || e.currentTarget || (e.target && e.target.closest('.content-type-btn'));
         if (!targetBtn) return;
+        const dataType = targetBtn.getAttribute('data-type') || (e.target && e.target.getAttribute('data-type'));
+        if (!dataType) return;
+
         contentTypeBtns.forEach(t => {
           t.classList.remove('active');
           t.style.background = '';
@@ -951,7 +961,7 @@ if (typeof firebase !== 'undefined') {
         });
         targetBtn.classList.add('active');
 
-        activeCollection = targetBtn.getAttribute('data-type');
+        activeCollection = dataType;
         initializeDashboard(); // Reload data for new collection
       });
     });
@@ -3084,10 +3094,7 @@ ${whyHTML}
         }
       });
     }
-});
-} else {
-  console.error('Firebase SDK not loaded inside the browser.');
-}
+  });
 
     function formatVehicleNumber(val) {
       let v = val.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
@@ -3295,13 +3302,21 @@ document.addEventListener('input', function(e) {
     });
     
     // Auto-initialize for server-authenticated dashboard
-    document.addEventListener('DOMContentLoaded', () => {
-      if (typeof loadDirectoryParameters === 'function') {
-        loadDirectoryParameters().then(() => {
-          if (typeof initializeDashboard === 'function') {
-            initializeDashboard();
-          }
-        });
+    function autoInitDashboard() {
+      if (typeof initializeDashboard === 'function') {
+        initializeDashboard();
       }
-    });
+      if (typeof loadDirectoryParameters === 'function') {
+        loadDirectoryParameters().catch(e => console.warn(e));
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', autoInitDashboard);
+    } else {
+      autoInitDashboard();
+    }
+} else {
+  console.error('Firebase SDK not loaded inside the browser.');
+}
   
