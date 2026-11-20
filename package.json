@@ -4,6 +4,7 @@
   "description": "ServeKerala.in Static Site",
   "scripts": {
     "dev": "node scripts/dev-server.js",
-    "build": "node scripts/generate-seo-pages.js && node scripts/inject-seo.js && node scripts/build-sitemap.js"
+    "build": "node scripts/generate-seo-pages.js && node scripts/inject-seo.js && node scripts/build-sitemap.js",
+    "deploy": "node scripts/deploy.js"
   }
 }
