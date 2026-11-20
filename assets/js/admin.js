@@ -2216,202 +2216,607 @@ ${whyHTML}
       });
     }
 
+    // ==================== ADVANCED KPI & CONVERSION COMMAND CENTER ====================
+    window.kpiState = {
+      businesses: [],
+      events: [],
+      leads: [],
+      activeRange: 'all',
+      chartCategories: null,
+      chartChannels: null
+    };
+
     function loadDirectoryPerformance(filters = {}) {
       const tbody = document.getElementById('perf-table-body');
-      if (!tbody) return;
-      
-      tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading performance data...</td></tr>';
-      
-      // Load both approved listings and business_pages
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94a3b8;">Loading live analytics & conversion metrics...</td></tr>';
+      }
+
+      // 1. Fetch businesses, analytics_events, and leads concurrently
       Promise.all([
-        db.collection('listings').where('status', '==', 'approved').get(),
-        db.collection('business_pages').get()
-      ]).then(([listingsSnap, bizPagesSnap]) => {
+        db.collection('listings').where('status', '==', 'approved').get().catch(() => ({ forEach: () => {} })),
+        db.collection('business_pages').get().catch(() => ({ forEach: () => {} })),
+        db.collection('analytics_events').get().catch(() => ({ forEach: () => {} })),
+        db.collection('leads').get().catch(() => ({ forEach: () => {} }))
+      ]).then(([listingsSnap, bizPagesSnap, eventsSnap, leadsSnap]) => {
         let businesses = [];
         listingsSnap.forEach(doc => {
-          const d = doc.data();
-          businesses.push({ id: doc.id, type: 'listing', ...d });
+          businesses.push({ id: doc.id, type: 'listing', ...doc.data() });
         });
         bizPagesSnap.forEach(doc => {
-          const d = doc.data();
-          businesses.push({ id: doc.id, type: 'business_page', ...d });
+          businesses.push({ id: doc.id, type: 'business_page', ...doc.data() });
         });
-        
-        const startDateVal = document.getElementById('perf-filter-start-date')?.value;
-        const endDateVal = document.getElementById('perf-filter-end-date')?.value;
-        
-        let eventQuery = db.collection('analytics_events');
-        if (startDateVal) {
-          const startTimestamp = firebase.firestore.Timestamp.fromDate(new Date(startDateVal + 'T00:00:00'));
-          eventQuery = eventQuery.where('timestamp', '>=', startTimestamp);
-        }
-        if (endDateVal) {
-          const endTimestamp = firebase.firestore.Timestamp.fromDate(new Date(endDateVal + 'T23:59:59'));
-          eventQuery = eventQuery.where('timestamp', '<=', endTimestamp);
-        }
-        
-        eventQuery.get().then(eventSnap => {
-          const aggregates = {};
-          eventSnap.forEach(doc => {
-            const evt = doc.data();
-            const bid = evt.business_id;
-            if (bid) {
-              if (!aggregates[bid]) {
-                aggregates[bid] = { views: 0, whatsapp: 0, calls: 0, callbacks: 0 };
-              }
-              if (evt.event_name === 'business_profile_view') aggregates[bid].views++;
-              else if (evt.event_name === 'whatsapp_click') aggregates[bid].whatsapp++;
-              else if (evt.event_name === 'phone_click') aggregates[bid].calls++;
-              else if (evt.event_name === 'callback_request') aggregates[bid].callbacks++;
-            }
-          });
-          
-          businesses.forEach(b => {
-            const agg = aggregates[b.id] || { views: 0, whatsapp: 0, calls: 0, callbacks: 0 };
-            b.profileViews = agg.views;
-            b.whatsappClicks = agg.whatsapp;
-            b.callClicks = agg.calls;
-            b.callbackRequests = agg.callbacks;
-          });
-          
-          renderPerformanceTable(businesses, filters);
-        }).catch(err => {
-          console.error("Error loading analytics events:", err);
-          tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #dc2626;">Error loading analytics events.</td></tr>';
+
+        let events = [];
+        eventsSnap.forEach(doc => {
+          events.push({ id: doc.id, ...doc.data() });
         });
+
+        let leads = [];
+        leadsSnap.forEach(doc => {
+          leads.push({ id: doc.id, ...doc.data() });
+        });
+
+        window.kpiState.businesses = businesses;
+        window.kpiState.events = events;
+        window.kpiState.leads = leads;
+
+        computeAndRenderKPI(filters);
       }).catch(err => {
-        console.error("Error loading performance data:", err);
-        tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #dc2626;">Error loading businesses.</td></tr>';
+        console.error('Error loading KPI data:', err);
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #ef4444;">Error loading telemetry data. Please click Refresh.</td></tr>';
+        }
       });
     }
 
-    function renderPerformanceTable(businesses, filters) {
+    function computeAndRenderKPI(filters = {}) {
+      const { businesses, events, leads, activeRange } = window.kpiState;
+
+      // Determine date cutoff based on activeRange
+      const now = new Date();
+      let cutoff = null;
+      if (activeRange === '30d') {
+        cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      } else if (activeRange === '7d') {
+        cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      } else if (activeRange === 'today') {
+        cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      }
+
+      // Filter events by date range
+      const filteredEvents = cutoff ? events.filter(e => {
+        if (!e.timestamp) return true;
+        const d = e.timestamp.toDate ? e.timestamp.toDate() : new Date(e.timestamp);
+        return d >= cutoff;
+      }) : events;
+
+      // Filter leads by date range
+      const filteredLeads = cutoff ? leads.filter(l => {
+        if (!l.createdAt) return true;
+        const d = l.createdAt.toDate ? l.createdAt.toDate() : new Date(l.createdAt);
+        return d >= cutoff;
+      }) : leads;
+
+      // Aggregate by business
+      const aggregates = {};
+      filteredEvents.forEach(evt => {
+        const bid = evt.business_id;
+        if (bid) {
+          if (!aggregates[bid]) {
+            aggregates[bid] = { views: 0, whatsapp: 0, calls: 0, callbacks: 0 };
+          }
+          if (evt.event_name === 'business_profile_view') aggregates[bid].views++;
+          else if (evt.event_name === 'whatsapp_click') aggregates[bid].whatsapp++;
+          else if (evt.event_name === 'phone_click') aggregates[bid].calls++;
+          else if (evt.event_name === 'callback_request') aggregates[bid].callbacks++;
+        }
+      });
+
+      // Attach aggregates to businesses
+      businesses.forEach(b => {
+        const agg = aggregates[b.id] || { views: 0, whatsapp: 0, calls: 0, callbacks: 0 };
+        b.profileViews = agg.views;
+        b.whatsappClicks = agg.whatsapp;
+        b.callClicks = agg.calls;
+        b.callbackRequests = agg.callbacks;
+        b.totalInquiries = (b.callClicks || 0) + (b.whatsappClicks || 0) + (b.callbackRequests || 0);
+      });
+
+      // Overall totals
+      let totalViews = 0;
+      let totalCalls = 0;
+      let totalWhatsApp = 0;
+      let totalCallbacks = 0;
+
+      businesses.forEach(b => {
+        totalViews += (b.profileViews || 0);
+        totalCalls += (b.callClicks || 0);
+        totalWhatsApp += (b.whatsappClicks || 0);
+        totalCallbacks += (b.callbackRequests || 0);
+      });
+
+      const totalDirectQuotes = filteredLeads.length;
+      const totalConversions = totalCalls + totalWhatsApp + totalDirectQuotes;
+      const conversionRate = totalViews > 0 ? ((totalConversions / totalViews) * 100).toFixed(1) : '0.0';
+
+      // Update 6 KPI Cards
+      const elViews = document.getElementById('kpi-stat-views');
+      const elCalls = document.getElementById('kpi-stat-calls');
+      const elWA = document.getElementById('kpi-stat-whatsapp');
+      const elQuotes = document.getElementById('kpi-stat-quotes');
+      const elTotalLeads = document.getElementById('kpi-stat-total-leads');
+      const elCVR = document.getElementById('kpi-stat-cvr');
+
+      if (elViews) elViews.textContent = totalViews.toLocaleString();
+      if (elCalls) elCalls.textContent = totalCalls.toLocaleString();
+      if (elWA) elWA.textContent = totalWhatsApp.toLocaleString();
+      if (elQuotes) elQuotes.textContent = totalDirectQuotes.toLocaleString();
+      if (elTotalLeads) elTotalLeads.textContent = totalConversions.toLocaleString();
+      if (elCVR) elCVR.textContent = conversionRate + '%';
+
+      // Also update top header banner counters if present
+      const bannerCalls = document.getElementById('perf-summary-calls');
+      const bannerWA = document.getElementById('perf-summary-whatsapp');
+      const bannerViews = document.getElementById('perf-summary-views');
+      if (bannerCalls) bannerCalls.textContent = totalCalls;
+      if (bannerWA) bannerWA.textContent = totalWhatsApp;
+      if (bannerViews) bannerViews.textContent = totalViews;
+
+      // Render Charts, Leaderboards & Explorer Table
+      renderCategoryDemandChart(businesses);
+      renderChannelsDoughnutChart(totalCalls, totalWhatsApp, totalDirectQuotes);
+      renderDistrictShare(businesses);
+      renderVendorLeaderboard(businesses);
+      renderPerformanceExplorerTable(businesses, filters);
+    }
+
+    // 1. Render Category Demand Chart
+    function renderCategoryDemandChart(businesses) {
+      const canvas = document.getElementById('kpi-chart-categories');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const categoryTotals = {};
+      businesses.forEach(b => {
+        const cat = (b.category || 'General').toLowerCase();
+        categoryTotals[cat] = (categoryTotals[cat] || 0) + (b.totalInquiries || 0) + (b.profileViews || 0);
+      });
+
+      const labels = Object.keys(categoryTotals).map(c => c.charAt(0).toUpperCase() + c.slice(1));
+      const data = Object.values(categoryTotals);
+
+      // Default sample if empty
+      const chartLabels = labels.length ? labels.slice(0, 7) : ['Solar', 'Electrician', 'Plumber', 'AC Service', 'CCTV', 'Cleaning'];
+      const chartData = data.length ? data.slice(0, 7) : [0, 0, 0, 0, 0, 0];
+
+      if (window.kpiState.chartCategories) {
+        window.kpiState.chartCategories.destroy();
+      }
+
+      const ctx = canvas.getContext('2d');
+      window.kpiState.chartCategories = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: 'Total Inquiries & Engagement',
+            data: chartData,
+            backgroundColor: [
+              '#0B3B2C', '#10b981', '#2563eb', '#d97706', '#7c3aed', '#059669', '#ea580c'
+            ],
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              padding: 10,
+              backgroundColor: '#0f172a',
+              titleFont: { weight: 'bold' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 11, weight: '600' }, color: '#475569' }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: { precision: 0, font: { size: 11 }, color: '#94a3b8' }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Render Channels Doughnut Chart
+    function renderChannelsDoughnutChart(calls, whatsapp, quotes) {
+      const canvas = document.getElementById('kpi-chart-channels');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      if (window.kpiState.chartChannels) {
+        window.kpiState.chartChannels.destroy();
+      }
+
+      const total = calls + whatsapp + quotes;
+      const data = total > 0 ? [whatsapp, calls, quotes] : [1, 1, 1];
+      const colors = total > 0 ? ['#16a34a', '#2563eb', '#d97706'] : ['#e2e8f0', '#cbd5e1', '#94a3b8'];
+
+      const ctx = canvas.getContext('2d');
+      window.kpiState.chartChannels = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['WhatsApp Leads', 'Phone Calls', 'Quote Inquiries'],
+          datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                boxWidth: 12,
+                padding: 14,
+                font: { size: 12, weight: '600' },
+                color: '#334155'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Render District Share
+    function renderDistrictShare(businesses) {
+      const container = document.getElementById('kpi-district-share-list');
+      if (!container) return;
+
+      const districtMap = {};
+      let totalDistrictLeads = 0;
+
+      businesses.forEach(b => {
+        const dist = (b.district || 'Multiple').toLowerCase();
+        const formatted = dist.charAt(0).toUpperCase() + dist.slice(1);
+        const leads = (b.totalInquiries || 0) + (b.profileViews || 0);
+        districtMap[formatted] = (districtMap[formatted] || 0) + leads;
+        totalDistrictLeads += leads;
+      });
+
+      const sorted = Object.entries(districtMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      if (!sorted.length || totalDistrictLeads === 0) {
+        container.innerHTML = `
+          <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+              <span>Kottayam</span>
+              <span style="color: #0B3B2C;">Ready for traffic</span>
+            </div>
+            <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
+              <div style="width: 35%; height: 100%; background: #0B3B2C; border-radius: 10px;"></div>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+              <span>Pathanamthitta</span>
+              <span style="color: #2563eb;">Ready for traffic</span>
+            </div>
+            <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
+              <div style="width: 25%; height: 100%; background: #2563eb; border-radius: 10px;"></div>
+            </div>
+          </div>
+          <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+              <span>Alappuzha</span>
+              <span style="color: #d97706;">Ready for traffic</span>
+            </div>
+            <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
+              <div style="width: 20%; height: 100%; background: #d97706; border-radius: 10px;"></div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = sorted.map(([district, count], idx) => {
+        const pct = totalDistrictLeads > 0 ? Math.round((count / totalDistrictLeads) * 100) : 0;
+        const colors = ['#0B3B2C', '#2563eb', '#16a34a', '#d97706', '#7c3aed'];
+        const barColor = colors[idx % colors.length];
+
+        return `
+          <div style="background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+              <span>${district}</span>
+              <span style="color: ${barColor};">${count} Inquiries (${pct}%)</span>
+            </div>
+            <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
+              <div style="width: ${Math.max(5, pct)}%; height: 100%; background: ${barColor}; border-radius: 10px; transition: width 0.6s ease;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 4. Render Top 5 Vendor Leaderboard
+    function renderVendorLeaderboard(businesses) {
+      const container = document.getElementById('kpi-top-vendors-list');
+      if (!container) return;
+
+      const sorted = [...businesses].sort((a, b) => (b.totalInquiries || 0) - (a.totalInquiries || 0));
+      const top5 = sorted.slice(0, 5);
+
+      if (!top5.length || (top5[0].totalInquiries === 0 && top5[0].profileViews === 0)) {
+        container.innerHTML = `
+          <div style="padding: 24px; text-align: center; color: #94a3b8; font-size: 13px; background: #f8fafc; border-radius: 8px;">
+            No live vendor inquiries recorded yet. When customers click Call or WhatsApp, top performers will rank here automatically!
+          </div>
+        `;
+        return;
+      }
+
+      const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+      container.innerHTML = top5.map((b, idx) => {
+        const phone = (b.phone || b.whatsapp || '').replace(/\D/g, '');
+        const waMsg = encodeURIComponent(`Hello ${b.name}! Your business listing on ServeKerala has received ${b.totalInquiries || 0} customer inquiries & ${b.profileViews || 0} views!`);
+        const waLink = phone ? `https://wa.me/${phone.length === 10 ? '91' + phone : phone}?text=${waMsg}` : '#';
+
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+              <span style="font-size: 20px; flex-shrink: 0;">${medals[idx] || '⭐'}</span>
+              <div style="min-width: 0;">
+                <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${b.name}
+                </div>
+                <div style="font-size: 11.5px; color: #64748b; text-transform: capitalize;">
+                  ${b.category || 'Local Service'} • ${b.district || 'Kerala'}
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+              <span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 800;">
+                ⚡ ${b.totalInquiries || 0} Leads
+              </span>
+              ${phone ? `
+                <a href="${waLink}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #25D366; color: #fff; border-radius: 6px; text-decoration: none; font-size: 14px;" title="Send WhatsApp performance report to vendor">
+                  💬
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 5. Render Detailed Performance Explorer Table
+    function renderPerformanceExplorerTable(businesses, filters) {
       const tbody = document.getElementById('perf-table-body');
+      const badgeCount = document.getElementById('kpi-table-count-badge');
       if (!tbody) return;
-      
-      let filtered = businesses;
-      
-      const districtFilter = (filters.district || '').toLowerCase().trim();
-      const townFilter = (filters.town || '').toLowerCase().trim();
-      const categoryFilter = (filters.category || '').toLowerCase().trim();
-      const businessFilter = (filters.business || '').toLowerCase().trim();
-      
+
+      let filtered = [...businesses];
+
+      const districtFilter = (document.getElementById('perf-filter-district')?.value || filters.district || '').toLowerCase().trim();
+      const categoryFilter = (document.getElementById('perf-filter-category')?.value || filters.category || '').toLowerCase().trim();
+      const searchFilter = (document.getElementById('perf-filter-business')?.value || filters.business || '').toLowerCase().trim();
+      const sortBy = document.getElementById('perf-filter-sort')?.value || 'leads';
+
       if (districtFilter) {
         filtered = filtered.filter(b => (b.district || '').toLowerCase() === districtFilter);
       }
-      if (townFilter) {
-        filtered = filtered.filter(b => {
-          const townsVal = typeof b.towns === 'string' ? b.towns : (b.town || '');
-          return townsVal.toLowerCase().includes(townFilter);
-        });
-      }
       if (categoryFilter) {
-        filtered = filtered.filter(b => {
-          const cat = (b.category || '').toLowerCase();
-          return cat === categoryFilter || cat.includes(categoryFilter);
-        });
+        filtered = filtered.filter(b => (b.category || '').toLowerCase().includes(categoryFilter));
       }
-      if (businessFilter) {
-        filtered = filtered.filter(b => (b.name || '').toLowerCase().includes(businessFilter));
+      if (searchFilter) {
+        filtered = filtered.filter(b => (b.name || '').toLowerCase().includes(searchFilter));
       }
-      
-      let totalViews = 0;
-      let totalWhatsApp = 0;
-      let totalCalls = 0;
-      let totalCallbacks = 0;
-      
-      filtered.forEach(b => {
-        totalViews += (b.profileViews || 0);
-        totalWhatsApp += (b.whatsappClicks || 0);
-        totalCalls += (b.callClicks || 0);
-        totalCallbacks += (b.callbackRequests || 0);
-      });
-      
-      document.getElementById('perf-summary-views').textContent = totalViews;
-      document.getElementById('perf-summary-whatsapp').textContent = totalWhatsApp;
-      document.getElementById('perf-summary-calls').textContent = totalCalls;
-      document.getElementById('perf-summary-callbacks').textContent = totalCallbacks;
-      
+
+      // Sort
+      if (sortBy === 'leads') {
+        filtered.sort((a, b) => (b.totalInquiries || 0) - (a.totalInquiries || 0));
+      } else if (sortBy === 'views') {
+        filtered.sort((a, b) => (b.profileViews || 0) - (a.profileViews || 0));
+      } else if (sortBy === 'calls') {
+        filtered.sort((a, b) => (b.callClicks || 0) - (a.callClicks || 0));
+      } else if (sortBy === 'whatsapp') {
+        filtered.sort((a, b) => (b.whatsappClicks || 0) - (a.whatsappClicks || 0));
+      } else if (sortBy === 'name') {
+        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      }
+
+      if (badgeCount) badgeCount.textContent = `${filtered.length} Pros Listed`;
+
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted);">No matching businesses found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94a3b8;">No businesses match your filter criteria.</td></tr>';
         return;
       }
-      
-      filtered.sort((a, b) => (b.profileViews || 0) - (a.profileViews || 0));
-      
+
       tbody.innerHTML = filtered.map(b => {
+        const phone = (b.phone || b.whatsapp || '').replace(/\D/g, '');
+        const waMsg = encodeURIComponent(`Hello ${b.name}, ServeKerala Admin is sharing your monthly performance stats: ${b.totalInquiries || 0} leads generated.`);
+        const waLink = phone ? `https://wa.me/${phone.length === 10 ? '91' + phone : phone}?text=${waMsg}` : '';
+
         return `
-          <tr style="border-bottom: 1px solid var(--border-color);">
-            <td style="padding: 12px; border-right: 1px solid var(--border-color); font-weight: 600;">${b.name}</td>
-            <td style="padding: 12px; border-right: 1px solid var(--border-color); text-transform: capitalize;">${b.category || 'N/A'}</td>
-            <td style="padding: 12px; border-right: 1px solid var(--border-color); font-weight: 500;">${b.district || 'Multiple'}</td>
-            <td style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center; font-weight: bold; color: var(--text-main);">${b.profileViews || 0}</td>
-            <td style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center; color: #16a34a; font-weight: 600;">${b.whatsappClicks || 0}</td>
-            <td style="padding: 12px; border-right: 1px solid var(--border-color); text-align: center; color: #2563eb; font-weight: 600;">${b.callClicks || 0}</td>
-            <td style="padding: 12px; text-align: center; color: var(--text-muted);">${b.callbackRequests || 0}</td>
+          <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; font-weight: 700; color: #0f172a;">
+              ${b.name}
+              <span style="color: #10b981; font-size: 11px; margin-left: 4px;" title="Verified Pro">✓</span>
+            </td>
+            <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; text-transform: capitalize; color: #475569;">
+              <span style="background: #f1f5f9; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${b.category || 'Service'}</span>
+            </td>
+            <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; color: #64748b; font-size: 13px;">
+              ${b.district || 'Kerala'} • ${b.town || b.towns || 'Hub'}
+            </td>
+            <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 700; color: #0B3B2C;">
+              ${b.profileViews || 0}
+            </td>
+            <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 700; color: #2563eb;">
+              ${b.callClicks || 0}
+            </td>
+            <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 700; color: #16a34a;">
+              ${b.whatsappClicks || 0}
+            </td>
+            <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 800; color: #7c3aed;">
+              <span style="background: #f5f3ff; color: #7c3aed; padding: 3px 10px; border-radius: 12px; border: 1px solid #ddd6fe;">
+                ⚡ ${b.totalInquiries || 0}
+              </span>
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+              ${waLink ? `
+                <a href="${waLink}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; background: #25D366; color: #fff; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-size: 11.5px; font-weight: 700;">
+                  💬 Chat
+                </a>
+              ` : '<span style="color:#cbd5e1; font-size: 12px;">No Phone</span>'}
+            </td>
           </tr>
         `;
       }).join('');
     }
 
-    // Set up one-time filter bindings
+    // 6. CSV Export Function
+    function exportKPIReportCSV() {
+      const { businesses } = window.kpiState;
+      if (!businesses || !businesses.length) {
+        alert('No business performance data available to export.');
+        return;
+      }
+
+      let csvContent = 'data:text/csv;charset=utf-8,';
+      csvContent += 'Business Name,Category,District,Town,Phone,Profile Views,Call Clicks,WhatsApp Leads,Total Inquiries\n';
+
+      businesses.forEach(b => {
+        const name = (b.name || '').replace(/,/g, ' ');
+        const cat = (b.category || '').replace(/,/g, ' ');
+        const dist = (b.district || '').replace(/,/g, ' ');
+        const town = (b.town || b.towns || '').replace(/,/g, ' ');
+        const phone = b.phone || b.whatsapp || '';
+        const views = b.profileViews || 0;
+        const calls = b.callClicks || 0;
+        const wa = b.whatsappClicks || 0;
+        const total = b.totalInquiries || 0;
+
+        csvContent += `"${name}","${cat}","${dist}","${town}","${phone}",${views},${calls},${wa},${total}\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `ServeKerala_Performance_Report_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Wire up events once DOM or elements are available
     document.addEventListener('DOMContentLoaded', () => {
-      const btnApplyPerf = document.getElementById('btn-perf-apply-filters');
-      const btnClearPerf = document.getElementById('btn-perf-clear-filters');
-      
-      if (btnApplyPerf) {
-        btnApplyPerf.addEventListener('click', () => {
-          const filters = {
-            district: document.getElementById('perf-filter-district').value,
-            town: document.getElementById('perf-filter-town').value,
-            category: document.getElementById('perf-filter-category').value,
-            business: document.getElementById('perf-filter-business').value
-          };
-          loadDirectoryPerformance(filters);
+      // Range selector buttons
+      document.querySelectorAll('.kpi-range-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.kpi-range-btn').forEach(b => {
+            b.style.background = 'transparent';
+            b.style.color = '#475569';
+            b.classList.remove('active');
+          });
+          e.target.style.background = '#0B3B2C';
+          e.target.style.color = '#ffffff';
+          e.target.classList.add('active');
+
+          window.kpiState.activeRange = e.target.dataset.range || 'all';
+          computeAndRenderKPI();
+        });
+      });
+
+      // Refresh button
+      const btnRefresh = document.getElementById('btn-kpi-refresh');
+      if (btnRefresh) {
+        btnRefresh.addEventListener('click', () => {
+          loadDirectoryPerformance();
         });
       }
-      
-      if (btnClearPerf) {
-        btnClearPerf.addEventListener('click', () => {
-          document.getElementById('perf-filter-district').value = '';
-          document.getElementById('perf-filter-town').value = '';
-          document.getElementById('perf-filter-category').value = '';
-          document.getElementById('perf-filter-business').value = '';
-          document.getElementById('perf-filter-start-date').value = '';
-          document.getElementById('perf-filter-end-date').value = '';
-          loadDirectoryPerformance({});
-        });
+
+      // Export CSV button
+      const btnExport = document.getElementById('btn-kpi-export-csv');
+      if (btnExport) {
+        btnExport.addEventListener('click', exportKPIReportCSV);
       }
+
+      // Live search and filter events in the explorer table
+      const searchInput = document.getElementById('perf-filter-business');
+      const distSelect = document.getElementById('perf-filter-district');
+      const catSelect = document.getElementById('perf-filter-category');
+      const sortSelect = document.getElementById('perf-filter-sort');
+
+      if (searchInput) searchInput.addEventListener('input', () => computeAndRenderKPI());
+      if (distSelect) distSelect.addEventListener('change', () => computeAndRenderKPI());
+      if (catSelect) catSelect.addEventListener('change', () => computeAndRenderKPI());
+      if (sortSelect) sortSelect.addEventListener('change', () => computeAndRenderKPI());
     });
 
-    // Also try direct binding if elements are already loaded in the DOM
+    // Fallback binding for quick navigation without page reload
     setTimeout(() => {
-      const btnApplyPerf = document.getElementById('btn-perf-apply-filters');
-      const btnClearPerf = document.getElementById('btn-perf-clear-filters');
-      if (btnApplyPerf && !btnApplyPerf.dataset.bound) {
-        btnApplyPerf.dataset.bound = 'true';
-        btnApplyPerf.addEventListener('click', () => {
-          const filters = {
-            district: document.getElementById('perf-filter-district').value,
-            town: document.getElementById('perf-filter-town').value,
-            category: document.getElementById('perf-filter-category').value,
-            business: document.getElementById('perf-filter-business').value
-          };
-          loadDirectoryPerformance(filters);
-        });
+      const btnRefresh = document.getElementById('btn-kpi-refresh');
+      if (btnRefresh && !btnRefresh.dataset.bound) {
+        btnRefresh.dataset.bound = 'true';
+        btnRefresh.addEventListener('click', () => loadDirectoryPerformance());
       }
-      if (btnClearPerf && !btnClearPerf.dataset.bound) {
-        btnClearPerf.dataset.bound = 'true';
-        btnClearPerf.addEventListener('click', () => {
-          document.getElementById('perf-filter-district').value = '';
-          document.getElementById('perf-filter-town').value = '';
-          document.getElementById('perf-filter-category').value = '';
-          document.getElementById('perf-filter-business').value = '';
-          document.getElementById('perf-filter-start-date').value = '';
-          document.getElementById('perf-filter-end-date').value = '';
-          loadDirectoryPerformance({});
-        });
+      const btnExport = document.getElementById('btn-kpi-export-csv');
+      if (btnExport && !btnExport.dataset.bound) {
+        btnExport.dataset.bound = 'true';
+        btnExport.addEventListener('click', exportKPIReportCSV);
       }
+      const searchInput = document.getElementById('perf-filter-business');
+      if (searchInput && !searchInput.dataset.bound) {
+        searchInput.dataset.bound = 'true';
+        searchInput.addEventListener('input', () => computeAndRenderKPI());
+      }
+      const distSelect = document.getElementById('perf-filter-district');
+      if (distSelect && !distSelect.dataset.bound) {
+        distSelect.dataset.bound = 'true';
+        distSelect.addEventListener('change', () => computeAndRenderKPI());
+      }
+      const catSelect = document.getElementById('perf-filter-category');
+      if (catSelect && !catSelect.dataset.bound) {
+        catSelect.dataset.bound = 'true';
+        catSelect.addEventListener('change', () => computeAndRenderKPI());
+      }
+      const sortSelect = document.getElementById('perf-filter-sort');
+      if (sortSelect && !sortSelect.dataset.bound) {
+        sortSelect.dataset.bound = 'true';
+        sortSelect.addEventListener('change', () => computeAndRenderKPI());
+      }
+      document.querySelectorAll('.kpi-range-btn').forEach(btn => {
+        if (!btn.dataset.bound) {
+          btn.dataset.bound = 'true';
+          btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.kpi-range-btn').forEach(b => {
+              b.style.background = 'transparent';
+              b.style.color = '#475569';
+              b.classList.remove('active');
+            });
+            e.target.style.background = '#0B3B2C';
+            e.target.style.color = '#ffffff';
+            e.target.classList.add('active');
+
+            window.kpiState.activeRange = e.target.dataset.range || 'all';
+            computeAndRenderKPI();
+          });
+        }
+      });
     }, 1000);
 
 
