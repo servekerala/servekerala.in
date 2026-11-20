@@ -182,7 +182,10 @@
     const mainNavs = document.querySelectorAll('.main-nav');
     mainNavs.forEach(nav => {
       if (!nav.querySelector('.lang-switcher-pill')) {
-        nav.appendChild(createPillElement());
+        const pill = createPillElement();
+        const accountControls = nav.querySelector('.admin-nav-account');
+        if (accountControls) nav.insertBefore(pill, accountControls);
+        else nav.appendChild(pill);
       }
     });
 

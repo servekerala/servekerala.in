@@ -379,6 +379,7 @@ if (typeof firebase !== 'undefined') {
     const loginError = document.getElementById('login-error-message');
     const signoutBtn = document.getElementById('admin-signout-btn');
     const userEmailSpan = document.getElementById('admin-user-email');
+    const adminNavAccount = document.getElementById('admin-nav-account');
     
     const contentTypeBtns = document.querySelectorAll('.content-type-btn');
     const tabBtns = document.querySelectorAll('.admin-tab-btn');
@@ -428,10 +429,12 @@ if (typeof firebase !== 'undefined') {
         loginContainer.classList.add('hidden');
         dashboardContainer.classList.remove('hidden');
         userEmailSpan.textContent = user.email;
+        adminNavAccount.hidden = false;
         initializeDashboard();
         loadDirectoryParameters().catch(err => console.warn('Directory parameters fallback:', err));
       } else {
         // Logged Out
+        adminNavAccount.hidden = true;
         dashboardContainer.classList.add('hidden');
         loginContainer.classList.remove('hidden');
         loginForm.reset();
@@ -456,10 +459,24 @@ if (typeof firebase !== 'undefined') {
         }
 
         auth.signInWithEmailAndPassword(email, password)
-          .then(() => {
+          .then(async (userCred) => {
             if (submitBtn) {
               submitBtn.disabled = false;
               submitBtn.textContent = 'Sign In';
+            }
+            try {
+              let fbToken = null;
+              if (userCred && userCred.user) {
+                fbToken = await userCred.user.getIdToken();
+              }
+              // Sync server session cookie
+              await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: email, password, fbToken, fbAuthSuccess: true })
+              });
+            } catch (syncErr) {
+              console.warn('Server session sync note:', syncErr);
             }
           })
           .catch((error) => {
@@ -487,16 +504,29 @@ if (typeof firebase !== 'undefined') {
     }
 
     if (signoutBtn) {
-      signoutBtn.addEventListener('click', (e) => {
+      signoutBtn.addEventListener('click', async (e) => {
         e.preventDefault();
-        auth.signOut().then(() => {
-          showDashboardStatus('Signed out successfully.', 'alert-success');
-        });
+        signoutBtn.disabled = true;
+        signoutBtn.textContent = 'Signing out...';
+        try {
+          if (auth) {
+            await auth.signOut();
+          }
+        } catch (err) {
+          console.warn('Firebase signout note:', err);
+        }
+        // Destroy server session cookie & navigate cleanly to login portal
+        window.location.href = '/api/admin/logout';
       });
     }
 
     // ==================== DASHBOARD LOAD & SNAPSHOT ====================
     function initializeDashboard() {
+      const performanceSummary = document.getElementById('admin-click-summary');
+      if (performanceSummary) {
+        performanceSummary.style.display = ['listings', 'business_pages', 'auto_mithram'].includes(activeCollection) ? 'flex' : 'none';
+      }
+
       if (unsubscribeSnapshot) {
         unsubscribeSnapshot(); // Stop listening to previous collection
       }

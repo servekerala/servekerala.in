@@ -93,10 +93,12 @@ const server = http.createServer((req, res) => {
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
-        const { username, password } = JSON.parse(body || '{}');
+        const { username, password, fbToken, fbAuthSuccess } = JSON.parse(body || '{}');
         const validUser = process.env.ADMIN_USER || 'admin';
         const validPass = process.env.ADMIN_PASSWORD || 'servekerala2026';
-        const isValid = ((username === validUser || username === 'servekerala.in@gmail.com') && password === validPass);
+        const isMasterValid = ((username === validUser || username === 'servekerala.in@gmail.com') && password === validPass);
+        const isFbValid = Boolean(fbAuthSuccess === true && fbToken);
+        const isValid = isMasterValid || isFbValid;
 
         if (isValid) {
           res.writeHead(200, {
@@ -118,8 +120,8 @@ const server = http.createServer((req, res) => {
 
   if (pathname === '/api/admin/logout' || pathname === '/admin/logout' || pathname === '/admin/logout/') {
     res.writeHead(302, {
-      'Location': '/admin/',
-      'Set-Cookie': 'sk_admin_session=; Path=/; HttpOnly; Max-Age=0'
+      'Location': '/admin/login/',
+      'Set-Cookie': 'sk_admin_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
     });
     res.end();
     return;
@@ -131,8 +133,9 @@ const server = http.createServer((req, res) => {
     const isAuthenticated = cookies['sk_admin_session'] === ADMIN_SECRET;
 
     if (!isAuthenticated) {
-      // Serve ONLY the professional login page
-      pathname = '/admin/login.html';
+      res.writeHead(302, { 'Location': '/admin/login/' });
+      res.end();
+      return;
     } else {
       pathname = '/admin/index.html';
     }

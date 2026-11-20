@@ -350,6 +350,21 @@
   </div>
 
   <script>
+    // Firebase initialization for client session sync
+    const firebaseConfig = {
+      apiKey: "AIzaSyCX0GVM7M09qd2b5FlgvETPzJL702MMpMc",
+      authDomain: "servekerala2026.firebaseapp.com",
+      projectId: "servekerala2026",
+      storageBucket: "servekerala2026.firebasestorage.app",
+      messagingSenderId: "122091003614",
+      appId: "1:122091003614:web:e2114b7064aceff4f5ac4f",
+      measurementId: "G-P3J3NLRKDL"
+    };
+
+    if (typeof firebase !== 'undefined' && (!firebase.apps || !firebase.apps.length)) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
     // Password toggle
     const pwdInput = document.getElementById('admin-pass-input');
     const pwdBtn = document.getElementById('toggle-pwd-btn');
@@ -376,11 +391,28 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span>Verifying credentials...</span>';
 
+      const fbEmail = username.includes('@') ? username : 'servekerala.in@gmail.com';
+      let fbToken = null;
+      let fbAuthSuccess = false;
+
+      // Client-side Firebase Auth sync (for seamless Firestore interaction)
+      if (typeof firebase !== 'undefined' && firebase.auth) {
+        try {
+          const userCred = await firebase.auth().signInWithEmailAndPassword(fbEmail, password);
+          if (userCred && userCred.user) {
+            fbToken = await userCred.user.getIdToken();
+            fbAuthSuccess = true;
+          }
+        } catch (fbErr) {
+          console.warn('Firebase client sign-in notice:', fbErr.message);
+        }
+      }
+
       try {
         const response = await fetch('/api/admin/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ username, password, fbToken, fbAuthSuccess })
         });
 
         const data = await response.json();
@@ -390,15 +422,9 @@
           alertBox.className = 'login-alert login-alert-success';
           alertBox.style.display = 'block';
 
-          // Client-side Firebase Auth sync (for seamless Firestore interaction)
-          if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-            const fbEmail = username.includes('@') ? username : 'servekerala.in@gmail.com';
-            firebase.auth().signInWithEmailAndPassword(fbEmail, password).catch(() => {});
-          }
-
           setTimeout(() => {
             window.location.href = data.redirect || '/admin/';
-          }, 400);
+          }, 350);
         } else {
           alertBox.textContent = data.error || 'Incorrect username or password. Please try again.';
           alertBox.className = 'login-alert login-alert-error';
