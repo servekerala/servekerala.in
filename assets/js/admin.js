@@ -942,16 +942,16 @@ if (typeof firebase !== 'undefined') {
     // ==================== UI TOGGLES (CONTENT TYPE & STATUS TABS) ====================
     contentTypeBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
+        const targetBtn = e.currentTarget || e.target.closest('.content-type-btn');
+        if (!targetBtn) return;
         contentTypeBtns.forEach(t => {
           t.classList.remove('active');
-          t.style.background = '#e5e7eb';
-          t.style.color = 'var(--text-dark)';
+          t.style.background = '';
+          t.style.color = '';
         });
-        e.target.classList.add('active');
-        e.target.style.background = 'var(--primary)';
-        e.target.style.color = 'white';
+        targetBtn.classList.add('active');
 
-        activeCollection = e.target.getAttribute('data-type');
+        activeCollection = targetBtn.getAttribute('data-type');
         initializeDashboard(); // Reload data for new collection
       });
     });

@@ -107,7 +107,14 @@ async function run() {
 
   console.log('\n===> 2. Pushing latest commits to GitHub...');
   try {
+    try {
+      execSync('git add -A', { stdio: 'inherit' });
+      execSync('git commit -m "Update admin top navigation menu bar and deployment sync"', { stdio: 'inherit' });
+    } catch {
+      // Nothing to commit
+    }
     execSync('git push origin master:main', { stdio: 'inherit' });
+    execSync('git push origin master:master', { stdio: 'inherit' });
     console.log('GitHub updated successfully!');
   } catch (err) {
     console.warn('Note: Git push skipped or already up-to-date.');
