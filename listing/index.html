@@ -473,13 +473,13 @@
       <div class="contact-card">
         <div class="contact-card-icon">📞</div>
         <h3>Direct Phone</h3>
-        <a href="tel:${phone}" onclick="track('call')">Call Now</a>
+        <a href="tel:${phone}" data-track-action="call">Call Now</a>
       </div>`;
     if (whatsapp) contactCards += `
       <div class="contact-card whatsapp">
         <div class="contact-card-icon">💬</div>
         <h3>Direct WhatsApp</h3>
-        <a href="${smartWaUrl}" target="_blank" rel="noopener" onclick="track('whatsapp')">Chat on WhatsApp</a>
+        <a href="${smartWaUrl}" target="_blank" rel="noopener" data-track-action="whatsapp">Chat on WhatsApp</a>
       </div>`;
     contactCards += `
       <div class="contact-card" style="border: 2px solid var(--accent); background: #f0fdf4;">
@@ -491,7 +491,7 @@
       <div class="contact-card">
         <div class="contact-card-icon">✉️</div>
         <h3>Email</h3>
-        <a class="contact-email-link" href="mailto:${email}" onclick="track('email')">${email}</a>
+        <a class="contact-email-link" href="mailto:${email}">${email}</a>
       </div>`;
 
     // ── Services List ──
@@ -549,7 +549,7 @@
       const displayTowns = (data.serviceAreas && data.serviceAreas.townIds && data.serviceAreas.townIds.length > 0) ? data.serviceAreas.townIds.join(', ') : towns;
       sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Areas</span><span class="sidebar-row-val" style="text-transform: capitalize;">${displayTowns}</span></div>`;
     }
-    if (website) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Website</span><span class="sidebar-row-val"><a href="${website}" target="_blank" rel="noopener" onclick="track('website')">${website.replace(/^https?:\/\//,'')}</a></span></div>`;
+    if (website) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Website</span><span class="sidebar-row-val"><a href="${website}" target="_blank" rel="noopener" data-track-action="website">${website.replace(/^https?:\/\//,'')}</a></span></div>`;
     if (address) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Address</span><span class="sidebar-row-val">${address}</span></div>`;
     if (gbpRating) sidebarRows += `<div class="sidebar-row"><span class="sidebar-row-label">Google Rating</span><span class="sidebar-row-val" style="color:#f59e0b;font-weight:700;">★ ${gbpRating} (${gbpReviews} reviews)</span></div>`;
 
@@ -657,7 +657,11 @@
       </section>
       ${trustNote}`;
 
-    document.getElementById('listing-main-content').innerHTML = mainContent;
+    const profileContent = document.getElementById('listing-main-content');
+    profileContent.innerHTML = mainContent;
+    profileContent.querySelectorAll('[data-track-action]').forEach(link => {
+      link.addEventListener('click', () => track(link.dataset.trackAction));
+    });
     track('view');
     if (typeof initMobileBottomBar === 'function') {
       initMobileBottomBar({ id: slug, name: name, phone: phone, whatsapp: whatsapp, category: category, district: district, towns: towns, collectionName: collectionName });

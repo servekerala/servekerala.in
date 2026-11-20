@@ -676,7 +676,7 @@ if (typeof firebase !== 'undefined') {
       if (!summaryEl) {
         summaryEl = document.createElement('div');
         summaryEl.id = 'admin-click-summary';
-        summaryEl.style.cssText = 'background: linear-gradient(135deg, #064e3b, #047857); color: white; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 4px 14px rgba(6,78,59,0.18);';
+        summaryEl.style.cssText = 'background: linear-gradient(135deg, #064e3b, #047857); color: white; padding: 4px 10px; border-radius: 6px; margin-bottom: 6px; display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(6,78,59,0.14);';
         const tabsEl = document.getElementById('admin-status-tabs');
         if (tabsEl && tabsEl.parentNode) {
           tabsEl.parentNode.insertBefore(summaryEl, tabsEl);
@@ -690,11 +690,11 @@ if (typeof firebase !== 'undefined') {
 
       const collectionLabel = activeCollection === 'auto_mithram' ? '🛺 Auto Mithram Performance' : (activeCollection === 'business_pages' ? '📄 Business Pages Performance' : '🔧 Services Directory Performance');
       summaryEl.innerHTML = `
-        <div style="font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.04em; opacity:0.95;">${collectionLabel}</div>
-        <div style="display:flex; gap:12px; font-weight:700; font-size:14px; flex-wrap:wrap;">
-          <span style="background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.3); backdrop-filter:blur(4px);">📞 Total Calls: ${totalCalls}</span>
-          <span style="background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.3); backdrop-filter:blur(4px);">💬 Total WhatsApp Leads: ${totalWa}</span>
-          <span style="background:rgba(255,255,255,0.18); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.3); backdrop-filter:blur(4px);">👁️ Total Views: ${totalViews}</span>
+        <div style="font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.02em; opacity:0.95;">${collectionLabel}</div>
+        <div style="display:flex; gap:6px; font-weight:700; font-size:10.5px; flex-wrap:wrap;">
+          <span style="background:rgba(255,255,255,0.18); padding:2px 7px; border-radius:8px; border:1px solid rgba(255,255,255,0.3);">📞 Calls: ${totalCalls}</span>
+          <span style="background:rgba(255,255,255,0.18); padding:2px 7px; border-radius:8px; border:1px solid rgba(255,255,255,0.3);">💬 WhatsApp: ${totalWa}</span>
+          <span style="background:rgba(255,255,255,0.18); padding:2px 7px; border-radius:8px; border:1px solid rgba(255,255,255,0.3);">👁️ Views: ${totalViews}</span>
         </div>
       `;
     }
