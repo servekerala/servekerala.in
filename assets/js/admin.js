@@ -2771,8 +2771,12 @@ ${whyHTML}
       const districtFilter = (document.getElementById('perf-filter-district')?.value || filters.district || '').toLowerCase().trim();
       const categoryFilter = (document.getElementById('perf-filter-category')?.value || filters.category || '').toLowerCase().trim();
       const searchFilter = (document.getElementById('perf-filter-business')?.value || filters.business || '').toLowerCase().trim();
+      const typeFilter = (document.getElementById('perf-filter-type')?.value || '').toLowerCase().trim();
       const sortBy = document.getElementById('perf-filter-sort')?.value || 'leads';
 
+      if (typeFilter) {
+        filtered = filtered.filter(b => (b.type || 'listing') === typeFilter);
+      }
       if (districtFilter) {
         filtered = filtered.filter(b => (b.district || '').toLowerCase() === districtFilter);
       }
@@ -2808,11 +2812,22 @@ ${whyHTML}
         const waMsg = encodeURIComponent(`Hello ${b.name}, ServeKerala Admin is sharing your monthly performance stats: ${b.totalInquiries || 0} leads generated.`);
         const waLink = phone ? `https://wa.me/${phone.length === 10 ? '91' + phone : phone}?text=${waMsg}` : '';
 
+        const isBizPage = b.type === 'business_page';
+        const typeBadge = isBizPage
+          ? `<span style="display:inline-block; font-size:10px; font-weight:700; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; border:1px solid #bae6fd;">📄 Landing Page</span>`
+          : `<span style="display:inline-block; font-size:10px; font-weight:700; background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:4px; border:1px solid #bbf7d0;">🛠️ Directory Listing</span>`;
+
+        const viewLink = isBizPage ? `/business/${b.id}/` : (b.website || '');
+
         return `
           <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
             <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; font-weight: 700; color: #0f172a;">
-              ${b.name}
-              <span style="color: #10b981; font-size: 11px; margin-left: 4px;" title="Verified Pro">✓</span>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span>${b.name}</span>
+                <span style="color: #10b981; font-size: 11px;" title="Verified Pro">✓</span>
+                ${typeBadge}
+              </div>
+              ${viewLink ? `<div style="font-size: 11px; font-weight: normal; margin-top: 3px;"><a href="${viewLink}" target="_blank" style="color: #0284c7; text-decoration: none;">${isBizPage ? '/business/' + b.id + '/' : 'Live View'} &nearr;</a></div>` : ''}
             </td>
             <td style="padding: 12px 14px; border-right: 1px solid #f1f5f9; text-transform: capitalize; color: #475569;">
               <span style="background: #f1f5f9; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${b.category || 'Service'}</span>
@@ -2855,10 +2870,11 @@ ${whyHTML}
       }
 
       let csvContent = 'data:text/csv;charset=utf-8,';
-      csvContent += 'Business Name,Category,District,Town,Phone,Profile Views,Call Clicks,WhatsApp Leads,Total Inquiries\n';
+      csvContent += 'Business Name,Type,Category,District,Town,Phone,Profile Views,Call Clicks,WhatsApp Leads,Total Inquiries\n';
 
       businesses.forEach(b => {
         const name = (b.name || '').replace(/,/g, ' ');
+        const type = b.type === 'business_page' ? 'Landing Page' : 'Directory Listing';
         const cat = (b.category || '').replace(/,/g, ' ');
         const dist = (b.district || '').replace(/,/g, ' ');
         const town = (b.town || b.towns || '').replace(/,/g, ' ');
@@ -2868,7 +2884,7 @@ ${whyHTML}
         const wa = b.whatsappClicks || 0;
         const total = b.totalInquiries || 0;
 
-        csvContent += `"${name}","${cat}","${dist}","${town}","${phone}",${views},${calls},${wa},${total}\n`;
+        csvContent += `"${name}","${type}","${cat}","${dist}","${town}","${phone}",${views},${calls},${wa},${total}\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
@@ -2908,11 +2924,13 @@ ${whyHTML}
     }
 
     const kpiSearchInput = document.getElementById('perf-filter-business');
+    const kpiTypeSelect = document.getElementById('perf-filter-type');
     const kpiDistSelect = document.getElementById('perf-filter-district');
     const kpiCatSelect = document.getElementById('perf-filter-category');
     const kpiSortSelect = document.getElementById('perf-filter-sort');
 
     if (kpiSearchInput) kpiSearchInput.addEventListener('input', () => computeAndRenderKPI());
+    if (kpiTypeSelect) kpiTypeSelect.addEventListener('change', () => computeAndRenderKPI());
     if (kpiDistSelect) kpiDistSelect.addEventListener('change', () => computeAndRenderKPI());
     if (kpiCatSelect) kpiCatSelect.addEventListener('change', () => computeAndRenderKPI());
     if (kpiSortSelect) kpiSortSelect.addEventListener('change', () => computeAndRenderKPI());

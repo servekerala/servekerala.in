@@ -28,7 +28,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/assets/js/events-loader.js?v=1.0" defer></script>
-  <script src="/assets/js/admin.js?v=27.6" defer></script>
+  <script src="/assets/js/admin.js?v=27.7" defer></script>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
   <script>
@@ -1146,6 +1146,16 @@
               Business</label>
             <input type="text" id="perf-filter-business" placeholder="Type name..."
               style="width: 100%; height: 36px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 10px; font-size: 13px; background: #fff;">
+          </div>
+          <div>
+            <label
+              style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">Listing Type</label>
+            <select id="perf-filter-type"
+              style="width: 100%; height: 36px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 10px; font-size: 13px; background: #fff;">
+              <option value="">All Types</option>
+              <option value="listing">🛠️ Directory Listings</option>
+              <option value="business_page">📄 Business Landing Pages</option>
+            </select>
           </div>
           <div>
             <label
