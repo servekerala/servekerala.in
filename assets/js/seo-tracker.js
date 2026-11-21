@@ -1670,7 +1670,7 @@
         if (text) text.textContent = `⚡ Live Google Scan [${i + 1}/${scanLimit}]: "${kw.keyword}"...`;
 
         try {
-          const res = await fetch('/api/admin/serp-check', {
+          const res = await fetch('/api/admin/serp-check/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1833,7 +1833,7 @@
     }
 
     try {
-      const res = await fetch('/api/admin/serp-check', {
+      const res = await fetch('/api/admin/serp-check/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
