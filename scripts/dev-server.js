@@ -88,7 +88,7 @@ const server = http.createServer((req, res) => {
   }
 
   // Live Google SERP Checker API Endpoint
-  if (pathname === '/api/admin/serp-check' && req.method === 'POST') {
+  if ((pathname === '/api/admin/serp-check' || pathname === '/api/admin/serp-check/') && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => {
       body += chunk;

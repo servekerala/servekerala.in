@@ -1682,18 +1682,28 @@
         if (text) text.textContent = `⚡ Live Google Scan [${i + 1}/${scanLimit}]: "${kw.keyword}"...`;
 
         try {
-          const res = await fetch('/api/admin/serp-check/', {
+          const payload = {
+            keyword: kw.keyword,
+            apiKey: serperApiKey,
+            domain: 'servekerala.in',
+            competitors: ['justdial.com', 'sulekha.com', 'indiamart.com', 'naatilepani.com']
+          };
+
+          let res = await fetch('/api/admin/serp-check/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              keyword: kw.keyword,
-              apiKey: serperApiKey,
-              domain: 'servekerala.in',
-              competitors: ['justdial.com', 'sulekha.com', 'indiamart.com', 'naatilepani.com']
-            })
-          });
+            body: JSON.stringify(payload)
+          }).catch(() => null);
 
-          if (res.ok) {
+          if (!res || res.status === 404) {
+            res = await fetch('/api/admin/serp-check', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            }).catch(() => null);
+          }
+
+          if (res && res.ok) {
             const data = await res.json();
             if (data.success && data.live) {
               kw.prevPosition = kw.position;
@@ -1845,18 +1855,34 @@
     }
 
     try {
-      const res = await fetch('/api/admin/serp-check/', {
+      const payload = {
+        keyword: 'solar installation pathanamthitta',
+        apiKey: key,
+        domain: 'servekerala.in',
+        competitors: ['justdial.com', 'sulekha.com', 'indiamart.com', 'naatilepani.com']
+      };
+
+      let res = await fetch('/api/admin/serp-check/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          keyword: 'solar installation pathanamthitta',
-          apiKey: key,
-          domain: 'servekerala.in',
-          competitors: ['justdial.com', 'sulekha.com', 'indiamart.com', 'naatilepani.com']
-        })
-      });
+        body: JSON.stringify(payload)
+      }).catch(() => null);
 
-      const data = await res.json();
+      if (!res || res.status === 404) {
+        res = await fetch('/api/admin/serp-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        const text = await res.text().catch(() => '');
+        throw new Error(res.status === 404 ? 'Endpoint /api/admin/serp-check returned 404. Restarting dev-server...' : (text.slice(0, 100) || jsonErr.message));
+      }
       if (data.success && data.live) {
         alert(`🎉 Live Google SERP Connection SUCCESSFUL!\n\nKeyword: "${data.keyword}"\nGoogle Scanned Results: ${data.totalScanned}\nServeKerala Position: ${data.position ? '#' + data.position : 'Not in top ' + data.totalScanned}\nJustdial Position: #${data.competitors['justdial.com'] || '—'}\nSulekha Position: #${data.competitors['sulekha.com'] || '—'}\n\nYour API key is working and live Google queries are active!`);
         serperApiKey = key;
