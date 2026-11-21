@@ -18,6 +18,15 @@ function getHtmlFiles(dir, fileList = []) {
     if (fs.statSync(fullPath).isDirectory()) {
       getHtmlFiles(fullPath, fileList);
     } else if (file === 'index.html') {
+      const html = fs.readFileSync(fullPath, 'utf8');
+      const robotsTag = html.match(/<meta\s+name=["']robots["']\s+content=["']([^"']+)["'][^>]*>/i);
+      const canonicalTag = html.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["'][^>]*>/i);
+      const urlPath = relativePath.replace(/\\/g, '/').replace(/\/index\.html$/, '/').replace(/^index\.html$/, '');
+      const expectedUrl = `https://servekerala.in/${urlPath}`;
+
+      if (robotsTag && /\bnoindex\b/i.test(robotsTag[1])) continue;
+      if (canonicalTag && canonicalTag[1].replace(/\/$/, '') !== expectedUrl.replace(/\/$/, '')) continue;
+
       fileList.push(relativePath);
     }
   }
@@ -27,19 +36,9 @@ function getHtmlFiles(dir, fileList = []) {
 console.log('Generating sitemap.xml based on actual filesystem...');
 const htmlFiles = getHtmlFiles(rootDir);
 
-// Seed event slugs to index in Google
-const seedEventSlugs = [
-  'central-travancore-flower-show-2026',
-  'kottayam-mega-shopping-and-trade-expo',
-  'maramon-convention-2027',
-  'alappuzha-beach-carnival-food-fest',
-  'kollam-fest-cultural-extravaganza',
-  'adoor-all-kerala-sevens-football-tournament'
-];
-
 const dateStr = new Date().toISOString().split('T')[0];
 let xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
 
 // Sort files to keep core pages at the top
@@ -69,20 +68,8 @@ for (const relPath of htmlFiles) {
   </url>`;
 }
 
-// Add Seed Event Detail URLs
-for (const slug of seedEventSlugs) {
-  const eventUrl = `https://servekerala.in/events/${slug}/`;
-  xmlContent += `
-  <url>
-    <loc>${eventUrl}</loc>
-    <lastmod>${dateStr}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>`;
-}
-
 xmlContent += '\n</urlset>\n';
 
 fs.writeFileSync(sitemapPath, xmlContent, 'utf8');
-const totalUrls = htmlFiles.length + seedEventSlugs.length;
+const totalUrls = htmlFiles.length;
 console.log(`Generated sitemap.xml with ${totalUrls} URLs successfully!`);

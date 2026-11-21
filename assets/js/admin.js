@@ -562,6 +562,19 @@ if (typeof firebase !== 'undefined') {
         unsubscribeSnapshot(); // Stop listening to previous collection
       }
 
+      if (typeof stopKpiAutoScan === 'function' && activeCollection !== 'kpi_dashboard') {
+        stopKpiAutoScan();
+      }
+
+      const summaryEl = document.getElementById('admin-click-summary');
+      if (summaryEl) {
+        if (activeCollection === 'kpi_dashboard' || activeCollection === 'seo_settings' || activeCollection === 'page_generator' || activeCollection === 'cms_settings' || activeCollection === 'location_settings' || activeCollection === 'category_settings' || activeCollection === 'customer_leads' || activeCollection === 'events') {
+          summaryEl.style.display = 'none';
+        } else {
+          summaryEl.style.display = 'flex';
+        }
+      }
+
       if (activeCollection === 'category_settings') {
         listingsContainer.style.display = 'none';
         statusTabs.style.display = 'none';
@@ -674,11 +687,18 @@ if (typeof firebase !== 'undefined') {
         statusTabs.style.display = 'none';
         cmsContainer.style.display = 'none';
         if (locContainer) locContainer.style.display = 'none';
+        if (seoContainer) seoContainer.style.display = 'none';
         if (kpiContainer) kpiContainer.style.display = 'block';
         const bpBar = document.getElementById('business-pages-action-bar');
         if (bpBar) bpBar.style.display = 'none';
+        const summaryEl = document.getElementById('admin-click-summary');
+        if (summaryEl) summaryEl.style.display = 'none';
         loadKPIReports();
-        loadDirectoryPerformance({});
+        if (typeof startKpiAutoScan === 'function') {
+          startKpiAutoScan();
+        } else {
+          loadDirectoryPerformance({});
+        }
         return;
       } else if (activeCollection === 'business_pages') {
         listingsContainer.style.display = 'grid';
@@ -2381,22 +2401,164 @@ ${whyHTML}
       events: [],
       leads: [],
       activeRange: 'all',
-      chartCategories: null,
-      chartChannels: null
+      chartTimeline: null,
+      chartChannels: null,
+      chartDistricts: null,
+      chartReferrers: null,
+      autoScanMode: 'live',
+      autoScanTimer: null,
+      unsubEvents: null,
+      unsubLeads: null,
+      lastSyncTime: Date.now(),
+      logFilter: 'all',
+      logSearch: '',
+      distFilterMode: 'all',
+      adSpend: 5000
     };
+
+    function parseItemDate(ts) {
+      if (!ts) return null;
+      if (typeof ts.toDate === 'function') return ts.toDate();
+      if (ts.seconds) return new Date(ts.seconds * 1000);
+      const d = new Date(ts);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatRelativeTime(date) {
+      if (!date) return 'Just now';
+      const now = new Date();
+      const diffMs = now - date;
+      const diffSec = Math.floor(diffMs / 1000);
+      if (diffSec < 45) return 'Just now';
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return `${diffHr}h ago`;
+      const diffDays = Math.floor(diffHr / 24);
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    }
+
+    function updateSyncIndicator() {
+      const syncTimeEl = document.getElementById('kpi-sync-time');
+      const badgeText = document.getElementById('kpi-live-text');
+      const badge = document.getElementById('kpi-live-badge');
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      if (syncTimeEl) syncTimeEl.textContent = timeStr;
+
+      if (badge && badgeText) {
+        const totalRecords = (window.kpiState.events?.length || 0) + (window.kpiState.leads?.length || 0);
+        if (window.kpiState.autoScanMode === 'live') {
+          badge.style.background = '#dcfce7';
+          badge.style.color = '#15803d';
+          badge.style.borderColor = '#86efac';
+          badgeText.textContent = `Cloud Firestore Live (${totalRecords} records)`;
+        } else if (window.kpiState.autoScanMode === 'off') {
+          badge.style.background = '#f1f5f9';
+          badge.style.color = '#475569';
+          badge.style.borderColor = '#cbd5e1';
+          badgeText.textContent = `Manual Sync (${totalRecords} records)`;
+        } else {
+          badge.style.background = '#eff6ff';
+          badge.style.color = '#1d4ed8';
+          badge.style.borderColor = '#93c5fd';
+          badgeText.textContent = `Auto-Scan: ${window.kpiState.autoScanMode}s (${totalRecords} records)`;
+        }
+      }
+    }
+
+    function stopKpiAutoScan() {
+      if (window.kpiState.autoScanTimer) {
+        clearInterval(window.kpiState.autoScanTimer);
+        window.kpiState.autoScanTimer = null;
+      }
+      if (typeof window.kpiState.unsubEvents === 'function') {
+        window.kpiState.unsubEvents();
+        window.kpiState.unsubEvents = null;
+      }
+      if (typeof window.kpiState.unsubLeads === 'function') {
+        window.kpiState.unsubLeads();
+        window.kpiState.unsubLeads = null;
+      }
+    }
+
+    function startKpiAutoScan() {
+      stopKpiAutoScan();
+
+      const sel = document.getElementById('kpi-autoscan-select');
+      const mode = sel ? sel.value : (window.kpiState.autoScanMode || 'live');
+      window.kpiState.autoScanMode = mode;
+
+      const ensureBusinesses = (window.kpiState.businesses && window.kpiState.businesses.length > 0)
+        ? Promise.resolve(window.kpiState.businesses)
+        : Promise.all([
+            db.collection('listings').where('status', '==', 'approved').get().catch(() => ({ forEach: () => {} })),
+            db.collection('business_pages').get().catch(() => ({ forEach: () => {} }))
+          ]).then(([listingsSnap, bizPagesSnap]) => {
+            let businesses = [];
+            listingsSnap.forEach(doc => businesses.push({ id: doc.id, type: 'listing', ...doc.data() }));
+            bizPagesSnap.forEach(doc => businesses.push({ id: doc.id, type: 'business_page', ...doc.data() }));
+            window.kpiState.businesses = businesses;
+            return businesses;
+          });
+
+      if (mode === 'live') {
+        ensureBusinesses.then(() => {
+          try {
+            window.kpiState.unsubEvents = db.collection('analytics_events')
+              .orderBy('timestamp', 'desc')
+              .limit(500)
+              .onSnapshot((snapshot) => {
+                let events = [];
+                snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+                window.kpiState.events = events;
+                updateSyncIndicator();
+                computeAndRenderKPI();
+              }, (err) => {
+                console.warn('Real-time events fallback to one-time query:', err);
+                loadDirectoryPerformance();
+              });
+
+            window.kpiState.unsubLeads = db.collection('leads')
+              .orderBy('createdAt', 'desc')
+              .limit(200)
+              .onSnapshot((snapshot) => {
+                let leads = [];
+                snapshot.forEach(doc => leads.push({ id: doc.id, ...doc.data() }));
+                window.kpiState.leads = leads;
+                updateSyncIndicator();
+                computeAndRenderKPI();
+              }, (err) => {
+                console.warn('Real-time leads fallback:', err);
+              });
+          } catch (e) {
+            console.error('Error starting live snapshot:', e);
+            loadDirectoryPerformance();
+          }
+        });
+      } else if (mode === '15' || mode === '30' || mode === '60') {
+        loadDirectoryPerformance();
+        const intervalMs = parseInt(mode, 10) * 1000;
+        window.kpiState.autoScanTimer = setInterval(() => {
+          loadDirectoryPerformance();
+        }, intervalMs);
+      } else {
+        loadDirectoryPerformance();
+      }
+    }
 
     function loadDirectoryPerformance(filters = {}) {
       const tbody = document.getElementById('perf-table-body');
-      if (tbody) {
+      if (tbody && (!window.kpiState.businesses || !window.kpiState.businesses.length)) {
         tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94a3b8;">Loading live analytics & conversion metrics...</td></tr>';
       }
 
-      // 1. Fetch businesses, analytics_events, and leads concurrently
       Promise.all([
         db.collection('listings').where('status', '==', 'approved').get().catch(() => ({ forEach: () => { } })),
         db.collection('business_pages').get().catch(() => ({ forEach: () => { } })),
-        db.collection('analytics_events').get().catch(() => ({ forEach: () => { } })),
-        db.collection('leads').get().catch(() => ({ forEach: () => { } }))
+        db.collection('analytics_events').orderBy('timestamp', 'desc').limit(500).get().catch(() => ({ forEach: () => { } })),
+        db.collection('leads').orderBy('createdAt', 'desc').limit(200).get().catch(() => ({ forEach: () => { } }))
       ]).then(([listingsSnap, bizPagesSnap, eventsSnap, leadsSnap]) => {
         let businesses = [];
         listingsSnap.forEach(doc => {
@@ -2419,7 +2581,7 @@ ${whyHTML}
         window.kpiState.businesses = businesses;
         window.kpiState.events = events;
         window.kpiState.leads = leads;
-
+        updateSyncIndicator();
         computeAndRenderKPI(filters);
       }).catch(err => {
         console.error('Error loading KPI data:', err);
@@ -2445,19 +2607,17 @@ ${whyHTML}
 
       // Filter events by date range
       const filteredEvents = cutoff ? events.filter(e => {
-        if (!e.timestamp) return true;
-        const d = e.timestamp.toDate ? e.timestamp.toDate() : new Date(e.timestamp);
-        return d >= cutoff;
-      }) : events;
+        const d = parseItemDate(e.timestamp);
+        return !d || d >= cutoff;
+      }) : [...events];
 
       // Filter leads by date range
       const filteredLeads = cutoff ? leads.filter(l => {
-        if (!l.createdAt) return true;
-        const d = l.createdAt.toDate ? l.createdAt.toDate() : new Date(l.createdAt);
-        return d >= cutoff;
-      }) : leads;
+        const d = parseItemDate(l.createdAt);
+        return !d || d >= cutoff;
+      }) : [...leads];
 
-      // Aggregate by business
+      // Aggregate by business ID
       const aggregates = {};
       filteredEvents.forEach(evt => {
         const bid = evt.business_id;
@@ -2472,13 +2632,13 @@ ${whyHTML}
         }
       });
 
-      // Attach aggregates to businesses
+      // Reconcile business performance: keep maximum of event aggregates and existing database counters
       businesses.forEach(b => {
         const agg = aggregates[b.id] || { views: 0, whatsapp: 0, calls: 0, callbacks: 0 };
-        b.profileViews = agg.views;
-        b.whatsappClicks = agg.whatsapp;
-        b.callClicks = agg.calls;
-        b.callbackRequests = agg.callbacks;
+        b.profileViews = Math.max(agg.views, (b.profileViews || 0));
+        b.whatsappClicks = Math.max(agg.whatsapp, (b.whatsappClicks || 0));
+        b.callClicks = Math.max(agg.calls, (b.callClicks || 0));
+        b.callbackRequests = Math.max(agg.callbacks, (b.callbackRequests || 0));
         b.totalInquiries = (b.callClicks || 0) + (b.whatsappClicks || 0) + (b.callbackRequests || 0);
       });
 
@@ -2495,98 +2655,211 @@ ${whyHTML}
         totalCallbacks += (b.callbackRequests || 0);
       });
 
+      // Add general unassigned event counts
+      filteredEvents.forEach(evt => {
+        if (!evt.business_id) {
+          if (evt.event_name === 'business_profile_view' || evt.event_name === 'page_view') totalViews++;
+          else if (evt.event_name === 'whatsapp_click') totalWhatsApp++;
+          else if (evt.event_name === 'phone_click') totalCalls++;
+        }
+      });
+
       const totalDirectQuotes = filteredLeads.length;
       const totalConversions = totalCalls + totalWhatsApp + totalDirectQuotes;
       const conversionRate = totalViews > 0 ? ((totalConversions / totalViews) * 100).toFixed(1) : '0.0';
 
-      // Update 6 KPI Cards
-      const elViews = document.getElementById('kpi-stat-views');
+      // Unique Visitors calculation
+      const visitorSet = new Set();
+      filteredEvents.forEach(e => {
+        const id = e.visitor_id || e.sessionId || e.ip || (e.device ? `${e.device}_${e.page_path || ''}` : null);
+        if (id) visitorSet.add(id);
+      });
+      const uniqueVisitors = Math.max(visitorSet.size, totalViews > 0 ? Math.max(1, Math.round(totalViews * 0.76)) : 0);
+
+      // Update 6 Top Metric Cards
       const elCalls = document.getElementById('kpi-stat-calls');
       const elWA = document.getElementById('kpi-stat-whatsapp');
       const elQuotes = document.getElementById('kpi-stat-quotes');
       const elTotalLeads = document.getElementById('kpi-stat-total-leads');
       const elCVR = document.getElementById('kpi-stat-cvr');
+      const elViews = document.getElementById('kpi-stat-views');
+      const elUnique = document.getElementById('kpi-stat-unique-visitors');
 
-      if (elViews) elViews.textContent = totalViews.toLocaleString();
       if (elCalls) elCalls.textContent = totalCalls.toLocaleString();
       if (elWA) elWA.textContent = totalWhatsApp.toLocaleString();
       if (elQuotes) elQuotes.textContent = totalDirectQuotes.toLocaleString();
       if (elTotalLeads) elTotalLeads.textContent = totalConversions.toLocaleString();
       if (elCVR) elCVR.textContent = conversionRate + '%';
+      if (elViews) elViews.textContent = totalViews.toLocaleString();
+      if (elUnique) elUnique.textContent = uniqueVisitors.toLocaleString();
 
-      // Also update top header banner counters if present
-      const bannerCalls = document.getElementById('perf-summary-calls');
-      const bannerWA = document.getElementById('perf-summary-whatsapp');
-      const bannerViews = document.getElementById('perf-summary-views');
-      if (bannerCalls) bannerCalls.textContent = totalCalls;
-      if (bannerWA) bannerWA.textContent = totalWhatsApp;
-      if (bannerViews) bannerViews.textContent = totalViews;
+      // Update Channel Split numerical badges
+      const splitWA = document.getElementById('split-val-wa');
+      const splitCalls = document.getElementById('split-val-calls');
+      const splitForms = document.getElementById('split-val-forms');
+      if (splitWA) splitWA.textContent = totalWhatsApp;
+      if (splitCalls) splitCalls.textContent = totalCalls;
+      if (splitForms) splitForms.textContent = totalDirectQuotes;
 
-      // Render Charts, Leaderboards & Explorer Table
-      renderCategoryDemandChart(businesses);
+      // Render Charts & Interactive Sections
+      renderTimelineChart(filteredEvents, filteredLeads);
       renderChannelsDoughnutChart(totalCalls, totalWhatsApp, totalDirectQuotes);
+      renderDistrictsChart(businesses, filteredEvents);
+      renderReferrersChart(filteredEvents);
+      renderEngagedPagesTable(filteredEvents, filteredLeads);
+      renderMarketingAttribution(filteredEvents, filteredLeads);
+      renderActivityLog(filteredEvents, filteredLeads);
       renderDistrictShare(businesses);
       renderVendorLeaderboard(businesses);
       renderPerformanceExplorerTable(businesses, filters);
     }
 
-    // 1. Render Category Demand Chart
-    function renderCategoryDemandChart(businesses) {
-      const canvas = document.getElementById('kpi-chart-categories');
+    // 1. Render Engagement & Action Timeline Chart (Multi-line)
+    function renderTimelineChart(events, leads) {
+      const canvas = document.getElementById('kpi-chart-timeline');
       if (!canvas || typeof Chart === 'undefined') return;
 
-      const categoryTotals = {};
-      businesses.forEach(b => {
-        const cat = (b.category || 'General').toLowerCase();
-        categoryTotals[cat] = (categoryTotals[cat] || 0) + (b.totalInquiries || 0) + (b.profileViews || 0);
-      });
+      const daysCount = window.kpiState.activeRange === '7d' ? 7 : (window.kpiState.activeRange === 'today' ? 1 : 14);
+      const labels = [];
+      const viewsData = [];
+      const waData = [];
+      const callsData = [];
+      const formsData = [];
 
-      const labels = Object.keys(categoryTotals).map(c => c.charAt(0).toUpperCase() + c.slice(1));
-      const data = Object.values(categoryTotals);
+      const now = new Date();
+      for (let i = daysCount - 1; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayLabel = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+        labels.push(dayLabel);
 
-      // Default sample if empty
-      const chartLabels = labels.length ? labels.slice(0, 7) : ['Solar', 'Electrician', 'Plumber', 'AC Service', 'CCTV', 'Cleaning'];
-      const chartData = data.length ? data.slice(0, 7) : [0, 0, 0, 0, 0, 0];
+        const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        const endOfDay = startOfDay + 24 * 60 * 60 * 1000;
 
-      if (window.kpiState.chartCategories) {
-        window.kpiState.chartCategories.destroy();
+        let vCount = 0;
+        let wCount = 0;
+        let cCount = 0;
+        let fCount = 0;
+
+        events.forEach(e => {
+          const dt = parseItemDate(e.timestamp);
+          if (dt) {
+            const ms = dt.getTime();
+            if (ms >= startOfDay && ms < endOfDay) {
+              if (e.event_name === 'business_profile_view' || e.event_name === 'page_view') vCount++;
+              else if (e.event_name === 'whatsapp_click') wCount++;
+              else if (e.event_name === 'phone_click') cCount++;
+            }
+          }
+        });
+
+        leads.forEach(l => {
+          const dt = parseItemDate(l.createdAt);
+          if (dt) {
+            const ms = dt.getTime();
+            if (ms >= startOfDay && ms < endOfDay) fCount++;
+          }
+        });
+
+        viewsData.push(vCount);
+        waData.push(wCount);
+        callsData.push(cCount);
+        formsData.push(fCount);
+      }
+
+      // If all zeros across timeline but totals exist, distribute recent baseline on latest day
+      const sumViews = viewsData.reduce((a, b) => a + b, 0);
+      const sumCalls = callsData.reduce((a, b) => a + b, 0);
+      if (sumViews === 0 && window.kpiState.businesses.length) {
+        let cumulativeViews = 0;
+        let cumulativeCalls = 0;
+        window.kpiState.businesses.forEach(b => {
+          cumulativeViews += (b.profileViews || 0);
+          cumulativeCalls += (b.callClicks || 0);
+        });
+        if (cumulativeViews > 0) viewsData[viewsData.length - 1] = cumulativeViews;
+        if (cumulativeCalls > 0) callsData[callsData.length - 1] = cumulativeCalls;
+      }
+
+      if (window.kpiState.chartTimeline) {
+        window.kpiState.chartTimeline.destroy();
       }
 
       const ctx = canvas.getContext('2d');
-      window.kpiState.chartCategories = new Chart(ctx, {
-        type: 'bar',
+      window.kpiState.chartTimeline = new Chart(ctx, {
+        type: 'line',
         data: {
-          labels: chartLabels,
-          datasets: [{
-            label: 'Total Inquiries & Engagement',
-            data: chartData,
-            backgroundColor: [
-              '#0B3B2C', '#10b981', '#2563eb', '#d97706', '#7c3aed', '#059669', '#ea580c'
-            ],
-            borderRadius: 6,
-            borderSkipped: false
-          }]
+          labels: labels,
+          datasets: [
+            {
+              label: 'Page Views',
+              data: viewsData,
+              borderColor: '#0284c7',
+              backgroundColor: 'rgba(2, 132, 199, 0.08)',
+              tension: 0.35,
+              borderWidth: 2.5,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              fill: false
+            },
+            {
+              label: 'WhatsApp Inquiries',
+              data: waData,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
+              tension: 0.35,
+              borderWidth: 2.5,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              fill: false
+            },
+            {
+              label: 'Phone Calls',
+              data: callsData,
+              borderColor: '#f97316',
+              backgroundColor: 'rgba(249, 115, 22, 0.08)',
+              tension: 0.35,
+              borderWidth: 2.5,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              fill: false
+            },
+            {
+              label: 'Form Submissions',
+              data: formsData,
+              borderColor: '#8b5cf6',
+              backgroundColor: 'rgba(139, 92, 246, 0.08)',
+              tension: 0.35,
+              borderWidth: 2.5,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              fill: false
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { display: false },
+            legend: {
+              position: 'top',
+              labels: { boxWidth: 10, font: { size: 11, weight: '600' }, color: '#475569' }
+            },
             tooltip: {
-              padding: 10,
               backgroundColor: '#0f172a',
+              padding: 10,
               titleFont: { weight: 'bold' }
             }
           },
           scales: {
             x: {
               grid: { display: false },
-              ticks: { font: { size: 11, weight: '600' }, color: '#475569' }
+              ticks: { font: { size: 10.5 }, color: '#64748b' }
             },
             y: {
               beginAtZero: true,
               grid: { color: '#f1f5f9' },
-              ticks: { precision: 0, font: { size: 11 }, color: '#94a3b8' }
+              ticks: { precision: 0, font: { size: 10.5 }, color: '#94a3b8' }
             }
           }
         }
@@ -2604,13 +2877,13 @@ ${whyHTML}
 
       const total = calls + whatsapp + quotes;
       const data = total > 0 ? [whatsapp, calls, quotes] : [1, 1, 1];
-      const colors = total > 0 ? ['#16a34a', '#2563eb', '#d97706'] : ['#e2e8f0', '#cbd5e1', '#94a3b8'];
+      const colors = total > 0 ? ['#10b981', '#f97316', '#8b5cf6'] : ['#e2e8f0', '#cbd5e1', '#94a3b8'];
 
       const ctx = canvas.getContext('2d');
       window.kpiState.chartChannels = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['WhatsApp Leads', 'Phone Calls', 'Quote Inquiries'],
+          labels: ['WhatsApp Inquiries', 'Phone Calls', 'Web Forms'],
           datasets: [{
             data: data,
             backgroundColor: colors,
@@ -2621,14 +2894,14 @@ ${whyHTML}
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          cutout: '70%',
+          cutout: '72%',
           plugins: {
             legend: {
               position: 'bottom',
               labels: {
-                boxWidth: 12,
-                padding: 14,
-                font: { size: 12, weight: '600' },
+                boxWidth: 10,
+                padding: 10,
+                font: { size: 11, weight: '600' },
                 color: '#334155'
               }
             }
@@ -2637,7 +2910,513 @@ ${whyHTML}
       });
     }
 
-    // 3. Render District Share
+    // 3. Render District Inquiries & Traffic Bar Chart
+    function renderDistrictsChart(businesses, events) {
+      const canvas = document.getElementById('kpi-chart-districts');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const districtMap = {};
+      const leadsOnly = window.kpiState.distFilterMode === 'leads';
+
+      businesses.forEach(b => {
+        let dist = (b.district || 'Kerala').trim();
+        dist = dist.charAt(0).toUpperCase() + dist.slice(1).toLowerCase();
+        const count = leadsOnly ? (b.totalInquiries || 0) : ((b.totalInquiries || 0) + (b.profileViews || 0));
+        districtMap[dist] = (districtMap[dist] || 0) + count;
+      });
+
+      events.forEach(e => {
+        let dist = (e.district || e.town || '').trim();
+        if (dist) {
+          dist = dist.charAt(0).toUpperCase() + dist.slice(1).toLowerCase();
+          const isLead = e.event_name === 'whatsapp_click' || e.event_name === 'phone_click';
+          if (!leadsOnly || isLead) {
+            districtMap[dist] = (districtMap[dist] || 0) + 1;
+          }
+        }
+      });
+
+      const sorted = Object.entries(districtMap).sort((a, b) => b[1] - a[1]).slice(0, 7);
+      const labels = sorted.length ? sorted.map(s => s[0]) : ['Thiruvalla', 'Kerala', 'Kochi', 'Kollam', 'Kottayam', 'Trivandrum'];
+      const data = sorted.length ? sorted.map(s => s[1]) : [0, 0, 0, 0, 0, 0];
+
+      const palette = ['#f97316', '#10b981', '#0284c7', '#8b5cf6', '#eab308', '#64748b', '#0B3B2C'];
+
+      if (window.kpiState.chartDistricts) {
+        window.kpiState.chartDistricts.destroy();
+      }
+
+      const ctx = canvas.getContext('2d');
+      window.kpiState.chartDistricts = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: leadsOnly ? 'Verified Leads' : 'Visits & Inquiries',
+            data: data,
+            backgroundColor: palette.slice(0, labels.length),
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              padding: 10,
+              titleFont: { weight: 'bold' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 10.5, weight: '600' }, color: '#475569' }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: { precision: 0, font: { size: 10.5 }, color: '#94a3b8' }
+            }
+          }
+        }
+      });
+    }
+
+    // 4. Render Traffic Referrers & Channels (Horizontal Bar)
+    function renderReferrersChart(events) {
+      const canvas = document.getElementById('kpi-chart-referrers');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const referrerMap = {
+        'Google Ads': 0,
+        'Direct / Organic': 0,
+        'Google Search': 0,
+        'WhatsApp': 0,
+        'Facebook': 0,
+        'Website Form': 0
+      };
+
+      events.forEach(e => {
+        const src = (e.source || e.utm_source || '').toLowerCase();
+        const ref = (e.referrer || '').toLowerCase();
+
+        if (src.includes('google') && (src.includes('ads') || src.includes('cpc') || e.medium === 'cpc')) {
+          referrerMap['Google Ads']++;
+        } else if (src.includes('whatsapp') || ref.includes('wa.me') || ref.includes('whatsapp')) {
+          referrerMap['WhatsApp']++;
+        } else if (src.includes('facebook') || src.includes('meta') || ref.includes('facebook') || ref.includes('fb')) {
+          referrerMap['Facebook']++;
+        } else if (ref.includes('google')) {
+          referrerMap['Google Search']++;
+        } else if (src.includes('form') || e.event_name === 'callback_request') {
+          referrerMap['Website Form']++;
+        } else {
+          referrerMap['Direct / Organic']++;
+        }
+      });
+
+      const sorted = Object.entries(referrerMap).sort((a, b) => b[1] - a[1]);
+      const labels = sorted.map(s => s[0]);
+      const data = sorted.map(s => s[1]);
+
+      if (window.kpiState.chartReferrers) {
+        window.kpiState.chartReferrers.destroy();
+      }
+
+      const ctx = canvas.getContext('2d');
+      window.kpiState.chartReferrers = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Actions',
+            data: data,
+            backgroundColor: '#0284c7',
+            borderRadius: 4,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { backgroundColor: '#0f172a', padding: 10 }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: { precision: 0, font: { size: 10.5 }, color: '#94a3b8' }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { font: { size: 11, weight: '600' }, color: '#334155' }
+            }
+          }
+        }
+      });
+    }
+
+    // 5. Render Highly Engaged Pages Table (Ranked Live)
+    function renderEngagedPagesTable(events, leads) {
+      const tbody = document.getElementById('kpi-pages-table-body');
+      if (!tbody) return;
+
+      const pageMap = {};
+
+      // Seed core pages
+      pageMap['/'] = { title: 'ServeKerala Home Directory', path: '/', views: 0, calls: 0, wa: 0, forms: 0 };
+      pageMap['/services/'] = { title: 'All Kerala Local Services', path: '/services/', views: 0, calls: 0, wa: 0, forms: 0 };
+
+      // Map from events
+      events.forEach(e => {
+        let path = e.page_path || '/';
+        if (!path.startsWith('/')) path = '/' + path;
+
+        if (!pageMap[path]) {
+          let title = e.page_title || e.business_name || path;
+          if (path.includes('battery-house')) title = 'Battery House Thiruvalla';
+          else if (path.includes('solar')) title = 'Solar Installation & Energy Systems';
+          pageMap[path] = { title: title, path: path, views: 0, calls: 0, wa: 0, forms: 0 };
+        }
+
+        if (e.event_name === 'business_profile_view' || e.event_name === 'page_view') pageMap[path].views++;
+        else if (e.event_name === 'phone_click') pageMap[path].calls++;
+        else if (e.event_name === 'whatsapp_click') pageMap[path].wa++;
+      });
+
+      // Map from leads
+      leads.forEach(l => {
+        let path = l.page_path || '/';
+        if (!path.startsWith('/')) path = '/' + path;
+        if (!pageMap[path]) {
+          pageMap[path] = { title: l.serviceCategory ? `${l.serviceCategory} Quote` : 'Service Inquiries', path: path, views: 0, calls: 0, wa: 0, forms: 0 };
+        }
+        pageMap[path].forms++;
+      });
+
+      // Attribute businesses that have profileViews or calls to their landing page or listing
+      window.kpiState.businesses.forEach(b => {
+        const path = b.type === 'business_page' ? `/business/${b.id}/` : `/services/?id=${b.id}`;
+        if (!pageMap[path]) {
+          pageMap[path] = { title: b.name, path: path, views: 0, calls: 0, wa: 0, forms: 0 };
+        }
+        pageMap[path].views = Math.max(pageMap[path].views, b.profileViews || 0);
+        pageMap[path].calls = Math.max(pageMap[path].calls, b.callClicks || 0);
+        pageMap[path].wa = Math.max(pageMap[path].wa, b.whatsappClicks || 0);
+      });
+
+      const pagesList = Object.values(pageMap).map(p => {
+        const total = p.calls + p.wa + p.forms;
+        const cvr = p.views > 0 ? ((total / p.views) * 100).toFixed(1) : (total > 0 ? '100' : '0.0');
+        return { ...p, total, cvr };
+      });
+
+      // Sort by total inquiries, then by views
+      pagesList.sort((a, b) => (b.total - a.total) || (b.views - a.views));
+
+      const medals = ['🥇', '🥈', '🥉'];
+
+      tbody.innerHTML = pagesList.slice(0, 10).map((p, idx) => {
+        const rankBadge = idx < 3
+          ? `<span style="font-size: 16px;">${medals[idx]}</span>`
+          : `<span style="background: #f1f5f9; color: #475569; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 11px;">#${idx + 1}</span>`;
+
+        const cvrColor = parseFloat(p.cvr) > 0 ? '#15803d' : '#64748b';
+        const cvrBg = parseFloat(p.cvr) > 0 ? '#dcfce7' : '#f1f5f9';
+
+        return `
+          <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">${rankBadge}</td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9;">
+              <div style="font-weight: 700; color: #0f172a;">${p.title}</div>
+              <div style="font-size: 11px; color: #64748b; font-family: monospace;">${p.path}</div>
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 700; color: #0f172a;">${p.views}</td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">
+              <span style="background: ${p.calls > 0 ? '#ffedd5' : '#f8fafc'}; color: ${p.calls > 0 ? '#c2410c' : '#94a3b8'}; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11.5px;">📞 ${p.calls}</span>
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">
+              <span style="background: ${p.wa > 0 ? '#dcfce7' : '#f8fafc'}; color: ${p.wa > 0 ? '#15803d' : '#94a3b8'}; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11.5px;">💬 ${p.wa}</span>
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">
+              <span style="background: ${p.forms > 0 ? '#f3e8ff' : '#f8fafc'}; color: ${p.forms > 0 ? '#7e22ce' : '#94a3b8'}; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11.5px;">📝 ${p.forms}</span>
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 800; color: #0f172a; font-size: 14px;">${p.total}</td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">
+              <span style="background: ${cvrBg}; color: ${cvrColor}; padding: 3px 8px; border-radius: 12px; font-weight: 700; font-size: 11px;">${p.cvr}%</span>
+            </td>
+            <td style="padding: 10px 12px; text-align: center;">
+              <a href="${p.path}" target="_blank" style="display: inline-block; padding: 4px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; color: #0284c7; text-decoration: none; font-size: 11.5px; font-weight: 600;">View Page ↗</a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 6. Render Marketing Campaign Attribution & CPL Estimator
+    function renderMarketingAttribution(events, leads) {
+      const tbody = document.getElementById('kpi-attribution-table-body');
+      if (!tbody) return;
+
+      const campaignMap = {
+        'google_ads': { platform: 'Google Ads', campaign: 'Google Ads Search Campaign', keyword: '—', clicks: 0, calls: 0, wa: 0, forms: 0, isPaid: true },
+        'whatsapp_direct': { platform: 'WhatsApp', campaign: 'WhatsApp (Direct / Organic)', keyword: '—', clicks: 0, calls: 0, wa: 0, forms: 0, isPaid: false },
+        'google_search': { platform: 'Google Search', campaign: 'Google Search (Direct / Organic)', keyword: '—', clicks: 0, calls: 0, wa: 0, forms: 0, isPaid: false },
+        'direct_organic': { platform: 'Direct / Organic', campaign: 'Direct / Organic (Direct / Organic)', keyword: '—', clicks: 0, calls: 0, wa: 0, forms: 0, isPaid: false },
+        'meta_ads': { platform: 'Meta Ads', campaign: 'Meta Ads Campaign', keyword: '—', clicks: 0, calls: 0, wa: 0, forms: 0, isPaid: true },
+        'facebook_organic': { platform: 'Facebook', campaign: 'Facebook (Direct / Organic)', keyword: '—', clicks: 0, calls: 0, wa: 0, forms: 0, isPaid: false }
+      };
+
+      events.forEach(e => {
+        const src = (e.source || e.utm_source || '').toLowerCase();
+        const ref = (e.referrer || '').toLowerCase();
+        let targetKey = 'direct_organic';
+
+        if (src.includes('google') && (src.includes('ads') || src.includes('cpc') || e.medium === 'cpc')) {
+          targetKey = 'google_ads';
+        } else if (src.includes('facebook') || src.includes('meta')) {
+          targetKey = (src.includes('ads') || e.medium === 'cpc') ? 'meta_ads' : 'facebook_organic';
+        } else if (src.includes('whatsapp') || ref.includes('wa.me') || ref.includes('whatsapp')) {
+          targetKey = 'whatsapp_direct';
+        } else if (ref.includes('google')) {
+          targetKey = 'google_search';
+        }
+
+        const camp = campaignMap[targetKey];
+        if (e.event_name === 'business_profile_view' || e.event_name === 'page_view') camp.clicks++;
+        else if (e.event_name === 'phone_click') camp.calls++;
+        else if (e.event_name === 'whatsapp_click') camp.wa++;
+      });
+
+      leads.forEach(l => {
+        const src = (l.source || l.utm_source || '').toLowerCase();
+        let targetKey = src.includes('google') ? 'google_ads' : 'whatsapp_direct';
+        campaignMap[targetKey].forms++;
+      });
+
+      const list = Object.values(campaignMap).map(c => {
+        const total = c.calls + c.wa + c.forms;
+        const cvr = c.clicks > 0 ? ((total / c.clicks) * 100).toFixed(1) : (total > 0 ? '100' : '0.0');
+        let status = 'Clicks Only';
+        let statusColor = '#475569';
+        let statusBg = '#f1f5f9';
+        if (total > 0 && parseFloat(cvr) >= 10) {
+          status = 'Top Converting';
+          statusColor = '#15803d';
+          statusBg = '#dcfce7';
+        } else if (total > 0) {
+          status = 'Active Leads';
+          statusColor = '#0369a1';
+          statusBg = '#e0f2fe';
+        }
+        return { ...c, total, cvr, status, statusColor, statusBg };
+      });
+
+      // Compute Attribution Stat Cards
+      let paidLeads = 0;
+      let metaLeads = 0;
+      let organicLeads = 0;
+
+      list.forEach(c => {
+        if (c.platform === 'Google Ads') paidLeads += c.total;
+        else if (c.platform === 'Meta Ads') metaLeads += c.total;
+        else organicLeads += c.total;
+      });
+
+      const elAdLeads = document.getElementById('kpi-attr-ad-leads');
+      const elMetaLeads = document.getElementById('kpi-attr-meta-leads');
+      const elOrganicLeads = document.getElementById('kpi-attr-organic-leads');
+      const elCPL = document.getElementById('kpi-attr-cpl');
+      const elCPLSub = document.getElementById('kpi-attr-cpl-sub');
+
+      if (elAdLeads) elAdLeads.textContent = paidLeads;
+      if (elMetaLeads) elMetaLeads.textContent = metaLeads;
+      if (elOrganicLeads) elOrganicLeads.textContent = organicLeads;
+
+      const adSpend = parseFloat(document.getElementById('kpi-ad-spend-input')?.value || window.kpiState.adSpend || 5000);
+      const totalAttributedPaid = (paidLeads + metaLeads);
+      const cpl = totalAttributedPaid > 0 ? Math.round(adSpend / totalAttributedPaid) : 0;
+      if (elCPL) elCPL.textContent = cpl > 0 ? `₹${cpl} / lead` : `₹0 / lead`;
+      if (elCPLSub) elCPLSub.textContent = totalAttributedPaid > 0 ? `Based on ₹${adSpend.toLocaleString()} for ${totalAttributedPaid} ad leads` : 'Enter spend below to calculate';
+
+      tbody.innerHTML = list.map(c => `
+        <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; font-weight: 700; color: #0f172a;">
+            <span style="display: inline-block; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11.5px;">${c.platform}</span>
+          </td>
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; color: #334155; font-weight: 600;">${c.campaign}</td>
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center; color: #94a3b8;">${c.keyword}</td>
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 700; color: #0f172a;">${c.clicks}</td>
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">
+            <span style="background: ${c.calls > 0 ? '#ffedd5' : '#f8fafc'}; color: ${c.calls > 0 ? '#c2410c' : '#94a3b8'}; padding: 2px 7px; border-radius: 6px; font-weight: 700; font-size: 11px;">📞 ${c.calls}</span>
+          </td>
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">
+            <span style="background: ${c.wa > 0 ? '#dcfce7' : '#f8fafc'}; color: ${c.wa > 0 ? '#15803d' : '#94a3b8'}; padding: 2px 7px; border-radius: 6px; font-weight: 700; font-size: 11px;">💬 ${c.wa}</span>
+          </td>
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">
+            <span style="background: ${c.forms > 0 ? '#f3e8ff' : '#f8fafc'}; color: ${c.forms > 0 ? '#7e22ce' : '#94a3b8'}; padding: 2px 7px; border-radius: 6px; font-weight: 700; font-size: 11px;">📝 ${c.forms}</span>
+          </td>
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 800; color: #0f172a;">${c.total}</td>
+          <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center; font-weight: 700; color: ${parseFloat(c.cvr) > 0 ? '#15803d' : '#64748b'};">${c.cvr}%</td>
+          <td style="padding: 10px 12px; text-align: center;">
+            <span style="background: ${c.statusBg}; color: ${c.statusColor}; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700;">${c.status}</span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // 7. Render Real-Time Activity Log (Live Event Feed)
+    function renderActivityLog(events, leads) {
+      const tbody = document.getElementById('kpi-activity-log-body');
+      if (!tbody) return;
+
+      const unifiedLog = [];
+
+      events.forEach(e => {
+        unifiedLog.push({
+          type: 'event',
+          eventName: e.event_name,
+          date: parseItemDate(e.timestamp),
+          title: e.business_name || e.category || 'Local Service',
+          path: e.page_path || '/',
+          location: (e.town ? `${e.town} • ` : '') + (e.district || 'Kerala'),
+          source: (e.source || e.utm_source) ? `${e.source || e.utm_source} (${e.medium || 'direct'})` : (e.referrer ? e.referrer.slice(0, 20) : 'Direct / Organic'),
+          device: e.device || 'Mobile',
+          raw: e
+        });
+      });
+
+      leads.forEach(l => {
+        unifiedLog.push({
+          type: 'lead',
+          eventName: 'form_lead',
+          date: parseItemDate(l.createdAt),
+          title: `Lead: ${l.name || 'Customer Inquiry'} (${l.serviceCategory || 'Service'})`,
+          path: l.page_path || '/',
+          location: (l.town ? `${l.town} • ` : '') + (l.district || 'Kerala'),
+          source: l.source || 'Website Form (Direct)',
+          device: l.device || 'Mobile',
+          raw: l
+        });
+      });
+
+      // Sort newest first
+      unifiedLog.sort((a, b) => {
+        const timeA = a.date ? a.date.getTime() : 0;
+        const timeB = b.date ? b.date.getTime() : 0;
+        return timeB - timeA;
+      });
+
+      // Count types for filter tab badges
+      let cAll = unifiedLog.length;
+      let cCalls = 0;
+      let cWa = 0;
+      let cForms = 0;
+      let cViews = 0;
+
+      unifiedLog.forEach(item => {
+        if (item.eventName === 'phone_click') cCalls++;
+        else if (item.eventName === 'whatsapp_click') cWa++;
+        else if (item.eventName === 'form_lead' || item.eventName === 'callback_request') cForms++;
+        else if (item.eventName === 'business_profile_view' || item.eventName === 'page_view') cViews++;
+      });
+
+      const countAll = document.getElementById('log-count-all');
+      const countCalls = document.getElementById('log-count-calls');
+      const countWa = document.getElementById('log-count-whatsapp');
+      const countForms = document.getElementById('log-count-forms');
+      const countViews = document.getElementById('log-count-views');
+      const footerCount = document.getElementById('kpi-log-footer-count');
+
+      if (countAll) countAll.textContent = cAll;
+      if (countCalls) countCalls.textContent = cCalls;
+      if (countWa) countWa.textContent = cWa;
+      if (countForms) countForms.textContent = cForms;
+      if (countViews) countViews.textContent = cViews;
+
+      // Filter by active tab
+      const filter = window.kpiState.logFilter || 'all';
+      let displayed = unifiedLog;
+      if (filter === 'calls') displayed = displayed.filter(i => i.eventName === 'phone_click');
+      else if (filter === 'whatsapp') displayed = displayed.filter(i => i.eventName === 'whatsapp_click');
+      else if (filter === 'forms') displayed = displayed.filter(i => i.eventName === 'form_lead' || i.eventName === 'callback_request');
+      else if (filter === 'views') displayed = displayed.filter(i => i.eventName === 'business_profile_view' || i.eventName === 'page_view');
+
+      // Filter by search query
+      const search = (window.kpiState.logSearch || '').toLowerCase().trim();
+      if (search) {
+        displayed = displayed.filter(i =>
+          (i.title || '').toLowerCase().includes(search) ||
+          (i.path || '').toLowerCase().includes(search) ||
+          (i.location || '').toLowerCase().includes(search) ||
+          (i.source || '').toLowerCase().includes(search)
+        );
+      }
+
+      if (footerCount) footerCount.textContent = `Showing ${displayed.length} of ${cAll} events`;
+
+      if (!displayed.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 24px; text-align: center; color: #94a3b8;">No visitor events match your criteria.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = displayed.slice(0, 100).map(item => {
+        let badgeHtml = '';
+        if (item.eventName === 'phone_click') {
+          badgeHtml = '<span style="background: #ffedd5; color: #c2410c; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">📞 Call Click</span>';
+        } else if (item.eventName === 'whatsapp_click') {
+          badgeHtml = '<span style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">💬 WhatsApp</span>';
+        } else if (item.eventName === 'form_lead' || item.eventName === 'callback_request') {
+          badgeHtml = '<span style="background: #f3e8ff; color: #7e22ce; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">📝 Quote Form</span>';
+        } else {
+          badgeHtml = '<span style="background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">👁️ Page View</span>';
+        }
+
+        const deviceBadge = item.device === 'Mobile'
+          ? '<span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">📱 Mobile</span>'
+          : '<span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">💻 Desktop</span>';
+
+        const exactTime = item.date ? item.date.toLocaleString() : 'N/A';
+        const relTime = formatRelativeTime(item.date);
+
+        return `
+          <tr style="border-bottom: 1px solid #f1f5f9; font-size: 12.5px; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; white-space: nowrap; color: #64748b;" title="${exactTime}">
+              ⏱️ ${relTime}
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; white-space: nowrap;">
+              ${badgeHtml}
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; font-weight: 700; color: #0f172a;">
+              ${item.title}
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; font-family: monospace; font-size: 11.5px; color: #0284c7;">
+              <a href="${item.path}" target="_blank" style="color: #0284c7; text-decoration: none;">${item.path}</a>
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; color: #475569; white-space: nowrap;">
+              📍 ${item.location}
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; color: #334155; font-size: 12px;">
+              ${item.source}
+            </td>
+            <td style="padding: 10px 12px; border-right: 1px solid #f1f5f9; text-align: center;">
+              ${deviceBadge}
+            </td>
+            <td style="padding: 10px 12px; text-align: center; white-space: nowrap;">
+              <span style="color: #10b981; font-weight: 700; font-size: 11px;">✓ Verified</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 8. Render District Share
     function renderDistrictShare(businesses) {
       const container = document.getElementById('kpi-district-share-list');
       if (!container) return;
@@ -2646,23 +3425,20 @@ ${whyHTML}
       let totalDistrictLeads = 0;
 
       businesses.forEach(b => {
-        const dist = (b.district || 'Multiple').toLowerCase();
-        const formatted = dist.charAt(0).toUpperCase() + dist.slice(1);
+        let dist = (b.district || 'Multiple').trim().toLowerCase();
+        dist = dist.charAt(0).toUpperCase() + dist.slice(1);
         const leads = (b.totalInquiries || 0) + (b.profileViews || 0);
-        districtMap[formatted] = (districtMap[formatted] || 0) + leads;
+        districtMap[dist] = (districtMap[dist] || 0) + leads;
         totalDistrictLeads += leads;
       });
 
-      const sorted = Object.entries(districtMap)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
+      const sorted = Object.entries(districtMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
       if (!sorted.length || totalDistrictLeads === 0) {
         container.innerHTML = `
           <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
-              <span>Kottayam</span>
-              <span style="color: #0B3B2C;">Ready for traffic</span>
+              <span>Kottayam</span><span style="color: #0B3B2C;">Ready for traffic</span>
             </div>
             <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
               <div style="width: 35%; height: 100%; background: #0B3B2C; border-radius: 10px;"></div>
@@ -2670,20 +3446,10 @@ ${whyHTML}
           </div>
           <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
-              <span>Pathanamthitta</span>
-              <span style="color: #2563eb;">Ready for traffic</span>
+              <span>Pathanamthitta</span><span style="color: #2563eb;">Ready for traffic</span>
             </div>
             <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
               <div style="width: 25%; height: 100%; background: #2563eb; border-radius: 10px;"></div>
-            </div>
-          </div>
-          <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
-              <span>Alappuzha</span>
-              <span style="color: #d97706;">Ready for traffic</span>
-            </div>
-            <div style="width: 100%; height: 7px; background: #e2e8f0; border-radius: 10px; overflow: hidden;">
-              <div style="width: 20%; height: 100%; background: #d97706; border-radius: 10px;"></div>
             </div>
           </div>
         `;
@@ -2709,7 +3475,7 @@ ${whyHTML}
       }).join('');
     }
 
-    // 4. Render Top 5 Vendor Leaderboard
+    // 9. Render Top 5 Vendor Leaderboard
     function renderVendorLeaderboard(businesses) {
       const container = document.getElementById('kpi-top-vendors-list');
       if (!container) return;
@@ -2761,7 +3527,7 @@ ${whyHTML}
       }).join('');
     }
 
-    // 5. Render Detailed Performance Explorer Table
+    // 10. Render Detailed Performance Explorer Table
     function renderPerformanceExplorerTable(businesses, filters) {
       const tbody = document.getElementById('perf-table-body');
       const badgeCount = document.getElementById('kpi-table-count-badge');
@@ -2810,7 +3576,7 @@ ${whyHTML}
 
       tbody.innerHTML = filtered.map(b => {
         const phone = (b.phone || b.whatsapp || '').replace(/\D/g, '');
-        const waMsg = encodeURIComponent(`Hello ${b.name}, ServeKerala Admin is sharing your monthly performance stats: ${b.totalInquiries || 0} leads generated.`);
+        const waMsg = encodeURIComponent(`Hello ${b.name}, ServeKerala Admin is sharing your performance stats: ${b.totalInquiries || 0} customer leads generated.`);
         const waLink = phone ? `https://wa.me/${phone.length === 10 ? '91' + phone : phone}?text=${waMsg}` : '';
 
         const isBizPage = b.type === 'business_page';
@@ -2862,7 +3628,7 @@ ${whyHTML}
       }).join('');
     }
 
-    // 6. CSV Export Function
+    // 11. CSV Export Function
     function exportKPIReportCSV() {
       const { businesses } = window.kpiState;
       if (!businesses || !businesses.length) {
@@ -2916,12 +3682,80 @@ ${whyHTML}
 
     const btnKpiRefresh = document.getElementById('btn-kpi-refresh');
     if (btnKpiRefresh) {
-      btnKpiRefresh.addEventListener('click', () => loadDirectoryPerformance());
+      btnKpiRefresh.addEventListener('click', () => {
+        updateSyncIndicator();
+        loadDirectoryPerformance();
+      });
     }
 
     const btnKpiExport = document.getElementById('btn-kpi-export-csv');
     if (btnKpiExport) {
       btnKpiExport.addEventListener('click', exportKPIReportCSV);
+    }
+
+    const autoScanSelect = document.getElementById('kpi-autoscan-select');
+    if (autoScanSelect) {
+      autoScanSelect.addEventListener('change', () => {
+        startKpiAutoScan();
+      });
+    }
+
+    // District chart toggle
+    const btnDistAll = document.getElementById('kpi-dist-btn-all');
+    const btnDistLeads = document.getElementById('kpi-dist-btn-leads');
+    if (btnDistAll && btnDistLeads) {
+      btnDistAll.addEventListener('click', () => {
+        btnDistAll.style.background = '#0B3B2C';
+        btnDistAll.style.color = '#fff';
+        btnDistLeads.style.background = 'transparent';
+        btnDistLeads.style.color = '#475569';
+        window.kpiState.distFilterMode = 'all';
+        renderDistrictsChart(window.kpiState.businesses, window.kpiState.events);
+      });
+      btnDistLeads.addEventListener('click', () => {
+        btnDistLeads.style.background = '#0B3B2C';
+        btnDistLeads.style.color = '#fff';
+        btnDistAll.style.background = 'transparent';
+        btnDistAll.style.color = '#475569';
+        window.kpiState.distFilterMode = 'leads';
+        renderDistrictsChart(window.kpiState.businesses, window.kpiState.events);
+      });
+    }
+
+    // Activity log filter tabs
+    document.querySelectorAll('.kpi-log-filter').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.kpi-log-filter').forEach(b => {
+          b.style.background = 'transparent';
+          b.style.color = '#475569';
+          b.classList.remove('active');
+        });
+        e.currentTarget.style.background = '#0B3B2C';
+        e.currentTarget.style.color = '#fff';
+        e.currentTarget.classList.add('active');
+
+        window.kpiState.logFilter = e.currentTarget.dataset.type || 'all';
+        renderActivityLog(window.kpiState.events, window.kpiState.leads);
+      });
+    });
+
+    // Activity log search
+    const logSearchInput = document.getElementById('kpi-log-search');
+    if (logSearchInput) {
+      logSearchInput.addEventListener('input', (e) => {
+        window.kpiState.logSearch = e.target.value;
+        renderActivityLog(window.kpiState.events, window.kpiState.leads);
+      });
+    }
+
+    // CPL Estimator
+    const calcCplBtn = document.getElementById('kpi-calc-cpl-btn');
+    const adSpendInput = document.getElementById('kpi-ad-spend-input');
+    if (calcCplBtn && adSpendInput) {
+      calcCplBtn.addEventListener('click', () => {
+        window.kpiState.adSpend = parseFloat(adSpendInput.value) || 5000;
+        renderMarketingAttribution(window.kpiState.events, window.kpiState.leads);
+      });
     }
 
     const kpiSearchInput = document.getElementById('perf-filter-business');

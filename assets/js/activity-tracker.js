@@ -52,7 +52,8 @@ if (typeof firebase !== 'undefined') {
         source: getUrlParam('utm_source'),
         medium: getUrlParam('utm_medium'),
         campaign: getUrlParam('utm_campaign'),
-        referrer: document.referrer || ''
+        referrer: document.referrer || '',
+        device: (/Mobi|Android|iPhone/i.test(navigator.userAgent)) ? 'Mobile' : 'Desktop'
       }).catch(err => console.error("Firestore analytics log error:", err));
     }
   };
