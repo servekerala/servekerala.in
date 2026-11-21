@@ -538,11 +538,12 @@ if (typeof firebase !== 'undefined') {
       });
     }
 
-    if (signoutBtn) {
-      signoutBtn.addEventListener('click', async (e) => {
+    const allSignoutBtns = document.querySelectorAll('.btn-signout');
+    allSignoutBtns.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
         e.preventDefault();
-        signoutBtn.disabled = true;
-        signoutBtn.textContent = 'Signing out...';
+        btn.disabled = true;
+        btn.textContent = 'Signing out...';
         try {
           if (auth) {
             await auth.signOut();
@@ -553,7 +554,7 @@ if (typeof firebase !== 'undefined') {
         // Destroy server session cookie & navigate cleanly to login portal
         window.location.href = '/api/admin/logout';
       });
-    }
+    });
 
     // ==================== DASHBOARD LOAD & SNAPSHOT ====================
     function initializeDashboard() {
