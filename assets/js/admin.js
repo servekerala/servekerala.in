@@ -4033,29 +4033,9 @@ ${whyHTML}
 
     // ==================== SEO SETTINGS LOGIC ====================
     function loadSeoSettings() {
-      db.collection('site_seo').doc('global').get().then((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          if (data.home) {
-            document.getElementById('seo-home-title').value = data.home.title || '';
-            document.getElementById('seo-home-desc').value = data.home.description || '';
-            document.getElementById('seo-home-keywords').value = data.home.keywords || '';
-          }
-          if (data.auto) {
-            document.getElementById('seo-auto-title').value = data.auto.title || '';
-            document.getElementById('seo-auto-desc').value = data.auto.description || '';
-            document.getElementById('seo-auto-keywords').value = data.auto.keywords || '';
-          }
-          if (data.services) {
-            document.getElementById('seo-services-title').value = data.services.title || '';
-            document.getElementById('seo-services-desc').value = data.services.description || '';
-            document.getElementById('seo-services-keywords').value = data.services.keywords || '';
-          }
-        }
-      }).catch((error) => {
-        console.error('Error fetching SEO settings:', error);
-        showDashboardStatus('Error loading SEO settings.', 'alert-error');
-      });
+      if (typeof window.renderSeoTracker === 'function') {
+        window.renderSeoTracker();
+      }
     }
 
     if (seoForm) {

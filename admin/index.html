@@ -28,8 +28,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/assets/js/events-loader.js?v=1.0" defer></script>
-  <script src="/assets/js/admin.js?v=28.0" defer></script>
-  <script src="/assets/js/seo-tracker.js?v=3.0" defer></script>
+  <script src="/assets/js/admin.js?v=28.1" defer></script>
+  <script src="/assets/js/seo-tracker.js?v=3.1" defer></script>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
   <script>
@@ -89,6 +89,8 @@
     .sk-rank-table { width:100%; border-collapse:collapse; min-width:750px; font-size:12px; }
     .sk-rank-table th { background:#f8fafc; text-align:left; padding:10px 10px; border-bottom:2px solid #e2e8f0; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:#475569; }
     .sk-rank-table td { text-align:left; padding:10px 10px; border-bottom:1px solid #edf2f7; vertical-align:middle; }
+    .btn-seo-mode { background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; font-weight:700; border-radius:8px; cursor:pointer; transition:all 0.15s ease; }
+    .btn-seo-mode.active { background:#0f172a; border-color:#0f172a; color:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
     .btn-filter-tab { background:#f1f5f9; border:1px solid #cbd5e1; color:#475569; font-weight:600; border-radius:6px; cursor:pointer; }
     .btn-filter-tab.active { background:#0f172a; border-color:#0f172a; color:#fff; }
     .btn-tf { background:#f8fafc; border:1px solid #cbd5e1; color:#475569; border-radius:4px; cursor:pointer; }
@@ -897,82 +899,8 @@
 
     <!-- SEO Settings Section (Hidden by default) -->
     <div id="admin-seo-container" class="admin-seo"
-      style="display: none; background: var(--bg-base); padding: 30px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
-      <h3
-        style="font-size: 20px; color: var(--primary); margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-        Page SEO Settings</h3>
-      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Configure Meta Titles, Descriptions,
-        and Keywords for core pages. Changes will be applied during the next deployment build.</p>
-
-      <div id="admin-seo-tracker-container" class="sk-rank-app" style="margin-bottom:28px;"></div>
-
-      <h3 style="font-size:18px; color:var(--primary); margin:28px 0 14px;">Page Metadata</h3>
-
-      <form id="seo-settings-form">
-        <div
-          style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-          <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">🏠 Home Page
-            (`/index.html`)</h4>
-          <div class="form-group">
-            <label>Meta Title</label>
-            <input type="text" id="seo-home-title" placeholder="e.g. ServeKerala.in - Find Trusted Local Services">
-          </div>
-          <div class="form-group">
-            <label>Meta Description</label>
-            <textarea id="seo-home-desc" rows="2"
-              placeholder="Discover verified local service providers in Kerala..."></textarea>
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label>Keywords (Comma separated)</label>
-            <input type="text" id="seo-home-keywords"
-              placeholder="e.g. kerala services, local businesses, auto mithram">
-          </div>
-        </div>
-
-        <div
-          style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-          <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">🚕 Auto Mithram
-            (`/auto-mithram/index.html`)</h4>
-          <div class="form-group">
-            <label>Meta Title</label>
-            <input type="text" id="seo-auto-title" placeholder="e.g. Auto Mithram - Find Auto Rickshaws in Kerala">
-          </div>
-          <div class="form-group">
-            <label>Meta Description</label>
-            <textarea id="seo-auto-desc" rows="2"
-              placeholder="Connect directly with local auto rickshaw drivers..."></textarea>
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label>Keywords (Comma separated)</label>
-            <input type="text" id="seo-auto-keywords" placeholder="e.g. auto rickshaw, kerala transport, auto mithram">
-          </div>
-        </div>
-
-        <div
-          style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-          <h4 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px;">🛠️ Services
-            Directory (`/services/index.html`)</h4>
-          <div class="form-group">
-            <label>Meta Title</label>
-            <input type="text" id="seo-services-title" placeholder="e.g. Browse All Services | ServeKerala.in">
-          </div>
-          <div class="form-group">
-            <label>Meta Description</label>
-            <textarea id="seo-services-desc" rows="2"
-              placeholder="Browse verified plumbers, electricians, AC repair..."></textarea>
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label>Keywords (Comma separated)</label>
-            <input type="text" id="seo-services-keywords" placeholder="e.g. plumber kerala, electrician, services">
-          </div>
-        </div>
-
-        <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-          <button type="submit" class="btn btn-primary" id="btn-save-seo"
-            style="padding: 12px 30px; font-size: 16px;">Save SEO Settings</button>
-          <span id="seo-save-status" style="margin-left: 12px; font-size: 14px; font-weight: 600;"></span>
-        </div>
-      </form>
+      style="display: none; background: var(--bg-base); padding: 16px 20px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+      <div id="admin-seo-tracker-container" class="sk-rank-app"></div>
     </div>
 
     <!-- KPI Dashboard Section (Hidden by default) -->

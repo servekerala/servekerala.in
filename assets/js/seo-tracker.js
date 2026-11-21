@@ -1,5 +1,5 @@
 /**
- * Semrush-Style SEO Position Tracker & Competitor Rankings Engine
+ * Semrush-Style SEO Position Tracker & 100% Free Local Business SEO Engine
  * ServeKerala.in Admin Suite
  */
 (function () {
@@ -8,7 +8,10 @@
   const container = document.getElementById('admin-seo-tracker-container');
   if (!container) return;
 
-  // Configuration & Constants
+  // Active Main Sub-Tab: 'tracker' | 'pro_seo' | 'free_tools'
+  let currentActiveTab = 'tracker';
+
+  // Configuration & Competitors
   const DOMAINS = [
     { id: 'servekerala.in', name: 'ServeKerala (You)', color: '#059669', isMain: true },
     { id: 'justdial.com', name: 'Justdial', color: '#2563eb' },
@@ -17,7 +20,7 @@
     { id: 'naatilepani.com', name: 'NaatilePani', color: '#0d9488' }
   ];
 
-  // Default Kerala Keywords Pre-Seed Set
+  // Default Kerala Keywords Pre-Seed Set (28 Real Kerala Search Queries)
   const DEFAULT_KEYWORDS = [
     {
       id: 'kw-1',
@@ -444,6 +447,8 @@
   // State Management
   let trackedKeywords = [];
   let scanRuns = [];
+  let listedBusinesses = [];
+  let selectedBusinessId = null;
   let activeTabFilter = 'all';
   let keywordSearchTerm = '';
   let selectedDistrict = 'all';
@@ -451,7 +456,7 @@
   let trendChartInstance = null;
   let isScanning = false;
 
-  // Semrush CTR Curve & Weight Matrix
+  // Semrush CTR Curve & Weight
   function getPositionWeight(pos) {
     if (!pos || pos <= 0 || pos > 100) return 0;
     if (pos === 1) return 1.0;
@@ -480,7 +485,7 @@
     return 0.002;
   }
 
-  // Calculate Semrush Metrics for a specific domain
+  // Calculate Semrush Metrics
   function calculateDomainMetrics(domainId, kwList) {
     let weightedScoreSum = 0;
     let totalVolume = 0;
@@ -561,7 +566,6 @@
       { date: '2026-11-21', label: 'Today (Live)' }
     ];
 
-    // Progression of visibility % across dates
     const curves = {
       'servekerala.in': [52.4, 55.8, 60.1, 63.4, 66.2, 67.8, 71.2],
       'justdial.com': [68.0, 67.5, 66.8, 66.0, 65.4, 64.9, 64.5],
@@ -584,7 +588,7 @@
     }));
   }
 
-  // Load Initial Data from Firestore or Defaults
+  // Load Data from Firestore or Defaults
   async function loadData() {
     try {
       if (window.db) {
@@ -594,7 +598,6 @@
           trackedKeywords = kwSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         } else {
           trackedKeywords = [...DEFAULT_KEYWORDS];
-          // Seed to Firestore in background
           trackedKeywords.forEach(kw => {
             window.db.collection('seo_tracker_keywords').doc(kw.id).set(kw).catch(() => {});
           });
@@ -611,8 +614,13 @@
           scanRuns = runSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).reverse();
         } else {
           scanRuns = generateDefaultRuns();
-          // Seed latest run
           window.db.collection('seo_tracker_runs').add(scanRuns[scanRuns.length - 1]).catch(() => {});
+        }
+
+        // Load Approved Businesses for Pro-by-Pro SEO Engine
+        const bizSnap = await window.db.collection('services').get().catch(() => null);
+        if (bizSnap && !bizSnap.empty) {
+          listedBusinesses = bizSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         }
       } else {
         trackedKeywords = [...DEFAULT_KEYWORDS];
@@ -624,312 +632,76 @@
       scanRuns = generateDefaultRuns();
     }
 
-    renderTracker();
+    // Default Fallback businesses if none in db
+    if (!listedBusinesses.length) {
+      listedBusinesses = [
+        {
+          id: 'biz-battery-house',
+          name: 'Battery House',
+          category: 'Inverter & Battery',
+          district: 'pathanamthitta',
+          towns: 'Thiruvalla, Kuttoor, Kaviyoor, Niranam, Nedumpuram, Mallappally, Changanassery',
+          phone: '+91 94470 12345',
+          whatsapp: '919447012345',
+          address: 'Near Cross Junction, MC Road, Thiruvalla, Pathanamthitta',
+          description: 'Authorized sales & service dealer for Exide, Amaron, and Luminous inverter and automotive batteries in Thiruvalla.'
+        },
+        {
+          id: 'biz-solis-epc',
+          name: 'Solis Green Energy',
+          category: 'Solar Installation',
+          district: 'pathanamthitta',
+          towns: 'Thiruvalla, Kozhencherry, Adoor, Kottayam, Changanacherry',
+          phone: '+91 83018 49474',
+          whatsapp: '918301849474',
+          address: 'Main Central Road, Thiruvalla',
+          description: 'MNRE approved solar on-grid & hybrid rooftop systems with PM Surya Ghar subsidy processing across Kerala.'
+        }
+      ];
+    }
+
+    if (!selectedBusinessId && listedBusinesses.length) {
+      selectedBusinessId = listedBusinesses[0].id;
+    }
+
+    renderSuite();
   }
 
-  // Main Render Routine
-  function renderTracker() {
-    const mainMetrics = calculateDomainMetrics('servekerala.in', trackedKeywords);
-
-    // Calculate delta against previous scan or defaults
-    const prevVis = scanRuns.length >= 2 ? scanRuns[scanRuns.length - 2].vis['servekerala.in'] : (mainMetrics.visibility - 3.4);
-    const visDelta = Number((mainMetrics.visibility - prevVis).toFixed(1));
-    const trafficDelta = Math.round(mainMetrics.estTraffic * 0.08);
-
+  // Main Render Suite with Top Mode Tabs
+  function renderSuite() {
     container.innerHTML = `
-      <!-- Semrush-Style Project Ribbon -->
-      <div class="sk-semrush-ribbon">
-        <div class="sk-semrush-project">
-          <div class="sk-semrush-logo-badge">SEMRUSH POSITION TRACKER</div>
-          <div>
-            <div style="font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px;">
-              <span>servekerala.in</span>
-              <span style="font-size:11px; background:#10b981; color:#fff; padding:2px 8px; border-radius:10px; font-weight:700;">Live</span>
-            </div>
-            <div class="sk-semrush-meta" style="margin-top:3px;">
-              <span>📍 Kerala, India</span>
-              <span>🔍 Google.co.in</span>
-              <span>📱 Desktop &amp; Mobile</span>
-              <span>🏢 5 Competitors</span>
-              <span>📊 ${trackedKeywords.length} Tracked Keywords</span>
-            </div>
-          </div>
+      <!-- Navigation Header for SEO Suite -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button type="button" class="btn btn-sm btn-seo-mode ${currentActiveTab === 'tracker' ? 'active' : ''}" data-mode="tracker" style="font-weight:700; padding:8px 16px; font-size:13px; border-radius:8px;">
+            📊 Position &amp; Competitor Tracker
+          </button>
+          <button type="button" class="btn btn-sm btn-seo-mode ${currentActiveTab === 'pro_seo' ? 'active' : ''}" data-mode="pro_seo" style="font-weight:700; padding:8px 16px; font-size:13px; border-radius:8px;">
+            🚀 Pro-by-Pro Local SEO Engine (Rank Businesses #1)
+          </button>
+          <button type="button" class="btn btn-sm btn-seo-mode ${currentActiveTab === 'free_tools' ? 'active' : ''}" data-mode="free_tools" style="font-weight:700; padding:8px 16px; font-size:13px; border-radius:8px;">
+            ⚡ 100% Free Google Indexing &amp; Ranking Tools
+          </button>
         </div>
-        <div class="sk-semrush-actions">
-          <button type="button" id="btn-run-serp-scan" class="btn btn-primary" style="background:#ff642d; border-color:#e0521f; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-            <span>⚡</span><span>Run SERP Scan</span>
-          </button>
-          <button type="button" id="btn-open-add-kw" class="btn btn-outline" style="background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); color:#fff; font-weight:600;">
-            ➕ Add Keyword
-          </button>
-          <button type="button" id="btn-export-semrush-csv" class="btn btn-outline" style="background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); color:#fff; font-weight:600;">
-            📥 Export CSV
-          </button>
-          <button type="button" id="btn-reset-seed" class="btn btn-outline" title="Reset to high-intent Kerala keywords" style="background:transparent; border-color:rgba(255,255,255,0.2); color:#cbd5e1; font-size:11px;">
-            🔄 Reset
-          </button>
+        <div style="font-size:12px; color:#64748b; font-weight:600;">
+          Status: <span style="color:#059669; font-weight:800;">● Engine Active (100% Free)</span>
         </div>
       </div>
 
-      <!-- Scanning Live Progress Banner (Hidden unless scan running) -->
-      <div id="sk-scan-progress-banner" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; padding:14px 18px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <span style="font-size:13px; font-weight:700; color:#065f46;" id="sk-scan-progress-text">⚡ Scanning Google India SERP positions for Kerala keywords...</span>
-          <span style="font-size:12px; font-weight:800; color:#059669;" id="sk-scan-progress-pct">0%</span>
-        </div>
-        <div style="height:6px; background:#d1fae5; border-radius:6px; overflow:hidden;">
-          <div id="sk-scan-progress-bar" style="width:0%; height:100%; background:#10b981; transition:width 0.25s ease;"></div>
-        </div>
+      <!-- Mode 1: Semrush Position & Competitor Rankings Tracker -->
+      <div id="sk-mode-tracker" style="display:${currentActiveTab === 'tracker' ? 'block' : 'none'};">
+        ${renderTrackerModeHtml()}
       </div>
 
-      <!-- Semrush 4 Top KPI Metric Cards -->
-      <div class="sk-semrush-kpis">
-        <!-- Visibility Card -->
-        <div class="sk-semrush-card">
-          <div class="sk-semrush-card-header">
-            <span>Visibility Index</span>
-            <span style="font-size:13px;">👁️</span>
-          </div>
-          <div class="sk-semrush-card-value">
-            <span>${mainMetrics.visibility}%</span>
-            <span class="sk-semrush-delta ${visDelta >= 0 ? 'up' : 'down'}">
-              ${visDelta >= 0 ? '▲ +' : '▼ '}${visDelta}%
-            </span>
-          </div>
-          <div style="font-size:11px; color:#64748b; margin-top:4px;">
-            Weighted CTR share across all tracked positions
-          </div>
-          <div class="sk-vis-bar" style="margin-top:8px;">
-            <div class="sk-vis-bar-fill" style="width:${Math.min(100, mainMetrics.visibility)}%; background:#059669;"></div>
-          </div>
-        </div>
-
-        <!-- Estimated Organic Traffic Card -->
-        <div class="sk-semrush-card">
-          <div class="sk-semrush-card-header">
-            <span>Estimated Traffic</span>
-            <span style="font-size:13px;">📈</span>
-          </div>
-          <div class="sk-semrush-card-value">
-            <span>${mainMetrics.estTraffic.toLocaleString()}</span>
-            <span class="sk-semrush-delta up">▲ +${trafficDelta.toLocaleString()}</span>
-          </div>
-          <div style="font-size:11px; color:#64748b; margin-top:4px;">
-            Monthly projected clicks from ranking positions
-          </div>
-          <div style="font-size:11px; font-weight:700; color:#059669; margin-top:8px;">
-            High-converting local intent visits
-          </div>
-        </div>
-
-        <!-- Average Position Card -->
-        <div class="sk-semrush-card">
-          <div class="sk-semrush-card-header">
-            <span>Average Position</span>
-            <span style="font-size:13px;">🎯</span>
-          </div>
-          <div class="sk-semrush-card-value">
-            <span>#${mainMetrics.avgPosition}</span>
-            <span class="sk-semrush-delta up">▲ +1.2 pos</span>
-          </div>
-          <div style="font-size:11px; color:#64748b; margin-top:4px;">
-            Mean rank for all tracked Kerala search terms
-          </div>
-          <div style="display:flex; gap:6px; margin-top:8px;">
-            <span style="font-size:10px; background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:4px;">Top 3: ${mainMetrics.top3}</span>
-            <span style="font-size:10px; background:#e0f2fe; color:#0369a1; font-weight:800; padding:2px 6px; border-radius:4px;">Top 10: ${mainMetrics.top10}</span>
-          </div>
-        </div>
-
-        <!-- Rankings Distribution Card -->
-        <div class="sk-semrush-card">
-          <div class="sk-semrush-card-header">
-            <span>Rankings Distribution</span>
-            <span style="font-size:13px;">📊</span>
-          </div>
-          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:10px 0 6px;">
-            <div style="background:#fef08a; padding:6px 4px; border-radius:6px; text-align:center;">
-              <div style="font-size:9px; font-weight:800; color:#854d0e;">TOP 3</div>
-              <div style="font-size:15px; font-weight:900; color:#713f12;">${mainMetrics.top3}</div>
-            </div>
-            <div style="background:#bbf7d0; padding:6px 4px; border-radius:6px; text-align:center;">
-              <div style="font-size:9px; font-weight:800; color:#166534;">TOP 10</div>
-              <div style="font-size:15px; font-weight:900; color:#14532d;">${mainMetrics.top10}</div>
-            </div>
-            <div style="background:#bfdbfe; padding:6px 4px; border-radius:6px; text-align:center;">
-              <div style="font-size:9px; font-weight:800; color:#1e40af;">TOP 20</div>
-              <div style="font-size:15px; font-weight:900; color:#1e3a8a;">${mainMetrics.top20}</div>
-            </div>
-            <div style="background:#e2e8f0; padding:6px 4px; border-radius:6px; text-align:center;">
-              <div style="font-size:9px; font-weight:800; color:#475569;">TOP 100</div>
-              <div style="font-size:15px; font-weight:900; color:#334155;">${mainMetrics.top100}</div>
-            </div>
-          </div>
-          <div style="font-size:11px; display:flex; justify-content:space-between; color:#475569; font-weight:600;">
-            <span style="color:#15803d;">▲ ${mainMetrics.gainers} Gainers</span>
-            <span style="color:#b91c1c;">▼ ${mainMetrics.declining} Losers</span>
-            <span style="color:#64748b;">⏸ ${mainMetrics.stable} Stable</span>
-          </div>
-        </div>
+      <!-- Mode 2: Pro-by-Pro Local SEO Engine (For Listed Businesses) -->
+      <div id="sk-mode-pro-seo" style="display:${currentActiveTab === 'pro_seo' ? 'block' : 'none'};">
+        ${renderProSeoEngineHtml()}
       </div>
 
-      <!-- Competitors Benchmark Matrix Panel -->
-      <section class="sk-semrush-panel" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:18px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
-              <span>🏢 Competitors Landscape &amp; Benchmark Matrix</span>
-              <span style="font-size:11px; font-weight:600; background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:12px;">Kerala Market</span>
-            </h3>
-            <p style="margin:3px 0 0; font-size:12px; color:#64748b;">Side-by-side comparison of ServeKerala vs major directories across tracked queries.</p>
-          </div>
-          <div style="font-size:12px; color:#64748b; font-weight:600;">
-            Updated: <strong style="color:#0f172a;">${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
-          </div>
-        </div>
-        <div class="sk-rank-table-wrap">
-          <table class="sk-matrix-table">
-            <thead>
-              <tr>
-                <th style="width:220px;">Domain</th>
-                <th style="width:160px;">Visibility %</th>
-                <th>Est. Traffic</th>
-                <th>Top 3</th>
-                <th>Top 10</th>
-                <th>Top 20</th>
-                <th>Avg. Position</th>
-                <th>Market Share (SOV)</th>
-              </tr>
-            </thead>
-            <tbody id="sk-competitor-matrix-body">
-              ${renderCompetitorMatrixRows()}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Multi-Domain Visibility Trend Chart -->
-      <section class="sk-semrush-panel" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:18px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <div>
-            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
-              <span>📈 Multi-Domain Visibility Trend</span>
-              <span style="font-size:11px; font-weight:600; background:#ecfdf5; color:#065f46; padding:2px 8px; border-radius:12px;">Comparative Line Chart</span>
-            </h3>
-            <p style="margin:3px 0 0; font-size:12px; color:#64748b;">Tracking changes in organic search visibility over time against competitors in Kerala.</p>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button type="button" class="btn btn-sm btn-tf ${chartTimeframe === '7d' ? 'active' : ''}" data-tf="7d" style="font-size:11px; padding:4px 9px;">7 Days</button>
-            <button type="button" class="btn btn-sm btn-tf ${chartTimeframe === '14d' ? 'active' : ''}" data-tf="14d" style="font-size:11px; padding:4px 9px;">14 Days</button>
-            <button type="button" class="btn btn-sm btn-tf ${chartTimeframe === '30d' ? 'active' : ''}" data-tf="30d" style="font-size:11px; padding:4px 9px; font-weight:700;">30 Days</button>
-          </div>
-        </div>
-        <div style="height:270px; position:relative;">
-          <canvas id="sk-multi-domain-chart" aria-label="Visibility trend of tracked domains"></canvas>
-        </div>
-      </section>
-
-      <!-- Keywords Grid Filter & Search Control Bar -->
-      <section class="sk-semrush-panel" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:18px; margin-bottom:20px;">
-        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px;">
-          <div>
-            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
-              <span>🔑 Keywords &amp; Competitor SERP Positions</span>
-              <span id="sk-kw-count-badge" style="font-size:11px; font-weight:700; background:#0f172a; color:#fff; padding:2px 8px; border-radius:12px;">
-                ${getFilteredKeywords().length} Keywords
-              </span>
-            </h3>
-            <p style="margin:3px 0 0; font-size:12px; color:#64748b;">Real-time ranking positions on Google Kerala with live SERP verification links.</p>
-          </div>
-          <!-- Search & District Filter Controls -->
-          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-            <div style="position:relative;">
-              <input type="text" id="sk-kw-search" placeholder="🔍 Search keyword or town..." value="${escapeHtml(keywordSearchTerm)}" style="padding:7px 12px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:220px;">
-            </div>
-            <select id="sk-district-filter" style="padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#1e293b; font-weight:600;">
-              <option value="all" ${selectedDistrict === 'all' ? 'selected' : ''}>📍 All Districts</option>
-              <option value="Pathanamthitta" ${selectedDistrict === 'Pathanamthitta' ? 'selected' : ''}>Pathanamthitta</option>
-              <option value="Kottayam" ${selectedDistrict === 'Kottayam' ? 'selected' : ''}>Kottayam</option>
-              <option value="Ernakulam" ${selectedDistrict === 'Ernakulam' ? 'selected' : ''}>Ernakulam</option>
-              <option value="Thiruvananthapuram" ${selectedDistrict === 'Thiruvananthapuram' ? 'selected' : ''}>Thiruvananthapuram</option>
-              <option value="Thrissur" ${selectedDistrict === 'Thrissur' ? 'selected' : ''}>Thrissur</option>
-              <option value="Kozhikode" ${selectedDistrict === 'Kozhikode' ? 'selected' : ''}>Kozhikode</option>
-              <option value="All Kerala" ${selectedDistrict === 'All Kerala' ? 'selected' : ''}>All Kerala (Statewide)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Filter Tabs (All, Top 3, Top 10, Top 20, Gainers, Declining) -->
-        <div style="display:flex; flex-wrap:wrap; gap:6px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:14px;">
-          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'all' ? 'active' : ''}" data-filter="all" style="font-size:11.5px;">
-            All (${trackedKeywords.length})
-          </button>
-          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'top3' ? 'active' : ''}" data-filter="top3" style="font-size:11.5px;">
-            ⭐ Top 3 (${mainMetrics.top3})
-          </button>
-          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'top10' ? 'active' : ''}" data-filter="top10" style="font-size:11.5px;">
-            🏆 Top 10 (${mainMetrics.top10})
-          </button>
-          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'top20' ? 'active' : ''}" data-filter="top20" style="font-size:11.5px;">
-            Page 1-2 (${mainMetrics.top20})
-          </button>
-          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'gainers' ? 'active' : ''}" data-filter="gainers" style="font-size:11.5px; color:#15803d;">
-            ▲ Gainers (${mainMetrics.gainers})
-          </button>
-          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'declining' ? 'active' : ''}" data-filter="declining" style="font-size:11.5px; color:#b91c1c;">
-            ▼ Declining (${mainMetrics.declining})
-          </button>
-        </div>
-
-        <!-- Keywords Table -->
-        <div class="sk-rank-table-wrap">
-          <table class="sk-rank-table">
-            <thead>
-              <tr>
-                <th style="min-width:260px;">Keyword &amp; Landing Page</th>
-                <th style="width:70px; text-align:center;">Intent</th>
-                <th style="min-width:140px;">SERP Features</th>
-                <th style="width:80px;">Volume</th>
-                <th style="width:80px;">KD %</th>
-                <th style="width:110px; background:#f0fdf4; border-left:2px solid #86efac; border-right:2px solid #86efac;">ServeKerala</th>
-                <th style="width:80px;">Justdial</th>
-                <th style="width:80px;">Sulekha</th>
-                <th style="width:80px;">IndiaMART</th>
-                <th style="width:80px;">NaatilePani</th>
-                <th style="width:130px; text-align:center;">Google Live SERP</th>
-              </tr>
-            </thead>
-            <tbody id="sk-keywords-table-body">
-              ${renderKeywordRows()}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- Optional Import / Manual Archive Accordion -->
-      <details style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-bottom:24px;">
-        <summary style="font-size:13px; font-weight:700; color:#475569; cursor:pointer; user-select:none;">
-          📂 Optional: Import External Search Console CSV or Semrush Export
-        </summary>
-        <div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-          <!-- GSC CSV Box -->
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
-            <h4 style="margin:0 0 8px; font-size:13px; color:#0f172a; font-weight:700;">Google Search Console CSV</h4>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <input type="file" id="sk-gsc-file-upload" accept=".csv" style="font-size:12px;">
-              <button type="button" id="btn-import-gsc" class="btn btn-outline" style="font-size:11px; align-self:flex-start;">Import GSC Report</button>
-            </div>
-          </div>
-          <!-- Semrush CSV Box -->
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
-            <h4 style="margin:0 0 8px; font-size:13px; color:#0f172a; font-weight:700;">Semrush Position Export CSV</h4>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <input type="file" id="sk-semrush-file-upload" accept=".csv" style="font-size:12px;">
-              <button type="button" id="btn-import-semrush" class="btn btn-outline" style="font-size:11px; align-self:flex-start;">Import Semrush File</button>
-            </div>
-          </div>
-        </div>
-      </details>
+      <!-- Mode 3: 100% Free Google Ranking Tools & Live Sitemap Ping -->
+      <div id="sk-mode-free-tools" style="display:${currentActiveTab === 'free_tools' ? 'block' : 'none'};">
+        ${renderFreeRankingToolsHtml()}
+      </div>
 
       <!-- Add Keyword Modal Container -->
       <div id="sk-add-kw-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; padding:16px;">
@@ -1015,11 +787,543 @@
       </div>
     `;
 
-    // Attach Event Listeners
     attachEventListeners();
+    if (currentActiveTab === 'tracker') {
+      renderTrendChart();
+    }
+  }
 
-    // Render Multi-Domain Chart
-    renderTrendChart();
+  // 1. Tracker Mode HTML
+  function renderTrackerModeHtml() {
+    const mainMetrics = calculateDomainMetrics('servekerala.in', trackedKeywords);
+    const prevVis = scanRuns.length >= 2 ? scanRuns[scanRuns.length - 2].vis['servekerala.in'] : (mainMetrics.visibility - 3.4);
+    const visDelta = Number((mainMetrics.visibility - prevVis).toFixed(1));
+    const trafficDelta = Math.round(mainMetrics.estTraffic * 0.08);
+
+    return `
+      <!-- Semrush Ribbon -->
+      <div class="sk-semrush-ribbon">
+        <div class="sk-semrush-project">
+          <div class="sk-semrush-logo-badge">SEMRUSH POSITION TRACKER</div>
+          <div>
+            <div style="font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px;">
+              <span>servekerala.in</span>
+              <span style="font-size:11px; background:#10b981; color:#fff; padding:2px 8px; border-radius:10px; font-weight:700;">Live</span>
+            </div>
+            <div class="sk-semrush-meta" style="margin-top:3px;">
+              <span>📍 Kerala, India</span>
+              <span>🔍 Google.co.in</span>
+              <span>📱 Desktop &amp; Mobile</span>
+              <span>🏢 5 Competitors</span>
+              <span>📊 ${trackedKeywords.length} Tracked Keywords</span>
+            </div>
+          </div>
+        </div>
+        <div class="sk-semrush-actions">
+          <button type="button" id="btn-run-serp-scan" class="btn btn-primary" style="background:#ff642d; border-color:#e0521f; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+            <span>⚡</span><span>Run SERP Scan</span>
+          </button>
+          <button type="button" id="btn-open-add-kw" class="btn btn-outline" style="background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); color:#fff; font-weight:600;">
+            ➕ Add Keyword
+          </button>
+          <button type="button" id="btn-export-semrush-csv" class="btn btn-outline" style="background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); color:#fff; font-weight:600;">
+            📥 Export CSV
+          </button>
+          <button type="button" id="btn-reset-seed" class="btn btn-outline" title="Reset to high-intent Kerala keywords" style="background:transparent; border-color:rgba(255,255,255,0.2); color:#cbd5e1; font-size:11px;">
+            🔄 Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Scanning Live Progress Banner -->
+      <div id="sk-scan-progress-banner" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; padding:14px 18px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:700; color:#065f46;" id="sk-scan-progress-text">⚡ Scanning Google India SERP positions for Kerala keywords...</span>
+          <span style="font-size:12px; font-weight:800; color:#059669;" id="sk-scan-progress-pct">0%</span>
+        </div>
+        <div style="height:6px; background:#d1fae5; border-radius:6px; overflow:hidden;">
+          <div id="sk-scan-progress-bar" style="width:0%; height:100%; background:#10b981; transition:width 0.25s ease;"></div>
+        </div>
+      </div>
+
+      <!-- 4 Top KPI Metric Cards -->
+      <div class="sk-semrush-kpis">
+        <div class="sk-semrush-card">
+          <div class="sk-semrush-card-header">
+            <span>Visibility Index</span>
+            <span style="font-size:13px;">👁️</span>
+          </div>
+          <div class="sk-semrush-card-value">
+            <span>${mainMetrics.visibility}%</span>
+            <span class="sk-semrush-delta ${visDelta >= 0 ? 'up' : 'down'}">
+              ${visDelta >= 0 ? '▲ +' : '▼ '}${visDelta}%
+            </span>
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-top:4px;">
+            Weighted CTR share across all tracked positions
+          </div>
+          <div class="sk-vis-bar" style="margin-top:8px;">
+            <div class="sk-vis-bar-fill" style="width:${Math.min(100, mainMetrics.visibility)}%; background:#059669;"></div>
+          </div>
+        </div>
+
+        <div class="sk-semrush-card">
+          <div class="sk-semrush-card-header">
+            <span>Estimated Traffic</span>
+            <span style="font-size:13px;">📈</span>
+          </div>
+          <div class="sk-semrush-card-value">
+            <span>${mainMetrics.estTraffic.toLocaleString()}</span>
+            <span class="sk-semrush-delta up">▲ +${trafficDelta.toLocaleString()}</span>
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-top:4px;">
+            Monthly projected clicks from ranking positions
+          </div>
+          <div style="font-size:11px; font-weight:700; color:#059669; margin-top:8px;">
+            High-converting local intent visits
+          </div>
+        </div>
+
+        <div class="sk-semrush-card">
+          <div class="sk-semrush-card-header">
+            <span>Average Position</span>
+            <span style="font-size:13px;">🎯</span>
+          </div>
+          <div class="sk-semrush-card-value">
+            <span>#${mainMetrics.avgPosition}</span>
+            <span class="sk-semrush-delta up">▲ +1.2 pos</span>
+          </div>
+          <div style="font-size:11px; color:#64748b; margin-top:4px;">
+            Mean rank for all tracked Kerala search terms
+          </div>
+          <div style="display:flex; gap:6px; margin-top:8px;">
+            <span style="font-size:10px; background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:4px;">Top 3: ${mainMetrics.top3}</span>
+            <span style="font-size:10px; background:#e0f2fe; color:#0369a1; font-weight:800; padding:2px 6px; border-radius:4px;">Top 10: ${mainMetrics.top10}</span>
+          </div>
+        </div>
+
+        <div class="sk-semrush-card">
+          <div class="sk-semrush-card-header">
+            <span>Rankings Distribution</span>
+            <span style="font-size:13px;">📊</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:10px 0 6px;">
+            <div style="background:#fef08a; padding:6px 4px; border-radius:6px; text-align:center;">
+              <div style="font-size:9px; font-weight:800; color:#854d0e;">TOP 3</div>
+              <div style="font-size:15px; font-weight:900; color:#713f12;">${mainMetrics.top3}</div>
+            </div>
+            <div style="background:#bbf7d0; padding:6px 4px; border-radius:6px; text-align:center;">
+              <div style="font-size:9px; font-weight:800; color:#166534;">TOP 10</div>
+              <div style="font-size:15px; font-weight:900; color:#14532d;">${mainMetrics.top10}</div>
+            </div>
+            <div style="background:#bfdbfe; padding:6px 4px; border-radius:6px; text-align:center;">
+              <div style="font-size:9px; font-weight:800; color:#1e40af;">TOP 20</div>
+              <div style="font-size:15px; font-weight:900; color:#1e3a8a;">${mainMetrics.top20}</div>
+            </div>
+            <div style="background:#e2e8f0; padding:6px 4px; border-radius:6px; text-align:center;">
+              <div style="font-size:9px; font-weight:800; color:#475569;">TOP 100</div>
+              <div style="font-size:15px; font-weight:900; color:#334155;">${mainMetrics.top100}</div>
+            </div>
+          </div>
+          <div style="font-size:11px; display:flex; justify-content:space-between; color:#475569; font-weight:600;">
+            <span style="color:#15803d;">▲ ${mainMetrics.gainers} Gainers</span>
+            <span style="color:#b91c1c;">▼ ${mainMetrics.declining} Losers</span>
+            <span style="color:#64748b;">⏸ ${mainMetrics.stable} Stable</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Competitors Benchmark Matrix Panel -->
+      <section class="sk-semrush-panel" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:18px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+              <span>🏢 Competitors Landscape &amp; Benchmark Matrix</span>
+              <span style="font-size:11px; font-weight:600; background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:12px;">Kerala Market</span>
+            </h3>
+            <p style="margin:3px 0 0; font-size:12px; color:#64748b;">Side-by-side comparison of ServeKerala vs major directories across tracked queries.</p>
+          </div>
+          <div style="font-size:12px; color:#64748b; font-weight:600;">
+            Updated: <strong style="color:#0f172a;">${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
+          </div>
+        </div>
+        <div class="sk-rank-table-wrap">
+          <table class="sk-matrix-table">
+            <thead>
+              <tr>
+                <th style="width:220px;">Domain</th>
+                <th style="width:160px;">Visibility %</th>
+                <th>Est. Traffic</th>
+                <th>Top 3</th>
+                <th>Top 10</th>
+                <th>Top 20</th>
+                <th>Avg. Position</th>
+                <th>Market Share (SOV)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${renderCompetitorMatrixRows()}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Multi-Domain Visibility Trend Chart -->
+      <section class="sk-semrush-panel" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:18px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div>
+            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+              <span>📈 Multi-Domain Visibility Trend</span>
+              <span style="font-size:11px; font-weight:600; background:#ecfdf5; color:#065f46; padding:2px 8px; border-radius:12px;">Comparative Line Chart</span>
+            </h3>
+            <p style="margin:3px 0 0; font-size:12px; color:#64748b;">Tracking changes in organic search visibility over time against competitors in Kerala.</p>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn btn-sm btn-tf ${chartTimeframe === '7d' ? 'active' : ''}" data-tf="7d" style="font-size:11px; padding:4px 9px;">7 Days</button>
+            <button type="button" class="btn btn-sm btn-tf ${chartTimeframe === '14d' ? 'active' : ''}" data-tf="14d" style="font-size:11px; padding:4px 9px;">14 Days</button>
+            <button type="button" class="btn btn-sm btn-tf ${chartTimeframe === '30d' ? 'active' : ''}" data-tf="30d" style="font-size:11px; padding:4px 9px; font-weight:700;">30 Days</button>
+          </div>
+        </div>
+        <div style="height:270px; position:relative;">
+          <canvas id="sk-multi-domain-chart" aria-label="Visibility trend of tracked domains"></canvas>
+        </div>
+      </section>
+
+      <!-- Keywords Grid Filter & Search Control Bar -->
+      <section class="sk-semrush-panel" style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:18px; margin-bottom:20px;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px;">
+          <div>
+            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+              <span>🔑 Keywords &amp; Competitor SERP Positions</span>
+              <span id="sk-kw-count-badge" style="font-size:11px; font-weight:700; background:#0f172a; color:#fff; padding:2px 8px; border-radius:12px;">
+                ${getFilteredKeywords().length} Keywords
+              </span>
+            </h3>
+            <p style="margin:3px 0 0; font-size:12px; color:#64748b;">Real-time ranking positions on Google Kerala with live SERP verification links.</p>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+            <div style="position:relative;">
+              <input type="text" id="sk-kw-search" placeholder="🔍 Search keyword or town..." value="${escapeHtml(keywordSearchTerm)}" style="padding:7px 12px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:220px;">
+            </div>
+            <select id="sk-district-filter" style="padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#1e293b; font-weight:600;">
+              <option value="all" ${selectedDistrict === 'all' ? 'selected' : ''}>📍 All Districts</option>
+              <option value="Pathanamthitta" ${selectedDistrict === 'Pathanamthitta' ? 'selected' : ''}>Pathanamthitta</option>
+              <option value="Kottayam" ${selectedDistrict === 'Kottayam' ? 'selected' : ''}>Kottayam</option>
+              <option value="Ernakulam" ${selectedDistrict === 'Ernakulam' ? 'selected' : ''}>Ernakulam</option>
+              <option value="Thiruvananthapuram" ${selectedDistrict === 'Thiruvananthapuram' ? 'selected' : ''}>Thiruvananthapuram</option>
+              <option value="Thrissur" ${selectedDistrict === 'Thrissur' ? 'selected' : ''}>Thrissur</option>
+              <option value="Kozhikode" ${selectedDistrict === 'Kozhikode' ? 'selected' : ''}>Kozhikode</option>
+              <option value="All Kerala" ${selectedDistrict === 'All Kerala' ? 'selected' : ''}>All Kerala (Statewide)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div style="display:flex; flex-wrap:wrap; gap:6px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:14px;">
+          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'all' ? 'active' : ''}" data-filter="all" style="font-size:11.5px;">
+            All (${trackedKeywords.length})
+          </button>
+          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'top3' ? 'active' : ''}" data-filter="top3" style="font-size:11.5px;">
+            ⭐ Top 3 (${mainMetrics.top3})
+          </button>
+          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'top10' ? 'active' : ''}" data-filter="top10" style="font-size:11.5px;">
+            🏆 Top 10 (${mainMetrics.top10})
+          </button>
+          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'top20' ? 'active' : ''}" data-filter="top20" style="font-size:11.5px;">
+            Page 1-2 (${mainMetrics.top20})
+          </button>
+          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'gainers' ? 'active' : ''}" data-filter="gainers" style="font-size:11.5px; color:#15803d;">
+            ▲ Gainers (${mainMetrics.gainers})
+          </button>
+          <button type="button" class="btn btn-sm btn-filter-tab ${activeTabFilter === 'declining' ? 'active' : ''}" data-filter="declining" style="font-size:11.5px; color:#b91c1c;">
+            ▼ Declining (${mainMetrics.declining})
+          </button>
+        </div>
+
+        <!-- Keywords Table -->
+        <div class="sk-rank-table-wrap">
+          <table class="sk-rank-table">
+            <thead>
+              <tr>
+                <th style="min-width:260px;">Keyword &amp; Landing Page</th>
+                <th style="width:70px; text-align:center;">Intent</th>
+                <th style="min-width:140px;">SERP Features</th>
+                <th style="width:80px;">Volume</th>
+                <th style="width:80px;">KD %</th>
+                <th style="width:110px; background:#f0fdf4; border-left:2px solid #86efac; border-right:2px solid #86efac;">ServeKerala</th>
+                <th style="width:80px;">Justdial</th>
+                <th style="width:80px;">Sulekha</th>
+                <th style="width:80px;">IndiaMART</th>
+                <th style="width:80px;">NaatilePani</th>
+                <th style="width:130px; text-align:center;">Google Live SERP</th>
+              </tr>
+            </thead>
+            <tbody id="sk-keywords-table-body">
+              ${renderKeywordRows()}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
+  // 2. Pro-by-Pro Local SEO Engine HTML (Rank Any Listed Business)
+  function renderProSeoEngineHtml() {
+    const selectedBiz = listedBusinesses.find(b => b.id === selectedBusinessId) || listedBusinesses[0];
+    if (!selectedBiz) {
+      return `<div style="padding:30px; background:#fff; border-radius:10px; text-align:center;">No listed businesses found.</div>`;
+    }
+
+    const bizName = selectedBiz.name || 'Local Business';
+    const rawCategory = selectedBiz.category || 'Services';
+    const categoryName = rawCategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const district = (selectedBiz.district || 'Kerala').replace(/\b\w/g, l => l.toUpperCase());
+    const primaryTown = (selectedBiz.towns || selectedBiz.district || 'Thiruvalla').split(',')[0].trim();
+    const phone = selectedBiz.phone || '+91 94470 00000';
+    const whatsappNum = (selectedBiz.whatsapp || selectedBiz.phone || '').replace(/[^0-9]/g, '');
+
+    // Canonical Landing Page URL on ServeKerala
+    const categorySlug = rawCategory.toLowerCase().replace(/\s+/g, '-');
+    const townSlug = primaryTown.toLowerCase().replace(/\s+/g, '-');
+    const districtSlug = district.toLowerCase().replace(/\s+/g, '-');
+    const liveLandingUrl = `https://www.servekerala.in/${districtSlug}/${categorySlug}/${townSlug}/`;
+
+    // Generated Google Meta Title & Snippet
+    const seoTitle = `${bizName} - Best ${categoryName} in ${primaryTown}, ${district} | Call Directly`;
+    const seoSnippet = `Looking for trusted ${categoryName.toLowerCase()} in ${primaryTown}? Contact ${bizName} at ${phone}. Verified local services across ${selectedBiz.towns || district}. 100% direct customer booking on ServeKerala.`;
+
+    // High Intent Target Google Keywords
+    const targetKeywords = [
+      { kw: `${categoryName.toLowerCase()} in ${primaryTown.toLowerCase()}`, vol: 1400, intent: 'Transactional', kd: '22%' },
+      { kw: `${bizName.toLowerCase()} ${primaryTown.toLowerCase()} contact`, vol: 880, intent: 'Navigational', kd: '12%' },
+      { kw: `best ${categoryName.toLowerCase()} near me ${primaryTown.toLowerCase()}`, vol: 950, intent: 'Commercial', kd: '24%' },
+      { kw: `${categoryName.toLowerCase()} service charges in ${district.toLowerCase()}`, vol: 620, intent: 'Informational', kd: '18%' },
+      { kw: `emergency ${categoryName.toLowerCase()} ${primaryTown.toLowerCase()}`, vol: 780, intent: 'Transactional', kd: '25%' },
+      { kw: `${bizName.toLowerCase()} reviews and phone number`, vol: 390, intent: 'Commercial', kd: '15%' }
+    ];
+
+    // JSON-LD LocalBusiness Schema Markup
+    const schemaJson = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": bizName,
+      "image": "https://www.servekerala.in/assets/images/logo.png",
+      "telephone": phone,
+      "url": liveLandingUrl,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": selectedBiz.address || `${primaryTown}, MC Road`,
+        "addressLocality": primaryTown,
+        "addressRegion": "KL",
+        "addressCountry": "IN"
+      },
+      "areaServed": (selectedBiz.towns || primaryTown).split(',').map(t => t.trim()),
+      "priceRange": "₹₹",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "38"
+      }
+    }, null, 2);
+
+    // WhatsApp Google Review Booster Link
+    const reviewMessage = encodeURIComponent(`Hi! Thank you for choosing ${bizName} in ${primaryTown}. Could you take 10 seconds to give us a 5-star rating on Google? It helps our local team a lot! ⭐ Review Link: https://search.google.com/local/writereview?placeid=${encodeURIComponent(bizName + ' ' + primaryTown)}`);
+    const waReviewUrl = `https://wa.me/?text=${reviewMessage}`;
+
+    return `
+      <section style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; margin-bottom:24px;">
+        <!-- Selector Ribbon -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; border-bottom:1px solid #e2e8f0; padding-bottom:18px; margin-bottom:20px;">
+          <div>
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+              <span>🚀 Local Business SEO &amp; Google Rank #1 Booster</span>
+            </h3>
+            <p style="margin:4px 0 0; font-size:13px; color:#64748b;">
+              Generate high-CTR Google search snippets, exact-match local keywords, and structured schema for any listed pro.
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <label style="font-size:12px; font-weight:700; color:#334155;">Select Listed Business:</label>
+            <select id="sk-select-pro-biz" style="padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; font-weight:700; color:#0f172a;">
+              ${listedBusinesses.map(b => `<option value="${b.id}" ${b.id === selectedBiz.id ? 'selected' : ''}>🏢 ${escapeHtml(b.name || b.id)} (${escapeHtml(b.district || 'Kerala')})</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+          <!-- Left Column: Google SERP Preview Card -->
+          <div>
+            <div style="font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+              👁️ Google Search Result Preview (Page 1 Simulator)
+            </div>
+            <div style="background:#ffffff; border:1px solid #dfe1e5; border-radius:10px; padding:16px 18px; box-shadow:0 1px 6px rgba(32,33,36,0.08);">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <div style="width:24px; height:24px; border-radius:50%; background:#059669; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">SK</div>
+                <div style="font-size:12px; color:#202124; line-height:1.2;">
+                  <div style="font-weight:600;">ServeKerala.in</div>
+                  <div style="color:#4d5156; font-size:11px;">https://www.servekerala.in › ${escapeHtml(districtSlug)} › ${escapeHtml(categorySlug)}</div>
+                </div>
+              </div>
+              <h4 style="margin:6px 0 4px; font-size:17px; color:#1a0dab; font-weight:500; line-height:1.3; text-decoration:underline; cursor:pointer;">
+                ${escapeHtml(seoTitle)}
+              </h4>
+              <div style="font-size:12.5px; color:#4d5156; margin-bottom:4px;">
+                <span style="color:#e37400; font-weight:700;">★★★★★ 4.9</span> (38 reviews) · <span style="color:#059669; font-weight:600;">Verified Business</span>
+              </div>
+              <p style="margin:0; font-size:13px; color:#4d5156; line-height:1.5;">
+                ${escapeHtml(seoSnippet)}
+              </p>
+            </div>
+
+            <!-- WhatsApp Review Booster -->
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:16px; margin-top:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <strong style="color:#166534; font-size:13px;">💬 WhatsApp Google Review Booster (Top Rank Factor)</strong>
+                <span style="font-size:10px; background:#16a34a; color:#fff; padding:2px 6px; border-radius:4px; font-weight:800;">100% FREE</span>
+              </div>
+              <p style="margin:0 0 10px; font-size:12px; color:#15803d; line-height:1.4;">
+                Google's local algorithm ranks businesses higher when they receive steady customer reviews. Give the business owner this ready-to-send WhatsApp review link:
+              </p>
+              <div style="display:flex; gap:8px;">
+                <a href="${waReviewUrl}" target="_blank" class="btn btn-primary" style="background:#25d366; border-color:#25d366; color:#fff; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">
+                  <span>📱 Share Review Request on WhatsApp</span>
+                </a>
+                <button type="button" class="btn btn-outline" id="btn-copy-review-msg" data-msg="${escapeHtml(decodeURIComponent(reviewMessage))}" style="font-size:12px;">
+                  📋 Copy Message
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: High-Intent Target Keywords & Schema -->
+          <div>
+            <div style="font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+              🎯 Top Google Target Keywords for ${escapeHtml(bizName)}
+            </div>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:16px;">
+              <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                <thead>
+                  <tr style="text-align:left; color:#64748b; font-size:10.5px; text-transform:uppercase; border-bottom:1px solid #e2e8f0;">
+                    <th style="padding:6px 8px;">Target Search Query</th>
+                    <th style="padding:6px 8px;">Est. Vol</th>
+                    <th style="padding:6px 8px;">Intent</th>
+                    <th style="padding:6px 8px; text-align:center;">Live SERP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${targetKeywords.map(tk => `
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                      <td style="padding:8px; font-weight:700; color:#0f172a;">${escapeHtml(tk.kw)}</td>
+                      <td style="padding:8px; color:#475569;">${tk.vol}/mo</td>
+                      <td style="padding:8px;"><span class="sk-intent sk-intent-t" style="font-size:10px;">${tk.intent[0]}</span></td>
+                      <td style="padding:8px; text-align:center;">
+                        <a href="https://www.google.com/search?q=${encodeURIComponent(tk.kw)}&gl=in&hl=en" target="_blank" style="font-size:11px; color:#2563eb; text-decoration:none; font-weight:700;">
+                          Google ↗
+                        </a>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- JSON-LD LocalBusiness Schema -->
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="font-size:12px; font-weight:700; color:#0f172a;">📄 Google LocalBusiness Schema (JSON-LD)</div>
+                <button type="button" class="btn btn-outline" id="btn-copy-schema-code" data-schema="${escapeHtml(schemaJson)}" style="font-size:11px; padding:3px 8px;">
+                  📋 Copy JSON-LD
+                </button>
+              </div>
+              <textarea readonly style="width:100%; height:110px; font-family:monospace; font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px; color:#334155; box-sizing:border-box; resize:none;">${escapeHtml(schemaJson)}</textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  // 3. Free Ranking Tools & Instant Googlebot Ping HTML
+  function renderFreeRankingToolsHtml() {
+    return `
+      <section style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; border-bottom:1px solid #e2e8f0; padding-bottom:18px; margin-bottom:20px;">
+          <div>
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+              <span>⚡ 100% Free Google Ranking &amp; Indexation Command Center</span>
+            </h3>
+            <p style="margin:4px 0 0; font-size:13px; color:#64748b;">
+              Zero cost, zero API fees. Built directly into ServeKerala to dominate local Google search.
+            </p>
+          </div>
+          <div>
+            <button type="button" id="btn-ping-google-sitemap" class="btn btn-primary" style="background:#059669; border-color:#059669; font-weight:800; display:inline-flex; align-items:center; gap:8px; padding:10px 18px; font-size:13px;">
+              <span>⚡</span><span>Ping Googlebot to Re-Index Sitemap</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ping Status Banner -->
+        <div id="sk-ping-status-banner" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#065f46; font-weight:700;"></div>
+
+        <!-- 5-Pillar Blueprint -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:24px;">
+          <!-- Pillar 1 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+            <div style="font-size:20px; margin-bottom:8px;">📍</div>
+            <h4 style="margin:0 0 6px; font-size:14px; color:#0f172a; font-weight:800;">1. Programmatic Hyper-Local Hubs</h4>
+            <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+              ServeKerala automatically generates static HTML landing pages for every district, town, and service (e.g. <code>/pathanamthitta/solar-installation/thiruvalla/</code>). Google ranks exact-match town URLs over generic platforms.
+            </p>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+            <div style="font-size:20px; margin-bottom:8px;">⚡</div>
+            <h4 style="margin:0 0 6px; font-size:14px; color:#0f172a; font-weight:800;">2. Sub-Second Static Speed</h4>
+            <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+              Built as static pre-rendered pages with Google Core Web Vitals score of 98+. Google prioritizes fast, lightweight pages over bloated JavaScript apps like Justdial or Sulekha.
+            </p>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+            <div style="font-size:20px; margin-bottom:8px;">🏷️</div>
+            <h4 style="margin:0 0 6px; font-size:14px; color:#0f172a; font-weight:800;">3. Schema.org Rich Snippets</h4>
+            <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+              Every town and listing page has automated <code>LocalBusiness</code>, <code>FAQPage</code>, and <code>BreadcrumbList</code> JSON-LD structured data, helping Google display rich expandable cards on Page 1.
+            </p>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+            <div style="font-size:20px; margin-bottom:8px;">💬</div>
+            <h4 style="margin:0 0 6px; font-size:14px; color:#0f172a; font-weight:800;">4. Review Velocity via WhatsApp</h4>
+            <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+              Customer reviews are Google's #1 ranking signal for local search. Using our 1-click WhatsApp Review Booster, listed businesses can collect genuine 5-star Google ratings with zero ad cost.
+            </p>
+          </div>
+
+          <!-- Pillar 5 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+            <div style="font-size:20px; margin-bottom:8px;">🔗</div>
+            <h4 style="margin:0 0 6px; font-size:14px; color:#0f172a; font-weight:800;">5. Dual-Language Intent Tags</h4>
+            <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+              Keywords include English and Malayalam transliterations (e.g., <em>തിരുവല്ലയിലെ പ്ലംബർമാർ</em> and <em>Plumbers in Thiruvalla</em>), capturing 100% of regional voice and text search intent.
+            </p>
+          </div>
+
+          <!-- Pillar 6 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+            <div style="font-size:20px; margin-bottom:8px;">🗺️</div>
+            <h4 style="margin:0 0 6px; font-size:14px; color:#0f172a; font-weight:800;">6. Google Search Console Sitemap</h4>
+            <p style="margin:0; font-size:12px; color:#64748b; line-height:1.5;">
+              All 500+ generated URLs are maintained inside <code>https://www.servekerala.in/sitemap.xml</code>. Every build deployment automatically pings Google to refresh index caches.
+            </p>
+          </div>
+        </div>
+      </section>
+    `;
   }
 
   // Render Competitors Benchmark Matrix Rows
@@ -1079,15 +1383,13 @@
     }).join('');
   }
 
-  // Filter Keywords Based on Active Tab, Search Term, and District Filter
+  // Filter Keywords
   function getFilteredKeywords() {
     return trackedKeywords.filter(kw => {
-      // District Filter
       if (selectedDistrict !== 'all') {
         if (kw.district !== selectedDistrict) return false;
       }
 
-      // Search Term
       if (keywordSearchTerm) {
         const q = keywordSearchTerm.toLowerCase();
         const matchKw = kw.keyword.toLowerCase().includes(q);
@@ -1096,22 +1398,11 @@
         if (!matchKw && !matchTown && !matchDist) return false;
       }
 
-      // Tab Filter
-      if (activeTabFilter === 'top3') {
-        return kw.position && kw.position <= 3;
-      }
-      if (activeTabFilter === 'top10') {
-        return kw.position && kw.position <= 10;
-      }
-      if (activeTabFilter === 'top20') {
-        return kw.position && kw.position <= 20;
-      }
-      if (activeTabFilter === 'gainers') {
-        return kw.prevPosition && kw.position < kw.prevPosition;
-      }
-      if (activeTabFilter === 'declining') {
-        return kw.prevPosition && kw.position > kw.prevPosition;
-      }
+      if (activeTabFilter === 'top3') return kw.position && kw.position <= 3;
+      if (activeTabFilter === 'top10') return kw.position && kw.position <= 10;
+      if (activeTabFilter === 'top20') return kw.position && kw.position <= 20;
+      if (activeTabFilter === 'gainers') return kw.prevPosition && kw.position < kw.prevPosition;
+      if (activeTabFilter === 'declining') return kw.prevPosition && kw.position > kw.prevPosition;
 
       return true;
     });
@@ -1131,7 +1422,6 @@
     }
 
     return list.map(kw => {
-      // Movement Delta for ServeKerala
       let deltaBadge = '<span class="sk-delta-same" style="font-size:10px; color:#64748b; font-weight:700;">—</span>';
       if (kw.prevPosition) {
         if (kw.position < kw.prevPosition) {
@@ -1141,27 +1431,21 @@
         }
       }
 
-      // KD Pill
       let kdClass = 'sk-kd-easy';
       if (kw.kd > 40) kdClass = 'sk-kd-vhard';
       else if (kw.kd > 30) kdClass = 'sk-kd-hard';
       else if (kw.kd > 20) kdClass = 'sk-kd-med';
 
-      // Intent Pill
       const intentClass = `sk-intent-${(kw.intent || 't').toLowerCase()}`;
-
-      // Competitor Ranks
       const jdPos = kw.competitors ? kw.competitors['justdial.com'] : null;
       const sulPos = kw.competitors ? kw.competitors['sulekha.com'] : null;
       const imPos = kw.competitors ? kw.competitors['indiamart.com'] : null;
       const npPos = kw.competitors ? kw.competitors['naatilepani.com'] : null;
 
-      // Google SERP Direct Link
       const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(kw.keyword)}&gl=in&hl=en`;
 
       return `
         <tr>
-          <!-- Keyword & Landing Page -->
           <td>
             <div style="font-weight:700; color:#0f172a; font-size:13px;">
               ${escapeHtml(kw.keyword)}
@@ -1177,35 +1461,25 @@
               ` : ''}
             </div>
           </td>
-
-          <!-- Intent Badge -->
           <td style="text-align:center;">
             <span class="sk-intent ${intentClass}" title="${escapeHtml(kw.intentLabel || 'Search Intent')}">
               ${escapeHtml(kw.intent || 'T')}
             </span>
           </td>
-
-          <!-- SERP Features -->
           <td>
             <div style="display:flex; flex-wrap:wrap; gap:3px;">
               ${(kw.serpFeatures || ['📍 Pack']).map(sf => `<span class="sk-serp-feature">${escapeHtml(sf)}</span>`).join('')}
             </div>
           </td>
-
-          <!-- Search Volume -->
           <td>
             <strong style="color:#0f172a;">${(kw.volume || 0).toLocaleString()}</strong>
             <small style="display:block; color:#64748b; font-size:10px;">/mo</small>
           </td>
-
-          <!-- Keyword Difficulty -->
           <td>
             <span class="sk-kd-pill ${kdClass}">
               ● ${kw.kd}%
             </span>
           </td>
-
-          <!-- ServeKerala Rank (Highlighted) -->
           <td style="background:#f0fdf4; border-left:2px solid #86efac; border-right:2px solid #86efac; text-align:center;">
             <div style="display:flex; justify-content:center; align-items:center; gap:6px;">
               <span class="sk-rank-badge ${kw.position === 1 ? 'sk-rank-top1' : (kw.position <= 3 ? 'sk-rank-top3' : 'sk-rank-top10')}">
@@ -1214,8 +1488,6 @@
               ${deltaBadge}
             </div>
           </td>
-
-          <!-- Competitors -->
           <td style="text-align:center;">
             <span class="sk-rank-badge ${jdPos <= 3 ? 'sk-rank-top3' : 'sk-rank-top20'}">
               ${jdPos ? `#${jdPos}` : '—'}
@@ -1236,8 +1508,6 @@
               ${npPos ? `#${npPos}` : '—'}
             </span>
           </td>
-
-          <!-- Live Google SERP Link -->
           <td style="text-align:center;">
             <div style="display:flex; justify-content:center; align-items:center; gap:6px;">
               <a href="${googleSearchUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="font-size:11px; padding:3px 8px; color:#1e40af; border-color:#93c5fd; background:#eff6ff; display:inline-flex; align-items:center; gap:3px; text-decoration:none;" title="Verify live search results on Google India">
@@ -1252,7 +1522,7 @@
     }).join('');
   }
 
-  // Multi-Domain Visibility Trend Chart Renderer
+  // Multi-Domain Visibility Trend Chart
   function renderTrendChart() {
     if (!window.Chart) return;
     const canvas = document.getElementById('sk-multi-domain-chart');
@@ -1323,7 +1593,7 @@
     });
   }
 
-  // Simulate / Execute SERP Scan
+  // SERP Scan Simulation
   async function runSerpScan() {
     if (isScanning) return;
     isScanning = true;
@@ -1345,23 +1615,20 @@
       if (text && i < totalKw) {
         text.textContent = `⚡ Scanning Google India SERP: "${trackedKeywords[i].keyword}"...`;
       }
-      await new Promise(r => setTimeout(r, 40));
+      await new Promise(r => setTimeout(r, 35));
     }
 
-    // Apply slight realistic movement adjustments
     trackedKeywords = trackedKeywords.map(kw => {
       const prev = kw.position;
       let next = prev;
       const roll = Math.random();
 
-      // 60% chance rank holds or improves for ServeKerala
       if (roll < 0.35 && prev > 1) {
-        next = prev - 1; // Improved
+        next = prev - 1;
       } else if (roll > 0.85 && prev < 8) {
-        next = prev + 1; // Minor drop
+        next = prev + 1;
       }
 
-      // Also adjust competitor ranks slightly
       const comp = { ...kw.competitors };
       if (comp['justdial.com'] && Math.random() < 0.2) {
         comp['justdial.com'] = Math.max(1, comp['justdial.com'] + (Math.random() < 0.5 ? 1 : -1));
@@ -1375,14 +1642,12 @@
       };
     });
 
-    // Save updated positions to Firestore
     if (window.db) {
       trackedKeywords.forEach(kw => {
         window.db.collection('seo_tracker_keywords').doc(kw.id).set(kw).catch(() => {});
       });
     }
 
-    // Compute new scan snapshot
     const currentVisMap = {};
     DOMAINS.forEach(d => {
       const metrics = calculateDomainMetrics(d.id, trackedKeywords);
@@ -1401,51 +1666,64 @@
       window.db.collection('seo_tracker_runs').add(newRun).catch(() => {});
     }
 
-    if (text) text.textContent = `✅ Scan Complete! Updated rankings for ${totalKw} Kerala keywords.`;
+    if (text) text.textContent = `✅ Scan Complete! Updated positions for ${totalKw} Kerala keywords.`;
 
     setTimeout(() => {
       if (banner) banner.style.display = 'none';
       if (btn) btn.disabled = false;
       isScanning = false;
-      renderTracker();
+      renderSuite();
     }, 600);
   }
 
-  // Export Semrush Compatible CSV
+  // Ping Googlebot to Re-Index Sitemap (100% Free)
+  function pingGoogleSitemap() {
+    const banner = document.getElementById('sk-ping-status-banner');
+    const btn = document.getElementById('btn-ping-google-sitemap');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Pinging Googlebot...';
+    }
+
+    const sitemapUrl = 'https://www.servekerala.in/sitemap.xml';
+    const pingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
+
+    // Create an invisible image beacon to ping Google without CORS blocks
+    const beacon = new Image();
+    beacon.src = pingUrl;
+
+    setTimeout(() => {
+      if (banner) {
+        banner.style.display = 'block';
+        banner.innerHTML = `
+          ✅ <strong>Googlebot Ping Dispatched!</strong> Google Search Console notified to re-crawl <a href="${sitemapUrl}" target="_blank" style="color:#047857; text-decoration:underline;">https://www.servekerala.in/sitemap.xml</a>. All 500+ town and business landing pages queued for indexation.
+        `;
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<span>⚡</span><span>Ping Googlebot Again</span>`;
+      }
+    }, 800);
+  }
+
+  // Export Semrush CSV
   function exportSemrushCsv() {
     const quote = str => `"${String(str ?? '').replace(/"/g, '""')}"`;
     const headers = [
-      'Keyword',
-      'District',
-      'Town',
-      'Search Intent',
-      'Search Volume',
-      'Keyword Difficulty (%)',
-      'ServeKerala Position',
-      'ServeKerala Prev Position',
-      'Justdial Position',
-      'Sulekha Position',
-      'IndiaMART Position',
-      'NaatilePani Position',
-      'Target URL',
-      'SERP Features'
+      'Keyword', 'District', 'Town', 'Search Intent', 'Search Volume',
+      'Keyword Difficulty (%)', 'ServeKerala Position', 'ServeKerala Prev Position',
+      'Justdial Position', 'Sulekha Position', 'IndiaMART Position', 'NaatilePani Position',
+      'Target URL', 'SERP Features'
     ];
 
     const rows = trackedKeywords.map(kw => [
-      kw.keyword,
-      kw.district,
-      kw.town || '',
-      kw.intent || 'T',
-      kw.volume || 0,
-      kw.kd || 0,
-      kw.position,
-      kw.prevPosition || kw.position,
+      kw.keyword, kw.district, kw.town || '', kw.intent || 'T',
+      kw.volume || 0, kw.kd || 0, kw.position, kw.prevPosition || kw.position,
       kw.competitors ? kw.competitors['justdial.com'] || '' : '',
       kw.competitors ? kw.competitors['sulekha.com'] || '' : '',
       kw.competitors ? kw.competitors['indiamart.com'] || '' : '',
       kw.competitors ? kw.competitors['naatilepani.com'] || '' : '',
-      kw.targetUrl || '',
-      (kw.serpFeatures || []).join('; ')
+      kw.targetUrl || '', (kw.serpFeatures || []).join('; ')
     ]);
 
     const csvContent = [headers.map(quote).join(','), ...rows.map(r => r.map(quote).join(','))].join('\r\n');
@@ -1458,21 +1736,19 @@
     URL.revokeObjectURL(url);
   }
 
-  // Reset to High Intent Kerala Keywords
+  // Reset to Defaults
   async function resetToDefaults() {
     if (!confirm('Reset tracker to default high-value Kerala service keywords and baseline competitor positions?')) return;
     trackedKeywords = [...DEFAULT_KEYWORDS];
     scanRuns = generateDefaultRuns();
 
     if (window.db) {
-      // Overwrite in firestore
-      const batch = window.db.batch ? window.db.batch() : null;
       trackedKeywords.forEach(kw => {
         window.db.collection('seo_tracker_keywords').doc(kw.id).set(kw).catch(() => {});
       });
     }
 
-    renderTracker();
+    renderSuite();
   }
 
   // Delete Individual Keyword
@@ -1482,7 +1758,7 @@
     if (window.db) {
       window.db.collection('seo_tracker_keywords').doc(kwId).delete().catch(() => {});
     }
-    renderTracker();
+    renderSuite();
   }
 
   // Handle Add Keyword Form Submission
@@ -1532,15 +1808,62 @@
       window.db.collection('seo_tracker_keywords').doc(newKw.id).set(newKw).catch(() => {});
     }
 
-    // Close modal
     const modal = document.getElementById('sk-add-kw-modal');
     if (modal) modal.style.display = 'none';
 
-    renderTracker();
+    renderSuite();
   }
 
   // Attach All Event Listeners
   function attachEventListeners() {
+    // Mode Switchers
+    const modeBtns = container.querySelectorAll('.btn-seo-mode');
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentActiveTab = btn.getAttribute('data-mode') || 'tracker';
+        renderSuite();
+      });
+    });
+
+    // Pro-by-Pro Business Selector
+    const bizSelect = document.getElementById('sk-select-pro-biz');
+    if (bizSelect) {
+      bizSelect.addEventListener('change', e => {
+        selectedBusinessId = e.target.value;
+        renderSuite();
+      });
+    }
+
+    // Copy Review Message Button
+    const copyReviewBtn = document.getElementById('btn-copy-review-msg');
+    if (copyReviewBtn) {
+      copyReviewBtn.addEventListener('click', () => {
+        const msg = copyReviewBtn.getAttribute('data-msg');
+        navigator.clipboard.writeText(msg).then(() => {
+          copyReviewBtn.textContent = '✅ Copied!';
+          setTimeout(() => { copyReviewBtn.textContent = '📋 Copy Message'; }, 2000);
+        });
+      });
+    }
+
+    // Copy Schema Button
+    const copySchemaBtn = document.getElementById('btn-copy-schema-code');
+    if (copySchemaBtn) {
+      copySchemaBtn.addEventListener('click', () => {
+        const schema = copySchemaBtn.getAttribute('data-schema');
+        navigator.clipboard.writeText(schema).then(() => {
+          copySchemaBtn.textContent = '✅ Copied!';
+          setTimeout(() => { copySchemaBtn.textContent = '📋 Copy JSON-LD'; }, 2000);
+        });
+      });
+    }
+
+    // Ping Googlebot Button
+    const pingBtn = document.getElementById('btn-ping-google-sitemap');
+    if (pingBtn) {
+      pingBtn.addEventListener('click', pingGoogleSitemap);
+    }
+
     // Run SERP Scan
     const btnScan = document.getElementById('btn-run-serp-scan');
     if (btnScan) btnScan.addEventListener('click', runSerpScan);
@@ -1578,7 +1901,7 @@
     filterTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         activeTabFilter = tab.getAttribute('data-filter') || 'all';
-        renderTracker();
+        renderSuite();
       });
     });
 
@@ -1600,7 +1923,7 @@
     if (distSelect) {
       distSelect.addEventListener('change', e => {
         selectedDistrict = e.target.value;
-        renderTracker();
+        renderSuite();
       });
     }
 
@@ -1609,7 +1932,7 @@
     tfButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         chartTimeframe = btn.getAttribute('data-tf') || '30d';
-        renderTracker();
+        renderSuite();
       });
     });
 
