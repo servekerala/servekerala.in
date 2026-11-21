@@ -28,7 +28,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/assets/js/events-loader.js?v=1.0" defer></script>
-  <script src="/assets/js/admin.js?v=27.8" defer></script>
+  <script src="/assets/js/admin.js?v=27.9" defer></script>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
   <script>
@@ -79,44 +79,18 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
     }
 
-    /* Sticky Top Control Bar (Dashboard Title + Menu Bar pinned at top / excluded from scroll) */
+    /* Sticky Top Control Bar (Menu Bar pinned at top / excluded from scroll) */
     .admin-sticky-header {
       position: sticky !important;
       top: 48px !important;
       z-index: 995 !important;
       background: #ffffff !important;
-      margin: -8px -12px 8px -12px !important;
-      padding: 8px 12px 6px 12px !important;
+      margin: -8px -12px 6px -12px !important;
+      padding: 6px 12px 6px 12px !important;
       border-top-left-radius: 8px !important;
       border-top-right-radius: 8px !important;
       border-bottom: 1px solid #e2e8f0 !important;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
-    }
-
-    .admin-header {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      border-bottom: 1px solid #e2e8f0 !important;
-      padding-bottom: 5px !important;
-      margin-bottom: 5px !important;
-      gap: 8px !important;
-    }
-
-    .admin-title-wrap {
-      display: flex !important;
-      align-items: center !important;
-      gap: 8px !important;
-      flex-wrap: wrap !important;
-    }
-
-    .admin-header h2 {
-      font-size: 14px !important;
-      font-weight: 800 !important;
-      color: var(--primary) !important;
-      margin: 0 !important;
-      line-height: 1.1 !important;
-      letter-spacing: -0.2px;
     }
 
     .admin-user-badge {
@@ -396,19 +370,8 @@
 
       <!-- 2. DASHBOARD INTERFACE (Hidden by default) -->
       <div id="dashboard-container" class="admin-dashboard">
-        <!-- Sticky Top Control Bar (Moderation Header + Menu Bar excluded from scroll) -->
+        <!-- Sticky Top Control Bar (Menu Bar excluded from scroll) -->
         <div class="admin-sticky-header">
-          <div class="admin-header">
-            <div class="admin-title-wrap">
-              <h2>Moderation Dashboard</h2>
-              <span class="admin-user-badge">
-                <span class="user-status-dot"></span>
-                <span id="admin-user-email">servekerala.in@gmail.com</span>
-              </span>
-            </div>
-            <button id="admin-signout-btn" class="btn btn-outline btn-signout">Sign Out</button>
-          </div>
-
           <!-- Content Type Tabs (Top Menu Bar) -->
           <div class="admin-menu-bar-container">
             <div class="admin-content-types">
