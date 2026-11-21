@@ -722,7 +722,10 @@
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <input type="password" id="sk-serper-key-input" placeholder="Paste Serper API Key..." value="${escapeHtml(serperApiKey)}" style="padding:6px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:220px;">
+          <div style="position:relative; display:inline-flex; align-items:center;">
+            <input type="password" id="sk-serper-key-input" placeholder="Paste Serper API Key..." value="${escapeHtml(serperApiKey)}" style="padding:6px 30px 6px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:220px; font-family:monospace;">
+            <button type="button" id="btn-toggle-key-visibility" style="position:absolute; right:6px; background:none; border:none; cursor:pointer; font-size:13px; color:#64748b; padding:2px;" title="Show/Hide Key">👁️</button>
+          </div>
           <button type="button" id="btn-save-serper-key" class="btn btn-outline" style="font-size:11.5px; padding:6px 12px; font-weight:700;">
             Save Key
           </button>
@@ -2001,6 +2004,18 @@
         renderSuite();
       });
     });
+
+    // Toggle Serper Key Visibility
+    const btnToggleVis = document.getElementById('btn-toggle-key-visibility');
+    if (btnToggleVis) {
+      btnToggleVis.addEventListener('click', () => {
+        const inp = document.getElementById('sk-serper-key-input');
+        if (inp) {
+          inp.type = inp.type === 'password' ? 'text' : 'password';
+          btnToggleVis.textContent = inp.type === 'password' ? '👁️' : '🙈';
+        }
+      });
+    }
 
     // Save Serper Key
     const btnSaveKey = document.getElementById('btn-save-serper-key');
