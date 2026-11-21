@@ -34,6 +34,37 @@ if (typeof firebase !== 'undefined') {
   const escapeDirectoryText = value => String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   const normalizeServiceName = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
+  function parseFirestoreField(f) {
+    if (!f) return null;
+    if ('stringValue' in f) return f.stringValue;
+    if ('integerValue' in f) return parseInt(f.integerValue, 10);
+    if ('doubleValue' in f) return parseFloat(f.doubleValue);
+    if ('booleanValue' in f) return f.booleanValue;
+    if ('timestampValue' in f) return { seconds: Math.floor(new Date(f.timestampValue).getTime() / 1000) };
+    if ('arrayValue' in f) return (f.arrayValue.values || []).map(parseFirestoreField);
+    if ('mapValue' in f) {
+      const res = {};
+      for (const [k, v] of Object.entries(f.mapValue.fields || {})) {
+        res[k] = parseFirestoreField(v);
+      }
+      return res;
+    }
+    if ('nullValue' in f) return null;
+    return f;
+  }
+
+  function parseFirestoreRestDoc(doc) {
+    const id = doc.name.split('/').pop();
+    const data = { id };
+    for (const [k, v] of Object.entries(doc.fields || {})) {
+      data[k] = parseFirestoreField(v);
+    }
+    if (doc.createTime && !data.createdAt) {
+      data.createdAt = { seconds: Math.floor(new Date(doc.createTime).getTime() / 1000) };
+    }
+    return data;
+  }
+
   const GLOBAL_CONFIG_FALLBACK = {
     categories: [
       { id: 'solar', name: 'Solar Installation' },
@@ -371,7 +402,10 @@ if (typeof firebase !== 'undefined') {
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  function initAdminDashboard() {
+    if (window._adminDashboardInitialized) return;
+    window._adminDashboardInitialized = true;
+
     // DOM Elements
     const loginContainer = document.getElementById('login-container');
     const dashboardContainer = document.getElementById('dashboard-container');
@@ -379,6 +413,7 @@ if (typeof firebase !== 'undefined') {
     const loginError = document.getElementById('login-error-message');
     const signoutBtn = document.getElementById('admin-signout-btn');
     const userEmailSpan = document.getElementById('admin-user-email');
+    const adminNavAccount = document.getElementById('admin-nav-account');
 
     const contentTypeBtns = document.querySelectorAll('.content-type-btn');
     const tabBtns = document.querySelectorAll('.admin-tab-btn');
@@ -417,6 +452,7 @@ if (typeof firebase !== 'undefined') {
     const kpiContainer = document.getElementById('admin-kpi-container');
 
     let activeStatusTab = 'pending';
+    let userHasSelectedStatusTab = false;
     let activeCollection = 'listings';
     let allDocuments = []; // Global cache for real-time local filtering
     let unsubscribeSnapshot = null;
@@ -661,20 +697,88 @@ if (typeof firebase !== 'undefined') {
         if (bpBar) bpBar.style.display = 'none';
       }
 
+      fetchAndRenderCollection(activeCollection);
+    }
+
+    function fetchAndRenderCollection(collectionName) {
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = null;
+      }
+
       listingsContainer.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 40px 0;">Loading data...</p>`;
 
-      // Real-time listener for the active collection
-      unsubscribeSnapshot = db.collection(activeCollection).onSnapshot((snapshot) => {
-        allDocuments = [];
-        snapshot.forEach(doc => {
-          allDocuments.push({ id: doc.id, ...doc.data() });
-        });
+      let applied = false;
+      function applyData(docs) {
+        if (!docs) return;
+        applied = true;
+        allDocuments = docs;
         updateTabCounts();
         renderListings();
-      }, (error) => {
-        console.error('Database read error:', error);
-        showDashboardStatus('Permission denied or error fetching data.', 'alert-error');
-      });
+      }
+
+      // Fast Path 1: Firestore SDK .get()
+      const sdkGet = (db && typeof db.collection === 'function')
+        ? db.collection(collectionName).get().then(snap => {
+            const docs = [];
+            snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+            return docs;
+          })
+        : Promise.reject(new Error('No db'));
+
+      // Fast Path 2: Direct REST fetch (resolves in ~150ms without WebChannel streaming hangs)
+      const restFetch = fetch(`https://firestore.googleapis.com/v1/projects/servekerala2026/databases/(default)/documents/${collectionName}`)
+        .then(res => {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(json => {
+          if (!json || !json.documents) return [];
+          return json.documents.map(parseFirestoreRestDoc);
+        });
+
+      // 1-second timeout to fall back to REST
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('SDK timeout')), 1000));
+
+      Promise.race([sdkGet, timeoutPromise])
+        .then(docs => {
+          applyData(docs);
+        })
+        .catch(sdkErr => {
+          console.warn('SDK fetch notice:', sdkErr.message, '- Using REST fallback...');
+          return restFetch.then(docs => {
+            applyData(docs);
+          });
+        })
+        .catch(err => {
+          console.error('Data load error:', err);
+          if (!applied) {
+            listingsContainer.innerHTML = `
+              <div style="text-align:center; padding: 40px 20px;">
+                <p style="color: #ef4444; font-weight: 600; margin-bottom: 10px;">Unable to load data (${err.message || 'Connection error'}).</p>
+                <button type="button" class="btn-admin" id="btn-retry-fetch" style="background: var(--primary); color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer;">🔄 Retry</button>
+              </div>`;
+            const retry = document.getElementById('btn-retry-fetch');
+            if (retry) retry.addEventListener('click', () => initializeDashboard());
+          }
+        });
+
+      // Background real-time listener (non-blocking)
+      try {
+        if (db && typeof db.collection === 'function') {
+          unsubscribeSnapshot = db.collection(collectionName).onSnapshot(snap => {
+            const docs = [];
+            snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+            allDocuments = docs;
+            updateTabCounts();
+            renderListings();
+          }, error => {
+            console.warn('Real-time listener notice:', error.message);
+          });
+        }
+      } catch (snapErr) {
+        console.warn('Snapshot listener skipped:', snapErr);
+      }
     }
 
     function updateTabCounts() {
@@ -685,6 +789,17 @@ if (typeof firebase !== 'undefined') {
       if (countPendingSpan) countPendingSpan.textContent = pendingCount;
       if (countApprovedSpan) countApprovedSpan.textContent = approvedCount;
       if (countRejectedSpan) countRejectedSpan.textContent = rejectedCount;
+
+      // Smart status auto-selection:
+      // If there are 0 pending items but there ARE approved items, and user hasn't manually clicked 'pending',
+      // default to 'approved' tab so approved items are visible right away!
+      if (!userHasSelectedStatusTab && activeStatusTab === 'pending' && pendingCount === 0 && approvedCount > 0) {
+        activeStatusTab = 'approved';
+        tabBtns.forEach(t => {
+          if (t.getAttribute('data-status') === 'approved') t.classList.add('active');
+          else t.classList.remove('active');
+        });
+      }
 
       let totalCalls = 0;
       let totalWa = 0;
@@ -738,10 +853,17 @@ if (typeof firebase !== 'undefined') {
       });
 
       if (filtered.length === 0) {
-        const emptyMsg = activeCollection === 'business_pages'
-          ? 'No listing pages yet. Click "+ Create New Listing Page" to add your first one.'
-          : 'No items found in this section.';
-        listingsContainer.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 40px 0;">${emptyMsg}</p>`;
+        let emptyMsg = 'No items found in this section.';
+        if (activeCollection === 'business_pages') {
+          emptyMsg = 'No listing pages yet. Click "+ Create New Listing Page" to add your first one.';
+        } else if (activeStatusTab === 'pending') {
+          emptyMsg = '🎉 No pending listings waiting for review. All items are approved or archived.';
+        } else if (activeStatusTab === 'approved') {
+          emptyMsg = 'No approved listings yet.';
+        } else if (activeStatusTab === 'rejected') {
+          emptyMsg = 'No archived listings.';
+        }
+        listingsContainer.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 40px 0; font-size: 14.5px;">${emptyMsg}</p>`;
         return;
       }
 
@@ -985,6 +1107,7 @@ if (typeof firebase !== 'undefined') {
         });
         targetBtn.classList.add('active');
 
+        userHasSelectedStatusTab = false; // Reset on section change
         activeCollection = dataType;
         initializeDashboard(); // Reload data for new collection
       });
@@ -992,9 +1115,10 @@ if (typeof firebase !== 'undefined') {
 
     tabBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
+        userHasSelectedStatusTab = true; // User explicitly selected
         tabBtns.forEach(t => t.classList.remove('active'));
-        e.target.classList.add('active');
-        activeStatusTab = e.target.getAttribute('data-status');
+        e.currentTarget.classList.add('active');
+        activeStatusTab = e.currentTarget.getAttribute('data-status');
         renderListings();
       });
     });
@@ -2756,102 +2880,42 @@ ${whyHTML}
       document.body.removeChild(link);
     }
 
-    // Wire up events once DOM or elements are available
-    document.addEventListener('DOMContentLoaded', () => {
-      // Range selector buttons
-      document.querySelectorAll('.kpi-range-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          document.querySelectorAll('.kpi-range-btn').forEach(b => {
-            b.style.background = 'transparent';
-            b.style.color = '#475569';
-            b.classList.remove('active');
-          });
-          e.target.style.background = '#0B3B2C';
-          e.target.style.color = '#ffffff';
-          e.target.classList.add('active');
-
-          window.kpiState.activeRange = e.target.dataset.range || 'all';
-          computeAndRenderKPI();
+    // Wire up KPI controls
+    document.querySelectorAll('.kpi-range-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.kpi-range-btn').forEach(b => {
+          b.style.background = 'transparent';
+          b.style.color = '#475569';
+          b.classList.remove('active');
         });
+        e.currentTarget.style.background = '#0B3B2C';
+        e.currentTarget.style.color = '#ffffff';
+        e.currentTarget.classList.add('active');
+
+        window.kpiState.activeRange = e.currentTarget.dataset.range || 'all';
+        computeAndRenderKPI();
       });
-
-      // Refresh button
-      const btnRefresh = document.getElementById('btn-kpi-refresh');
-      if (btnRefresh) {
-        btnRefresh.addEventListener('click', () => {
-          loadDirectoryPerformance();
-        });
-      }
-
-      // Export CSV button
-      const btnExport = document.getElementById('btn-kpi-export-csv');
-      if (btnExport) {
-        btnExport.addEventListener('click', exportKPIReportCSV);
-      }
-
-      // Live search and filter events in the explorer table
-      const searchInput = document.getElementById('perf-filter-business');
-      const distSelect = document.getElementById('perf-filter-district');
-      const catSelect = document.getElementById('perf-filter-category');
-      const sortSelect = document.getElementById('perf-filter-sort');
-
-      if (searchInput) searchInput.addEventListener('input', () => computeAndRenderKPI());
-      if (distSelect) distSelect.addEventListener('change', () => computeAndRenderKPI());
-      if (catSelect) catSelect.addEventListener('change', () => computeAndRenderKPI());
-      if (sortSelect) sortSelect.addEventListener('change', () => computeAndRenderKPI());
     });
 
-    // Fallback binding for quick navigation without page reload
-    setTimeout(() => {
-      const btnRefresh = document.getElementById('btn-kpi-refresh');
-      if (btnRefresh && !btnRefresh.dataset.bound) {
-        btnRefresh.dataset.bound = 'true';
-        btnRefresh.addEventListener('click', () => loadDirectoryPerformance());
-      }
-      const btnExport = document.getElementById('btn-kpi-export-csv');
-      if (btnExport && !btnExport.dataset.bound) {
-        btnExport.dataset.bound = 'true';
-        btnExport.addEventListener('click', exportKPIReportCSV);
-      }
-      const searchInput = document.getElementById('perf-filter-business');
-      if (searchInput && !searchInput.dataset.bound) {
-        searchInput.dataset.bound = 'true';
-        searchInput.addEventListener('input', () => computeAndRenderKPI());
-      }
-      const distSelect = document.getElementById('perf-filter-district');
-      if (distSelect && !distSelect.dataset.bound) {
-        distSelect.dataset.bound = 'true';
-        distSelect.addEventListener('change', () => computeAndRenderKPI());
-      }
-      const catSelect = document.getElementById('perf-filter-category');
-      if (catSelect && !catSelect.dataset.bound) {
-        catSelect.dataset.bound = 'true';
-        catSelect.addEventListener('change', () => computeAndRenderKPI());
-      }
-      const sortSelect = document.getElementById('perf-filter-sort');
-      if (sortSelect && !sortSelect.dataset.bound) {
-        sortSelect.dataset.bound = 'true';
-        sortSelect.addEventListener('change', () => computeAndRenderKPI());
-      }
-      document.querySelectorAll('.kpi-range-btn').forEach(btn => {
-        if (!btn.dataset.bound) {
-          btn.dataset.bound = 'true';
-          btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.kpi-range-btn').forEach(b => {
-              b.style.background = 'transparent';
-              b.style.color = '#475569';
-              b.classList.remove('active');
-            });
-            e.target.style.background = '#0B3B2C';
-            e.target.style.color = '#ffffff';
-            e.target.classList.add('active');
+    const btnKpiRefresh = document.getElementById('btn-kpi-refresh');
+    if (btnKpiRefresh) {
+      btnKpiRefresh.addEventListener('click', () => loadDirectoryPerformance());
+    }
 
-            window.kpiState.activeRange = e.target.dataset.range || 'all';
-            computeAndRenderKPI();
-          });
-        }
-      });
-    }, 1000);
+    const btnKpiExport = document.getElementById('btn-kpi-export-csv');
+    if (btnKpiExport) {
+      btnKpiExport.addEventListener('click', exportKPIReportCSV);
+    }
+
+    const kpiSearchInput = document.getElementById('perf-filter-business');
+    const kpiDistSelect = document.getElementById('perf-filter-district');
+    const kpiCatSelect = document.getElementById('perf-filter-category');
+    const kpiSortSelect = document.getElementById('perf-filter-sort');
+
+    if (kpiSearchInput) kpiSearchInput.addEventListener('input', () => computeAndRenderKPI());
+    if (kpiDistSelect) kpiDistSelect.addEventListener('change', () => computeAndRenderKPI());
+    if (kpiCatSelect) kpiCatSelect.addEventListener('change', () => computeAndRenderKPI());
+    if (kpiSortSelect) kpiSortSelect.addEventListener('change', () => computeAndRenderKPI());
 
 
 
@@ -3118,7 +3182,7 @@ ${whyHTML}
         }
       });
     }
-  });
+  }
 
   function formatVehicleNumber(val) {
     let v = val.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
@@ -3200,6 +3264,7 @@ ${whyHTML}
           return timeB - timeA;
         });
 
+        const countLeadsSpan = document.getElementById('count-leads');
         if (countLeadsSpan) {
           const newCount = cachedLeads.filter(l => (l.status || 'new') === 'new').length;
           countLeadsSpan.textContent = newCount;
@@ -3317,28 +3382,280 @@ ${whyHTML}
     });
   }
 
-  // Bind Filter & Refresh
-  document.addEventListener('DOMContentLoaded', () => {
-    const filterSelect = document.getElementById('leads-filter-status');
-    const refreshBtn = document.getElementById('btn-refresh-leads');
-    if (filterSelect) filterSelect.addEventListener('change', renderLeadsTable);
-    if (refreshBtn) refreshBtn.addEventListener('click', loadCustomerLeads);
-  });
+  // ==================== EVENTS ENGINE ====================
+  let cachedEvents = [];
 
-  // Auto-initialize for server-authenticated dashboard
-  function autoInitDashboard() {
-    if (typeof initializeDashboard === 'function') {
-      initializeDashboard();
+  function loadAdminEvents() {
+    const tbody = document.getElementById('admin-events-tbody');
+    const countEventsSpan = document.getElementById('count-events');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="6" style="padding: 30px; text-align: center; color: var(--text-muted);">Fetching events...</td></tr>';
+
+    const renderEventsList = (events) => {
+      cachedEvents = events;
+      if (countEventsSpan) countEventsSpan.textContent = events.length;
+
+      const filterStatus = document.getElementById('events-filter-status')?.value || '';
+      const filterDist = document.getElementById('events-filter-district')?.value || '';
+
+      let list = events;
+      if (filterStatus) {
+        if (filterStatus === 'featured') {
+          list = list.filter(e => e.isFeatured);
+        } else {
+          list = list.filter(e => (e.status || 'approved') === filterStatus);
+        }
+      }
+      if (filterDist) {
+        list = list.filter(e => (e.district || '').toLowerCase() === filterDist.toLowerCase());
+      }
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="padding: 30px; text-align: center; color: var(--text-muted);">No events found matching this filter.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(ev => {
+        const poster = ev.posterUrl || 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=200&q=80';
+        const isFeat = ev.isFeatured === true;
+        const status = ev.status || 'approved';
+        const statusBadge = status === 'approved'
+          ? '<span style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">Approved</span>'
+          : (status === 'pending'
+            ? '<span style="background:#fef3c7; color:#b45309; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">Pending</span>'
+            : '<span style="background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700;">Archived</span>');
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 10px; display: flex; align-items: center; gap: 10px;">
+              <img src="${poster}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px;" />
+              <div>
+                <a href="/events/${ev.slug || ev.id}/" target="_blank" style="font-weight: 700; color: var(--primary); text-decoration: none;">${ev.title}</a>
+                <div style="font-size: 11px; color: var(--text-muted);">${ev.venue || ''}</div>
+              </div>
+            </td>
+            <td style="padding: 10px;">
+              <span style="font-weight: 600;">${ev.categoryLabel || ev.category}</span>
+              <div style="font-size: 11px; color: var(--text-muted);">${ev.town ? ev.town + ', ' : ''}${ev.district}</div>
+            </td>
+            <td style="padding: 10px;">
+              <div>${ev.startDate} ${ev.endDate ? 'to ' + ev.endDate : ''}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${ev.time || ''}</div>
+            </td>
+            <td style="padding: 10px;">
+              <div>${ev.contactPhone || '—'}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${ev.organizer || ''}</div>
+            </td>
+            <td style="padding: 10px;">
+              ${statusBadge}
+              ${isFeat ? '<div style="font-size: 10px; color: #b45309; font-weight: 700; margin-top: 3px;">⭐ Featured</div>' : ''}
+            </td>
+            <td style="padding: 10px; text-align: center;">
+              <div style="display: flex; gap: 6px; justify-content: center;">
+                <button type="button" class="btn-admin btn-edit-event" data-id="${ev.id}" style="padding: 4px 8px; font-size: 11px;">✏️ Edit</button>
+                ${status === 'pending' ? `<button type="button" class="btn-admin btn-approve-event" data-id="${ev.id}" style="padding: 4px 8px; font-size: 11px; background:#dcfce7; color:#15803d; border:none;">Approve</button>` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Wire up event action buttons
+      tbody.querySelectorAll('.btn-edit-event').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          const target = cachedEvents.find(e => e.id === id);
+          if (target) openEventModal(target);
+        });
+      });
+      tbody.querySelectorAll('.btn-approve-event').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          if (db) {
+            db.collection('events').doc(id).update({ status: 'approved' }).then(() => {
+              showDashboardStatus('Event approved!', 'alert-success');
+              loadAdminEvents();
+            });
+          }
+        });
+      });
+    };
+
+    // Try Firestore events collection first
+    if (db) {
+      db.collection('events').get().then(snap => {
+        let events = [];
+        snap.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+        if (!events.length && window.SK_SEED_EVENTS) {
+          events = [...window.SK_SEED_EVENTS];
+        }
+        renderEventsList(events);
+      }).catch(err => {
+        console.warn('Events fetch note, using fallback seeds:', err);
+        if (window.SK_SEED_EVENTS) {
+          renderEventsList([...window.SK_SEED_EVENTS]);
+        }
+      });
+    } else if (window.SK_SEED_EVENTS) {
+      renderEventsList([...window.SK_SEED_EVENTS]);
     }
+  }
+
+  function openEventModal(event = null) {
+    const modal = document.getElementById('modal-event');
+    if (!modal) return;
+    const titleEl = document.getElementById('modal-event-title');
+    const idInput = document.getElementById('event-edit-id');
+    const titleInput = document.getElementById('event-input-title');
+    const slugInput = document.getElementById('event-input-slug');
+    const catInput = document.getElementById('event-input-category');
+    const distInput = document.getElementById('event-input-district');
+    const townInput = document.getElementById('event-input-town');
+    const venueInput = document.getElementById('event-input-venue');
+    const startInput = document.getElementById('event-input-start');
+    const endInput = document.getElementById('event-input-end');
+    const timeInput = document.getElementById('event-input-time');
+    const entryInput = document.getElementById('event-input-entry');
+    const orgInput = document.getElementById('event-input-organizer');
+    const phoneInput = document.getElementById('event-input-phone');
+    const waInput = document.getElementById('event-input-whatsapp');
+    const posterInput = document.getElementById('event-input-poster');
+    const descInput = document.getElementById('event-input-desc');
+    const statusInput = document.getElementById('event-input-status');
+    const featInput = document.getElementById('event-input-featured');
+
+    if (event) {
+      if (titleEl) titleEl.textContent = 'Edit Event: ' + (event.title || '');
+      if (idInput) idInput.value = event.id || '';
+      if (titleInput) titleInput.value = event.title || '';
+      if (slugInput) slugInput.value = event.slug || event.id || '';
+      if (catInput) catInput.value = event.category || 'expo';
+      if (distInput) distInput.value = event.district || 'Kottayam';
+      if (townInput) townInput.value = event.town || '';
+      if (venueInput) venueInput.value = event.venue || '';
+      if (startInput) startInput.value = event.startDate || '';
+      if (endInput) endInput.value = event.endDate || '';
+      if (timeInput) timeInput.value = event.time || '';
+      if (entryInput) entryInput.value = event.entryType || '';
+      if (orgInput) orgInput.value = event.organizer || '';
+      if (phoneInput) phoneInput.value = event.contactPhone || '';
+      if (waInput) waInput.value = event.contactWhatsApp || '';
+      if (posterInput) posterInput.value = event.posterUrl || '';
+      if (descInput) descInput.value = event.description || '';
+      if (statusInput) statusInput.value = event.status || 'approved';
+      if (featInput) featInput.checked = !!event.isFeatured;
+    } else {
+      if (titleEl) titleEl.textContent = 'Create New Event';
+      if (idInput) idInput.value = '';
+      const form = document.getElementById('form-event-editor');
+      if (form) form.reset();
+      if (statusInput) statusInput.value = 'approved';
+    }
+    modal.style.display = 'flex';
+  }
+
+  function setupEventAndLeadBindings() {
+    // Leads Filter & Refresh
+    const leadFilterSelect = document.getElementById('leads-filter-status');
+    const leadRefreshBtn = document.getElementById('btn-refresh-leads');
+    if (leadFilterSelect) leadFilterSelect.addEventListener('change', renderLeadsTable);
+    if (leadRefreshBtn) leadRefreshBtn.addEventListener('click', loadCustomerLeads);
+
+    // Events Filter & Refresh
+    const eventFilterStatus = document.getElementById('events-filter-status');
+    const eventFilterDistrict = document.getElementById('events-filter-district');
+    const eventRefreshBtn = document.getElementById('btn-refresh-events');
+    const btnCreateEvent = document.getElementById('btn-create-event-modal');
+    const btnSeedEvents = document.getElementById('btn-seed-sample-events');
+    const closeEventBtn = document.getElementById('close-modal-event');
+    const cancelEventBtn = document.getElementById('btn-cancel-modal-event');
+    const eventModal = document.getElementById('modal-event');
+    const formEvent = document.getElementById('form-event-editor');
+
+    if (eventFilterStatus) eventFilterStatus.addEventListener('change', loadAdminEvents);
+    if (eventFilterDistrict) eventFilterDistrict.addEventListener('change', loadAdminEvents);
+    if (eventRefreshBtn) eventRefreshBtn.addEventListener('click', loadAdminEvents);
+    if (btnCreateEvent) btnCreateEvent.addEventListener('click', () => openEventModal(null));
+    if (closeEventBtn) closeEventBtn.addEventListener('click', () => { if (eventModal) eventModal.style.display = 'none'; });
+    if (cancelEventBtn) cancelEventBtn.addEventListener('click', () => { if (eventModal) eventModal.style.display = 'none'; });
+
+    if (btnSeedEvents) {
+      btnSeedEvents.addEventListener('click', async () => {
+        if (!confirm('Seed sample community events into Firestore?')) return;
+        if (db && window.SK_SEED_EVENTS) {
+          btnSeedEvents.disabled = true;
+          btnSeedEvents.textContent = 'Seeding...';
+          try {
+            for (const ev of window.SK_SEED_EVENTS) {
+              await db.collection('events').doc(ev.id).set(ev, { merge: true });
+            }
+            showDashboardStatus('Sample events seeded to Firestore!', 'alert-success');
+            loadAdminEvents();
+          } catch (e) {
+            console.error('Seeding error:', e);
+            showDashboardStatus('Seeding completed with local fallback.', 'alert-success');
+            loadAdminEvents();
+          } finally {
+            btnSeedEvents.disabled = false;
+            btnSeedEvents.textContent = '📥 Seed 6 Sample Events';
+          }
+        }
+      });
+    }
+
+    if (formEvent) {
+      formEvent.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('event-edit-id')?.value || ('event-' + Date.now());
+        const eventData = {
+          title: document.getElementById('event-input-title')?.value.trim() || '',
+          slug: document.getElementById('event-input-slug')?.value.trim().toLowerCase() || id,
+          category: document.getElementById('event-input-category')?.value || 'expo',
+          district: document.getElementById('event-input-district')?.value || 'Kottayam',
+          town: document.getElementById('event-input-town')?.value.trim() || '',
+          venue: document.getElementById('event-input-venue')?.value.trim() || '',
+          startDate: document.getElementById('event-input-start')?.value || '',
+          endDate: document.getElementById('event-input-end')?.value || '',
+          time: document.getElementById('event-input-time')?.value.trim() || '',
+          entryType: document.getElementById('event-input-entry')?.value.trim() || 'Free Entry',
+          organizer: document.getElementById('event-input-organizer')?.value.trim() || '',
+          contactPhone: document.getElementById('event-input-phone')?.value.trim() || '',
+          contactWhatsApp: document.getElementById('event-input-whatsapp')?.value.trim() || '',
+          posterUrl: document.getElementById('event-input-poster')?.value.trim() || '',
+          description: document.getElementById('event-input-desc')?.value.trim() || '',
+          status: document.getElementById('event-input-status')?.value || 'approved',
+          isFeatured: document.getElementById('event-input-featured')?.checked === true,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (db) {
+          db.collection('events').doc(id).set(eventData, { merge: true }).then(() => {
+            showDashboardStatus('Event saved successfully!', 'alert-success');
+            if (eventModal) eventModal.style.display = 'none';
+            loadAdminEvents();
+          }).catch(err => {
+            console.error('Error saving event:', err);
+            showDashboardStatus('Failed to save event.', 'alert-error');
+          });
+        }
+      });
+    }
+  }
+
+  // Safe dashboard auto-initialization across all execution contexts
+  function startAdminApp() {
+    initAdminDashboard();
+    setupEventAndLeadBindings();
     if (typeof loadDirectoryParameters === 'function') {
-      loadDirectoryParameters().catch(e => console.warn(e));
+      loadDirectoryParameters().catch(e => console.warn('Directory params note:', e));
     }
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoInitDashboard);
+    document.addEventListener('DOMContentLoaded', startAdminApp);
   } else {
-    autoInitDashboard();
+    startAdminApp();
   }
 } else {
   console.error('Firebase SDK not loaded inside the browser.');
