@@ -87,6 +87,33 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Live Google SERP Checker API Endpoint
+  if (pathname === '/api/admin/serp-check' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk;
+      if (body.length > 64 * 1024) req.destroy();
+    });
+    req.on('end', async () => {
+      try {
+        req.body = JSON.parse(body || '{}');
+        const handler = require('../api/admin/serp-check');
+        const response = {
+          status(code) { res.statusCode = code; return this; },
+          json(payload) {
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify(payload));
+          }
+        };
+        await handler(req, response);
+      } catch (error) {
+        res.writeHead(500, {'Content-Type': 'application/json; charset=utf-8'});
+        res.end(JSON.stringify({ error: error.message || 'Server error.' }));
+      }
+    });
+    return;
+  }
+
   // 2. Server-Level Authentication API Endpoints
   if (req.method === 'POST' && (pathname === '/api/admin/login' || pathname === '/api/admin/login/')) {
     let body = '';
