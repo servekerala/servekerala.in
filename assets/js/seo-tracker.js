@@ -13,7 +13,12 @@
   let currentActiveTab = 'tracker';
 
   // Serper.dev API Key (Stored in localStorage & Firestore site_seo/global)
-  let serperApiKey = localStorage.getItem('sk_serper_api_key') || '';
+  const DEFAULT_SERPER_KEY = '38232572b45d7ca7bba5cc86a36ca7d76d16f83a';
+  let serperApiKey = localStorage.getItem('sk_serper_api_key') || DEFAULT_SERPER_KEY;
+  if (!serperApiKey || serperApiKey.length < 10) {
+    serperApiKey = DEFAULT_SERPER_KEY;
+    localStorage.setItem('sk_serper_api_key', serperApiKey);
+  }
 
   // Configuration & Competitors
   const DOMAINS = [
@@ -601,13 +606,17 @@
         const seoDoc = await window.db.collection('site_seo').doc('global').get().catch(() => null);
         if (seoDoc && seoDoc.exists) {
           const seoData = seoDoc.data();
-          if (seoData.serperApiKey && !serperApiKey) {
+          if (seoData.serperApiKey) {
             serperApiKey = seoData.serperApiKey;
             localStorage.setItem('sk_serper_api_key', serperApiKey);
+          } else {
+            window.db.collection('site_seo').doc('global').set({ serperApiKey: DEFAULT_SERPER_KEY }, { merge: true }).catch(() => {});
           }
           if (seoData.googleSiteVerification) {
             gscVerificationCode = seoData.googleSiteVerification;
           }
+        } else {
+          window.db.collection('site_seo').doc('global').set({ serperApiKey: DEFAULT_SERPER_KEY }, { merge: true }).catch(() => {});
         }
 
         // Load Keywords

@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Keyword is required.' });
     }
 
-    const key = apiKey || process.env.SERPER_API_KEY;
+    const key = (apiKey && apiKey.trim()) || process.env.SERPER_API_KEY || '38232572b45d7ca7bba5cc86a36ca7d76d16f83a';
     if (!key) {
       return res.status(400).json({
         success: false,
