@@ -29,6 +29,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="/assets/js/events-loader.js?v=1.0" defer></script>
   <script src="/assets/js/admin.js?v=27.9" defer></script>
+  <script src="/assets/js/seo-tracker.js?v=1.0" defer></script>
 
   <!-- ================= GOOGLE TAG MANAGER ================= -->
   <script>
@@ -48,6 +49,45 @@
 
   <!-- Admin Navigation Top Menu Bar Styling (Ultra-Compact) -->
   <style>
+    .sk-rank-app { background:#f6f8f7; padding:24px; border:1px solid #dbe5df; border-radius:14px; color:#173b2d; }
+    .sk-rank-header,.sk-rank-panel-heading { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+    .sk-rank-header { margin-bottom:18px; }
+    .sk-rank-header h2 { margin:3px 0 5px; font-size:26px; color:#123d2e; }
+    .sk-rank-header p,.sk-rank-panel-heading p { color:#64746b; margin:0; font-size:13px; }
+    .sk-rank-eyebrow { color:#0b7653; font-weight:800; letter-spacing:.12em; font-size:10px; }
+    .sk-rank-status { background:#eef3f0; color:#445a4e; border-radius:8px; padding:11px 14px; margin:0 0 16px; font-size:13px; }
+    .sk-rank-status.success { background:#e4f6eb; color:#17683e; }
+    .sk-rank-status.error { background:#fff0ee; color:#a43124; }
+    .sk-rank-status.warning { background:#fff7e6; color:#925b00; }
+    .sk-rank-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+    .sk-rank-stats article,.sk-rank-panel { background:#fff; border:1px solid #e2e9e4; border-radius:11px; }
+    .sk-rank-stats article { display:flex; flex-direction:column; gap:7px; padding:16px; }
+    .sk-rank-stats article span,.sk-rank-stats article small { color:#68776f; font-size:12px; }
+    .sk-rank-stats article strong { font-size:24px; color:#123d2e; }
+    .sk-rank-panel { padding:18px; margin-bottom:16px; }
+    .sk-rank-panel h3 { margin:0 0 4px; color:#173b2d; font-size:17px; }
+    .sk-rank-panel-heading { margin-bottom:16px; }
+    .sk-rank-form-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .sk-rank-form-grid label { display:flex; flex-direction:column; gap:6px; color:#42564a; font-size:12px; font-weight:700; }
+    .sk-rank-form-grid input,.sk-rank-form-grid select,.sk-rank-form-grid textarea { width:100%; padding:10px 11px; border:1px solid #d4dfd8; border-radius:7px; color:#1d3428; background:#fff; font:inherit; font-weight:400; box-sizing:border-box; }
+    .sk-rank-form-grid textarea { resize:vertical; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12px; line-height:1.55; }
+    .sk-rank-keywords-field { grid-column:1 / -1; }
+    .sk-rank-cost-note { margin:12px 0 0; color:#7b6540; font-size:12px; }
+    .sk-rank-chart-wrap { height:250px; position:relative; }
+    .sk-rank-table-wrap { overflow:auto; }
+    .sk-rank-table { width:100%; border-collapse:collapse; min-width:650px; font-size:12px; }
+    .sk-rank-table th,.sk-rank-table td { text-align:left; padding:11px 10px; border-bottom:1px solid #edf1ee; vertical-align:top; }
+    .sk-rank-table th { color:#718077; font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+    .sk-rank-table td small,.sk-rank-table td a { display:block; color:#718077; font-size:10px; margin-top:4px; }
+    .sk-rank-table td a { color:#176d50; text-decoration:none; }
+    .sk-rank-good strong { color:#16824e; }
+    .sk-rank-error { color:#a43124; }
+    .sk-rank-history { display:grid; gap:8px; }
+    .sk-rank-history>div { display:grid; grid-template-columns:2fr 2fr 1fr 1fr 1fr; gap:10px; padding:10px; border-bottom:1px solid #edf1ee; font-size:12px; color:#56665c; }
+    .sk-rank-history>div strong { color:#263d30; }
+    @media(max-width:850px) { .sk-rank-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .sk-rank-form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:560px) { .sk-rank-app { padding:13px; } .sk-rank-header,.sk-rank-panel-heading { align-items:flex-start; flex-direction:column; } .sk-rank-form-grid,.sk-rank-stats { grid-template-columns:1fr; } .sk-rank-history>div { grid-template-columns:1fr 1fr; } }
+
     .admin-page .site-header {
       background: #fbf9f5 !important;
       border-bottom: 1px solid #e2e8f0 !important;
@@ -814,6 +854,10 @@
       <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Configure Meta Titles, Descriptions,
         and Keywords for core pages. Changes will be applied during the next deployment build.</p>
 
+      <div id="admin-seo-tracker-container" class="sk-rank-app" style="margin-bottom:28px;"></div>
+
+      <h3 style="font-size:18px; color:var(--primary); margin:28px 0 14px;">Page Metadata</h3>
+
       <form id="seo-settings-form">
         <div
           style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
@@ -883,7 +927,10 @@
 
     <!-- KPI Dashboard Section (Hidden by default) -->
     <div id="admin-kpi-container" class="admin-kpi"
-      style="display: none; background: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      style="display: none; background: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; position: relative;">
+
+      <!-- Floating Live Toast Notifications Container -->
+      <div id="kpi-toast-container" style="position: fixed; top: 68px; right: 24px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; max-width: 380px;"></div>
 
       <!-- ================= 1. KPI HEADER WITH AUTO-SCAN ================= -->
       <div
@@ -929,6 +976,15 @@
             <button type="button" class="kpi-range-btn active" data-range="all"
               style="padding: 6px 12px; border: none; background: #0B3B2C; color: #ffffff; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">All Time</button>
           </div>
+
+          <!-- Audio Lead Alerts Button (Matching Solis EPC) -->
+          <button type="button" id="btn-kpi-audio-alerts" class="btn"
+            style="padding: 6px 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
+            title="Click to toggle audio chime notifications for live visitor leads and interactions">
+            <span id="kpi-audio-icon">🔔</span>
+            <span>Lead Alerts</span>
+            <span id="kpi-audio-status-badge" style="background: #22c55e; color: #ffffff; padding: 2px 7px; border-radius: 12px; font-size: 10px; font-weight: 800;">Active</span>
+          </button>
 
           <button type="button" id="btn-kpi-refresh" class="btn btn-outline"
             style="padding: 7px 12px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; border-radius: 6px;">🔄 Refresh</button>

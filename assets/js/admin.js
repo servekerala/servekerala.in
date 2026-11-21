@@ -693,6 +693,7 @@ if (typeof firebase !== 'undefined') {
         if (bpBar) bpBar.style.display = 'none';
         const summaryEl = document.getElementById('admin-click-summary');
         if (summaryEl) summaryEl.style.display = 'none';
+        if (typeof updateAudioAlertButton === 'function') updateAudioAlertButton();
         loadKPIReports();
         if (typeof startKpiAutoScan === 'function') {
           startKpiAutoScan();
@@ -2413,8 +2414,179 @@ ${whyHTML}
       logFilter: 'all',
       logSearch: '',
       distFilterMode: 'all',
-      adSpend: 5000
+      adSpend: 5000,
+      audioAlertsEnabled: localStorage.getItem('sk_kpi_audio_alerts') !== 'false',
+      seenEventIds: new Set(),
+      seenLeadIds: new Set(),
+      isInitialEventsLoaded: false,
+      isInitialLeadsLoaded: false
     };
+
+    // Web Audio Synthesizer for Lead Alerts (zero audio file dependencies, instant chime)
+    let kpiAudioCtx = null;
+    function getKpiAudioContext() {
+      if (!kpiAudioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          kpiAudioCtx = new AudioContextClass();
+        }
+      }
+      if (kpiAudioCtx && kpiAudioCtx.state === 'suspended') {
+        kpiAudioCtx.resume();
+      }
+      return kpiAudioCtx;
+    }
+
+    function playLeadAlertSound(type = 'lead') {
+      try {
+        const ctx = getKpiAudioContext();
+        if (!ctx) return;
+
+        const now = ctx.currentTime;
+        let notes = [];
+
+        if (type === 'call') {
+          // Bright 4-note ascending fanfare: E5 -> G#5 -> B5 -> E6
+          notes = [
+            { freq: 659.25, time: 0.00, dur: 0.16, vol: 0.26 },
+            { freq: 830.61, time: 0.08, dur: 0.16, vol: 0.26 },
+            { freq: 987.77, time: 0.16, dur: 0.20, vol: 0.30 },
+            { freq: 1318.51, time: 0.24, dur: 0.42, vol: 0.34 }
+          ];
+        } else if (type === 'whatsapp') {
+          // Crisp high-energy WhatsApp lead chime: G5 -> C6 -> E6
+          notes = [
+            { freq: 783.99, time: 0.00, dur: 0.14, vol: 0.26 },
+            { freq: 1046.50, time: 0.10, dur: 0.16, vol: 0.29 },
+            { freq: 1318.51, time: 0.20, dur: 0.40, vol: 0.33 }
+          ];
+        } else if (type === 'lead') {
+          // Warm professional chord chime: C5 -> E5 -> G5
+          notes = [
+            { freq: 523.25, time: 0.00, dur: 0.15, vol: 0.25 },
+            { freq: 659.25, time: 0.10, dur: 0.18, vol: 0.28 },
+            { freq: 783.99, time: 0.20, dur: 0.38, vol: 0.30 }
+          ];
+        } else {
+          // Subtle soft blip for views / clicks
+          notes = [
+            { freq: 880.00, time: 0.00, dur: 0.10, vol: 0.12 }
+          ];
+        }
+
+        notes.forEach(note => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(note.freq, now + note.time);
+
+          gain.gain.setValueAtTime(0.001, now + note.time);
+          gain.gain.linearRampToValueAtTime(note.vol, now + note.time + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + note.time + note.dur);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now + note.time);
+          osc.stop(now + note.time + note.dur + 0.02);
+        });
+      } catch (err) {
+        console.warn('Audio alert play error:', err);
+      }
+    }
+
+    function showKpiToast(title, message, icon = '🔔') {
+      let container = document.getElementById('kpi-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'kpi-toast-container';
+        container.style.cssText = 'position: fixed; top: 68px; right: 24px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; max-width: 380px;';
+        document.body.appendChild(container);
+      }
+
+      const toast = document.createElement('div');
+      toast.style.cssText = 'background: #ffffff; border-left: 5px solid #10b981; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); pointer-events: auto; display: flex; align-items: flex-start; gap: 12px; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; opacity: 0;';
+
+      toast.innerHTML = `
+        <span style="font-size: 22px; flex-shrink: 0; line-height: 1;">${icon}</span>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 2px;">${title}</div>
+          <div style="font-size: 12px; color: #475569; word-break: break-word; line-height: 1.4;">${message}</div>
+          <div style="font-size: 10.5px; color: #94a3b8; margin-top: 4px;">Just now • ServeKerala Real-Time</div>
+        </div>
+        <button type="button" style="background: transparent; border: none; font-size: 16px; color: #94a3b8; cursor: pointer; padding: 0 4px; line-height: 1;" onclick="this.parentElement.remove()">×</button>
+      `;
+
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.style.transform = 'translateX(0)';
+        toast.style.opacity = '1';
+      });
+
+      setTimeout(() => {
+        toast.style.transform = 'translateX(120%)';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 350);
+      }, 5000);
+    }
+
+    function triggerActivityAlert(item) {
+      if (!window.kpiState.audioAlertsEnabled) return;
+
+      const eventName = item.event_name || 'activity';
+      let title = 'New Visitor Action';
+      let icon = '⚡';
+      let soundType = 'lead';
+
+      if (eventName === 'phone_click') {
+        title = '📞 New Phone Call Click!';
+        icon = '📞';
+        soundType = 'call';
+      } else if (eventName === 'whatsapp_click') {
+        title = '💬 New WhatsApp Lead!';
+        icon = '💬';
+        soundType = 'whatsapp';
+      } else if (eventName === 'form_lead' || eventName === 'callback_request') {
+        title = '📝 New Quote Form Submitted!';
+        icon = '📝';
+        soundType = 'lead';
+      } else if (eventName === 'business_profile_view' || eventName === 'page_view') {
+        title = '👁️ New Page View';
+        icon = '👁️';
+        soundType = 'view';
+      }
+
+      const detail = item.business_name || item.name || item.category || item.page_path || 'servekerala.in';
+      const loc = (item.town ? `${item.town} • ` : '') + (item.district || 'Kerala');
+
+      playLeadAlertSound(soundType);
+      showKpiToast(title, `${detail} (${loc})`, icon);
+    }
+
+    function updateAudioAlertButton() {
+      const btn = document.getElementById('btn-kpi-audio-alerts');
+      const badge = document.getElementById('kpi-audio-status-badge');
+      const icon = document.getElementById('kpi-audio-icon');
+      if (!btn || !badge) return;
+
+      if (window.kpiState.audioAlertsEnabled) {
+        btn.style.background = '#fef3c7';
+        btn.style.color = '#92400e';
+        btn.style.borderColor = '#fde68a';
+        badge.style.background = '#22c55e';
+        badge.textContent = 'Active';
+        if (icon) icon.textContent = '🔔';
+      } else {
+        btn.style.background = '#f1f5f9';
+        btn.style.color = '#64748b';
+        btn.style.borderColor = '#cbd5e1';
+        badge.style.background = '#94a3b8';
+        badge.textContent = 'Muted';
+        if (icon) icon.textContent = '🔕';
+      }
+    }
 
     function parseItemDate(ts) {
       if (!ts) return null;
@@ -2511,10 +2683,31 @@ ${whyHTML}
               .limit(500)
               .onSnapshot((snapshot) => {
                 let events = [];
-                snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+                let newEventToAlert = null;
+
+                snapshot.docChanges().forEach((change) => {
+                  if (change.type === 'added') {
+                    const docId = change.doc.id;
+                    if (window.kpiState.isInitialEventsLoaded && !window.kpiState.seenEventIds.has(docId)) {
+                      newEventToAlert = change.doc.data();
+                    }
+                    window.kpiState.seenEventIds.add(docId);
+                  }
+                });
+
+                snapshot.forEach(doc => {
+                  events.push({ id: doc.id, ...doc.data() });
+                  window.kpiState.seenEventIds.add(doc.id);
+                });
+
                 window.kpiState.events = events;
                 updateSyncIndicator();
                 computeAndRenderKPI();
+
+                if (window.kpiState.isInitialEventsLoaded && newEventToAlert) {
+                  triggerActivityAlert(newEventToAlert);
+                }
+                window.kpiState.isInitialEventsLoaded = true;
               }, (err) => {
                 console.warn('Real-time events fallback to one-time query:', err);
                 loadDirectoryPerformance();
@@ -2525,10 +2718,31 @@ ${whyHTML}
               .limit(200)
               .onSnapshot((snapshot) => {
                 let leads = [];
-                snapshot.forEach(doc => leads.push({ id: doc.id, ...doc.data() }));
+                let newLeadToAlert = null;
+
+                snapshot.docChanges().forEach((change) => {
+                  if (change.type === 'added') {
+                    const docId = change.doc.id;
+                    if (window.kpiState.isInitialLeadsLoaded && !window.kpiState.seenLeadIds.has(docId)) {
+                      newLeadToAlert = { ...change.doc.data(), event_name: 'form_lead' };
+                    }
+                    window.kpiState.seenLeadIds.add(docId);
+                  }
+                });
+
+                snapshot.forEach(doc => {
+                  leads.push({ id: doc.id, ...doc.data() });
+                  window.kpiState.seenLeadIds.add(doc.id);
+                });
+
                 window.kpiState.leads = leads;
                 updateSyncIndicator();
                 computeAndRenderKPI();
+
+                if (window.kpiState.isInitialLeadsLoaded && newLeadToAlert) {
+                  triggerActivityAlert(newLeadToAlert);
+                }
+                window.kpiState.isInitialLeadsLoaded = true;
               }, (err) => {
                 console.warn('Real-time leads fallback:', err);
               });
@@ -2577,6 +2791,30 @@ ${whyHTML}
         leadsSnap.forEach(doc => {
           leads.push({ id: doc.id, ...doc.data() });
         });
+
+        if (window.kpiState.isInitialEventsLoaded) {
+          events.forEach(e => {
+            if (!window.kpiState.seenEventIds.has(e.id)) {
+              window.kpiState.seenEventIds.add(e.id);
+              triggerActivityAlert(e);
+            }
+          });
+        } else {
+          events.forEach(e => window.kpiState.seenEventIds.add(e.id));
+          window.kpiState.isInitialEventsLoaded = true;
+        }
+
+        if (window.kpiState.isInitialLeadsLoaded) {
+          leads.forEach(l => {
+            if (!window.kpiState.seenLeadIds.has(l.id)) {
+              window.kpiState.seenLeadIds.add(l.id);
+              triggerActivityAlert({ ...l, event_name: 'form_lead' });
+            }
+          });
+        } else {
+          leads.forEach(l => window.kpiState.seenLeadIds.add(l.id));
+          window.kpiState.isInitialLeadsLoaded = true;
+        }
 
         window.kpiState.businesses = businesses;
         window.kpiState.events = events;
@@ -3755,6 +3993,26 @@ ${whyHTML}
       calcCplBtn.addEventListener('click', () => {
         window.kpiState.adSpend = parseFloat(adSpendInput.value) || 5000;
         renderMarketingAttribution(window.kpiState.events, window.kpiState.leads);
+      });
+    }
+
+    // Audio Lead Alerts Toggle
+    const btnAudioAlerts = document.getElementById('btn-kpi-audio-alerts');
+    if (btnAudioAlerts) {
+      updateAudioAlertButton();
+      btnAudioAlerts.addEventListener('click', () => {
+        getKpiAudioContext(); // Unlock AudioContext on click
+
+        window.kpiState.audioAlertsEnabled = !window.kpiState.audioAlertsEnabled;
+        localStorage.setItem('sk_kpi_audio_alerts', window.kpiState.audioAlertsEnabled);
+        updateAudioAlertButton();
+
+        if (window.kpiState.audioAlertsEnabled) {
+          playLeadAlertSound('whatsapp');
+          showKpiToast('🔔 Lead Alerts Activated!', 'You will hear a live chime whenever a visitor calls, chats on WhatsApp, or submits a form.', '🔔');
+        } else {
+          showKpiToast('🔕 Lead Alerts Muted', 'Audio chimes have been muted.', '🔕');
+        }
       });
     }
 

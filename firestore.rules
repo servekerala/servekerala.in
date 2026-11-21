@@ -104,5 +104,14 @@ service cloud.firestore {
       allow read: if isAdmin() || ownsBusiness(resource.data.business_id, resource.data.get('business_collection', ''));
       allow update, delete: if isAdmin();
     }
+
+    // 7. Private rank-tracking campaigns and SERP snapshots
+    match /seo_tracker_settings/{document} {
+      allow read, write: if isAdmin();
+    }
+
+    match /seo_tracker_runs/{document} {
+      allow read, write: if isAdmin();
+    }
   }
 }
