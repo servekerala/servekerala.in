@@ -42,9 +42,9 @@
       volume: 1900,
       kd: 28,
       targetUrl: '/pathanamthitta/solar-installation/thiruvalla/',
-      position: 1,
-      prevPosition: 2,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 5, 'indiamart.com': 6, 'naatilepani.com': 14 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-2',
@@ -57,9 +57,9 @@
       volume: 1400,
       kd: 24,
       targetUrl: '/pathanamthitta/inverter-battery/thiruvalla/',
-      position: 1,
-      prevPosition: 1,
-      competitors: { 'justdial.com': 3, 'sulekha.com': 4, 'indiamart.com': 8, 'naatilepani.com': 19 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-3',
@@ -72,9 +72,9 @@
       volume: 2400,
       kd: 32,
       targetUrl: '/kottayam/plumber/',
-      position: 2,
-      prevPosition: 3,
-      competitors: { 'justdial.com': 1, 'sulekha.com': 4, 'indiamart.com': 7, 'naatilepani.com': 8 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-4',
@@ -87,9 +87,9 @@
       volume: 3600,
       kd: 41,
       targetUrl: '/ernakulam/electrician/',
-      position: 3,
-      prevPosition: 4,
-      competitors: { 'justdial.com': 1, 'sulekha.com': 2, 'indiamart.com': 5, 'naatilepani.com': 11 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-5',
@@ -102,9 +102,9 @@
       volume: 3200,
       kd: 38,
       targetUrl: '/ernakulam/ac-repair/',
-      position: 3,
-      prevPosition: 2,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 1, 'indiamart.com': 4, 'naatilepani.com': 9 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-6',
@@ -117,9 +117,9 @@
       volume: 1600,
       kd: 27,
       targetUrl: '/kottayam/cctv-installation/',
-      position: 2,
-      prevPosition: 2,
-      competitors: { 'justdial.com': 3, 'sulekha.com': 5, 'indiamart.com': 4, 'naatilepani.com': 12 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-7',
@@ -132,9 +132,9 @@
       volume: 4800,
       kd: 44,
       targetUrl: '/services/solar-installation/',
-      position: 2,
-      prevPosition: 4,
-      competitors: { 'justdial.com': 5, 'sulekha.com': 6, 'indiamart.com': 3, 'naatilepani.com': 21 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-8',
@@ -147,9 +147,9 @@
       volume: 1200,
       kd: 15,
       targetUrl: '/auto-mithram/thiruvalla/',
-      position: 1,
-      prevPosition: 1,
-      competitors: { 'justdial.com': 4, 'sulekha.com': 18, 'indiamart.com': 25, 'naatilepani.com': 16 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-9',
@@ -162,9 +162,9 @@
       volume: 2100,
       kd: 35,
       targetUrl: '/thiruvananthapuram/pest-control/',
-      position: 4,
-      prevPosition: 5,
-      competitors: { 'justdial.com': 1, 'sulekha.com': 2, 'indiamart.com': 3, 'naatilepani.com': 10 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-10',
@@ -177,9 +177,9 @@
       volume: 1300,
       kd: 22,
       targetUrl: '/thrissur/water-purifier/',
-      position: 3,
-      prevPosition: 3,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 4, 'indiamart.com': 6, 'naatilepani.com': 15 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-11',
@@ -192,9 +192,9 @@
       volume: 1800,
       kd: 30,
       targetUrl: '/kozhikode/painting/',
-      position: 4,
-      prevPosition: 4,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 1, 'indiamart.com': 5, 'naatilepani.com': 8 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-12',
@@ -207,9 +207,9 @@
       volume: 2800,
       kd: 39,
       targetUrl: '/ernakulam/cleaning-service/',
-      position: 3,
-      prevPosition: 5,
-      competitors: { 'justdial.com': 1, 'sulekha.com': 2, 'indiamart.com': 4, 'naatilepani.com': 7 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-13',
@@ -222,9 +222,9 @@
       volume: 950,
       kd: 20,
       targetUrl: '/pathanamthitta/carpenter/thiruvalla/',
-      position: 1,
-      prevPosition: 2,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 5, 'indiamart.com': 8, 'naatilepani.com': 6 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-14',
@@ -237,9 +237,9 @@
       volume: 1100,
       kd: 25,
       targetUrl: '/pathanamthitta/borewell-drilling/',
-      position: 2,
-      prevPosition: 2,
-      competitors: { 'justdial.com': 3, 'sulekha.com': 4, 'indiamart.com': 7, 'naatilepani.com': 12 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-15',
@@ -252,9 +252,9 @@
       volume: 2200,
       kd: 33,
       targetUrl: '/services/solar-water-heater/',
-      position: 3,
-      prevPosition: 3,
-      competitors: { 'justdial.com': 4, 'sulekha.com': 5, 'indiamart.com': 1, 'naatilepani.com': 18 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-16',
@@ -267,9 +267,9 @@
       volume: 880,
       kd: 12,
       targetUrl: '/pathanamthitta/inverter-battery/thiruvalla/',
-      position: 1,
-      prevPosition: 1,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 16, 'indiamart.com': 22, 'naatilepani.com': 14 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-17',
@@ -282,9 +282,9 @@
       volume: 1450,
       kd: 26,
       targetUrl: '/kottayam/aluminium-fabrication/',
-      position: 3,
-      prevPosition: 4,
-      competitors: { 'justdial.com': 1, 'sulekha.com': 3, 'indiamart.com': 2, 'naatilepani.com': 7 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-18',
@@ -297,9 +297,9 @@
       volume: 750,
       kd: 18,
       targetUrl: '/kottayam/welding-works/',
-      position: 2,
-      prevPosition: 2,
-      competitors: { 'justdial.com': 3, 'sulekha.com': 6, 'indiamart.com': 5, 'naatilepani.com': 9 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-19',
@@ -312,9 +312,9 @@
       volume: 600,
       kd: 16,
       targetUrl: '/kottayam/plumber/pala/',
-      position: 1,
-      prevPosition: 2,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 4, 'indiamart.com': 19, 'naatilepani.com': 5 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-20',
@@ -327,9 +327,9 @@
       volume: 2300,
       kd: 34,
       targetUrl: '/thiruvananthapuram/appliance-repair/',
-      position: 3,
-      prevPosition: 4,
-      competitors: { 'justdial.com': 1, 'sulekha.com': 2, 'indiamart.com': 5, 'naatilepani.com': 11 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-21',
@@ -342,9 +342,9 @@
       volume: 2600,
       kd: 36,
       targetUrl: '/kozhikode/appliance-repair/',
-      position: 3,
-      prevPosition: 3,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 1, 'indiamart.com': 6, 'naatilepani.com': 8 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-22',
@@ -357,9 +357,9 @@
       volume: 1100,
       kd: 22,
       targetUrl: '/pathanamthitta/cctv-installation/thiruvalla/',
-      position: 1,
-      prevPosition: 1,
-      competitors: { 'justdial.com': 3, 'sulekha.com': 4, 'indiamart.com': 2, 'naatilepani.com': 13 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-23',
@@ -372,9 +372,9 @@
       volume: 3900,
       kd: 42,
       targetUrl: '/services/solar-installation/',
-      position: 2,
-      prevPosition: 3,
-      competitors: { 'justdial.com': 6, 'sulekha.com': 8, 'indiamart.com': 4, 'naatilepani.com': 24 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-24',
@@ -387,9 +387,9 @@
       volume: 1500,
       kd: 14,
       targetUrl: '/auto-mithram/',
-      position: 1,
-      prevPosition: 1,
-      competitors: { 'justdial.com': 5, 'sulekha.com': 20, 'indiamart.com': 22, 'naatilepani.com': 17 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-25',
@@ -402,9 +402,9 @@
       volume: 1700,
       kd: 37,
       targetUrl: '/ernakulam/packers-and-movers/',
-      position: 4,
-      prevPosition: 5,
-      competitors: { 'justdial.com': 1, 'sulekha.com': 2, 'indiamart.com': 3, 'naatilepani.com': 10 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-26',
@@ -417,9 +417,9 @@
       volume: 2100,
       kd: 29,
       targetUrl: '/services/tile-work/',
-      position: 3,
-      prevPosition: 4,
-      competitors: { 'justdial.com': 4, 'sulekha.com': 7, 'indiamart.com': 2, 'naatilepani.com': 6 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-27',
@@ -432,9 +432,9 @@
       volume: 850,
       kd: 19,
       targetUrl: '/pathanamthitta/septic-tank-cleaning/thiruvalla/',
-      position: 1,
-      prevPosition: 1,
-      competitors: { 'justdial.com': 2, 'sulekha.com': 3, 'indiamart.com': 21, 'naatilepani.com': 5 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     },
     {
       id: 'kw-28',
@@ -447,9 +447,9 @@
       volume: 1350,
       kd: 27,
       targetUrl: '/kottayam/solar-installation/',
-      position: 2,
-      prevPosition: 2,
-      competitors: { 'justdial.com': 3, 'sulekha.com': 4, 'indiamart.com': 1, 'naatilepani.com': 13 }
+      position: null,
+      prevPosition: null,
+      competitors: { 'justdial.com': null, 'sulekha.com': null, 'indiamart.com': null, 'naatilepani.com': null }, liveVerified: false
     }
   ];
 
@@ -622,7 +622,14 @@
         // Load Keywords
         const kwSnap = await window.db.collection('seo_tracker_keywords').get().catch(() => null);
         if (kwSnap && !kwSnap.empty) {
-          trackedKeywords = kwSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          trackedKeywords = kwSnap.docs.map(doc => {
+            const d = doc.data();
+            if (!d.liveVerified) {
+              d.position = null;
+              d.prevPosition = null;
+            }
+            return { id: doc.id, ...d };
+          });
         } else {
           trackedKeywords = [...DEFAULT_KEYWORDS];
           trackedKeywords.forEach(kw => {
@@ -912,7 +919,7 @@
           <div class="sk-semrush-card-value">
             <span>${mainMetrics.visibility}%</span>
             <span class="sk-semrush-delta ${visDelta >= 0 ? 'up' : 'down'}">
-              ${visDelta >= 0 ? '▲ +' : '▼ '}${visDelta}%
+              ${scanRuns.length >= 2 ? (visDelta >= 0 ? '▲ +' : '▼ ') + visDelta + '%' : 'Baseline'}
             </span>
           </div>
           <div style="font-size:11px; color:#64748b; margin-top:4px;">
@@ -930,7 +937,7 @@
           </div>
           <div class="sk-semrush-card-value">
             <span>${mainMetrics.estTraffic.toLocaleString()}</span>
-            <span class="sk-semrush-delta up">▲ +${trafficDelta.toLocaleString()}</span>
+            <span class="sk-semrush-delta ${mainMetrics.estTraffic > 0 ? 'up' : 'same'}">${mainMetrics.estTraffic > 0 ? '▲ +' + trafficDelta.toLocaleString() : '0'}</span>
           </div>
           <div style="font-size:11px; color:#64748b; margin-top:4px;">
             Monthly projected clicks from ranking positions
@@ -946,8 +953,8 @@
             <span style="font-size:13px;">🎯</span>
           </div>
           <div class="sk-semrush-card-value">
-            <span>#${mainMetrics.avgPosition}</span>
-            <span class="sk-semrush-delta up">▲ +1.2 pos</span>
+            <span>${mainMetrics.avgPosition > 0 ? `#${mainMetrics.avgPosition}` : '—'}</span>
+            <span class="sk-semrush-delta ${mainMetrics.avgPosition > 0 ? 'up' : 'same'}">${mainMetrics.avgPosition > 0 ? '▲ Live' : 'Unranked'}</span>
           </div>
           <div style="font-size:11px; color:#64748b; margin-top:4px;">
             Mean rank for all tracked Kerala search terms
@@ -1426,7 +1433,7 @@
             <span class="sk-rank-badge ${m.top20 > 0 ? 'sk-rank-top20' : ''}">${m.top20}</span>
           </td>
           <td>
-            <strong style="color:#1e293b; font-size:13px;">#${m.avgPosition}</strong>
+            <strong style="color:#1e293b; font-size:13px;">${m.avgPosition > 0 ? `#${m.avgPosition}` : '—'}</strong>
           </td>
           <td>
             <div style="display:flex; align-items:center; gap:6px;">
