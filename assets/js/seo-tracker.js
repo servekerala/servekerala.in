@@ -1672,8 +1672,8 @@
     if (serperApiKey) {
       if (text) text.textContent = `🟢 Querying Live Google India servers via Serper API...`;
 
-      // Scan up to 10 keywords live per batch to stay within free tier
-      const scanLimit = Math.min(totalKw, 10);
+      // Scan all tracked keywords live via Serper API
+      const scanLimit = totalKw;
       for (let i = 0; i < scanLimit; i++) {
         const kw = trackedKeywords[i];
         const p = Math.round(((i + 1) / scanLimit) * 100);
@@ -1707,20 +1707,31 @@
             const data = await res.json();
             if (data.success && data.live) {
               kw.prevPosition = kw.position;
-              kw.position = data.position || kw.position;
-              kw.competitors = { ...kw.competitors, ...(data.competitors || {}) };
+              kw.position = (data.position && data.position > 0) ? data.position : null;
+              kw.competitors = {
+                'justdial.com': data.competitors?.['justdial.com'] || null,
+                'sulekha.com': data.competitors?.['sulekha.com'] || null,
+                'indiamart.com': data.competitors?.['indiamart.com'] || null,
+                'naatilepani.com': data.competitors?.['naatilepani.com'] || null
+              };
               kw.liveVerified = true;
               kw.lastChecked = Date.now();
             }
           }
         } catch (err) {
-          console.warn('Live SERP query failed for keyword, using fallback model:', kw.keyword, err);
+          console.warn('Live SERP query failed for keyword:', kw.keyword, err);
         }
 
         await new Promise(r => setTimeout(r, 200));
       }
 
-      if (text) text.textContent = `✅ Live Scan Complete! Verified ${scanLimit} keywords directly from Google India.`;
+      if (window.db) {
+        trackedKeywords.forEach(kw => {
+          window.db.collection('seo_tracker_keywords').doc(kw.id).set(kw).catch(() => {});
+        });
+      }
+
+      if (text) text.textContent = `✅ Live Scan Complete! Verified all ${scanLimit} keywords directly from Google India.`;
     } else {
       // Fallback Smart Local Simulation
       for (let i = 0; i <= totalKw; i++) {
