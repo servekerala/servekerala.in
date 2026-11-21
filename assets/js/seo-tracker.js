@@ -9,8 +9,25 @@
   const container = document.getElementById('admin-seo-tracker-container');
   if (!container) return;
 
-  // Active Main Sub-Tab: 'tracker' | 'pro_seo' | 'free_tools'
+  // Active Main Sub-Tab: 'tracker' | 'pro_seo' | 'free_tools' | 'page_meta'
   let currentActiveTab = 'tracker';
+  let pageSeoSettings = {
+    home: {
+      title: 'ServeKerala.in - Find Trusted Local Services in Kerala',
+      description: 'Discover verified local service providers, electricians, plumbers, AC technicians and businesses in Kerala.',
+      keywords: 'kerala services, local businesses, auto mithram, home repair kerala'
+    },
+    auto: {
+      title: 'Auto Mithram - Find Local Auto Rickshaws Across Kerala | ServeKerala',
+      description: 'Connect directly with verified local auto rickshaw drivers at stands near you with zero commissions.',
+      keywords: 'auto rickshaw, kerala transport, auto mithram, thiruvalla auto stand'
+    },
+    services: {
+      title: 'Services Directory - Browse Verified Professionals | ServeKerala',
+      description: 'Browse verified plumbers, electricians, AC repair, solar installation and cleaners in Kerala towns.',
+      keywords: 'plumber kerala, electrician, services, solar installation kerala'
+    }
+  };
 
   // Serper.dev API Key (Stored in localStorage & Firestore site_seo/global)
   const DEFAULT_SERPER_KEY = '38232572b45d7ca7bba5cc86a36ca7d76d16f83a';
@@ -615,6 +632,9 @@
           if (seoData.googleSiteVerification) {
             gscVerificationCode = seoData.googleSiteVerification;
           }
+          if (seoData.home) pageSeoSettings.home = { ...pageSeoSettings.home, ...seoData.home };
+          if (seoData.auto) pageSeoSettings.auto = { ...pageSeoSettings.auto, ...seoData.auto };
+          if (seoData.services) pageSeoSettings.services = { ...pageSeoSettings.services, ...seoData.services };
         } else {
           window.db.collection('site_seo').doc('global').set({ serperApiKey: DEFAULT_SERPER_KEY }, { merge: true }).catch(() => {});
         }
@@ -715,6 +735,9 @@
           <button type="button" class="btn btn-sm btn-seo-mode ${currentActiveTab === 'free_tools' ? 'active' : ''}" data-mode="free_tools" style="font-weight:700; padding:8px 16px; font-size:13px; border-radius:8px;">
             ⚡ 100% Free Google Indexing &amp; Ranking Tools
           </button>
+          <button type="button" class="btn btn-sm btn-seo-mode ${currentActiveTab === 'page_meta' ? 'active' : ''}" data-mode="page_meta" style="font-weight:700; padding:8px 16px; font-size:13px; border-radius:8px;">
+            📑 Core Pages Meta &amp; Keywords
+          </button>
         </div>
         <div style="font-size:12px; color:#64748b; font-weight:600; display:flex; align-items:center; gap:8px;">
           ${serperApiKey ? '<span style="color:#059669; font-weight:800; background:#ecfdf5; border:1px solid #a7f3d0; padding:3px 8px; border-radius:12px;">🟢 Live Google API Active</span>' : '<span style="color:#d97706; font-weight:700; background:#fffbeb; border:1px solid #fef3c7; padding:3px 8px; border-radius:12px;">⚪ Enter Free Key for Live Scans</span>'}
@@ -766,14 +789,20 @@
         ${renderFreeRankingToolsHtml()}
       </div>
 
-      <!-- Add Keyword Modal Container -->
+      <!-- Mode 4: Core Pages SEO Metadata & Keywords -->
+      <div id="sk-mode-page-meta" style="display:${currentActiveTab === 'page_meta' ? 'block' : 'none'};">
+        ${renderPageMetaHtml()}
+      </div>
+
+      <!-- Add/Edit Keyword Modal Container -->
       <div id="sk-add-kw-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; padding:16px;">
         <div style="background:#fff; border-radius:12px; width:100%; max-width:540px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); padding:24px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">➕ Add Tracked Keyword</h3>
+            <h3 id="modal-kw-title" style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">➕ Add Tracked Keyword</h3>
             <button type="button" id="btn-close-add-modal" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">&times;</button>
           </div>
           <form id="form-add-keyword" style="display:flex; flex-direction:column; gap:12px;">
+            <input type="hidden" id="modal-kw-id" value="">
             <div>
               <label style="display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:#334155;">Keyword / Query</label>
               <input type="text" id="modal-kw-text" required placeholder="e.g. ac service near me thiruvalla" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; box-sizing:border-box;">
@@ -843,7 +872,7 @@
             </div>
             <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
               <button type="button" id="btn-cancel-add-modal" class="btn btn-outline">Cancel</button>
-              <button type="submit" class="btn btn-primary" style="background:#059669; border-color:#059669;">Save &amp; Track</button>
+              <button type="submit" id="btn-submit-kw-modal" class="btn btn-primary" style="background:#059669; border-color:#059669;">Save &amp; Track</button>
             </div>
           </form>
         </div>
@@ -854,6 +883,103 @@
     if (currentActiveTab === 'tracker') {
       renderTrendChart();
     }
+  }
+
+
+  // Mode 4: Core Pages SEO Metadata & Keywords Renderer
+  function renderPageMetaHtml() {
+    const home = pageSeoSettings?.home || {};
+    const auto = pageSeoSettings?.auto || {};
+    const services = pageSeoSettings?.services || {};
+
+    return `
+      <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:24px; box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:16px;">
+          <div>
+            <h3 style="margin:0 0 6px; font-size:18px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+              <span>📑 Core Pages SEO Metadata &amp; Keywords</span>
+              <span style="font-size:11px; font-weight:700; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:12px; border:1px solid #bbf7d0;">Cloud Firestore Synced</span>
+            </h3>
+            <p style="margin:0; font-size:13px; color:#64748b;">Configure Meta Titles, Meta Descriptions, and comma-separated search keywords for ServeKerala's core landing pages. Stored in Firestore and applied sitewide.</p>
+          </div>
+        </div>
+
+        <form id="form-core-page-seo" style="display:flex; flex-direction:column; gap:20px;">
+          <!-- Home Page Card -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+              <span style="font-size:18px;">🏠</span>
+              <h4 style="margin:0; font-size:15px; font-weight:800; color:#0f172a;">Home Page <span style="font-size:12px; color:#64748b; font-weight:500;">(/index.html)</span></h4>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Meta Title</label>
+                <input type="text" id="page-seo-home-title" value="${escapeHtml(home.title || '')}" placeholder="e.g. ServeKerala.in - Find Trusted Local Services" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Meta Description</label>
+                <textarea id="page-seo-home-desc" rows="2" placeholder="Discover verified local service providers in Kerala..." style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; resize:vertical;">${escapeHtml(home.description || '')}</textarea>
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Keywords (Comma separated)</label>
+                <input type="text" id="page-seo-home-keywords" value="${escapeHtml(home.keywords || '')}" placeholder="e.g. kerala services, local businesses, auto mithram" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto Mithram Card -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+              <span style="font-size:18px;">🚕</span>
+              <h4 style="margin:0; font-size:15px; font-weight:800; color:#0f172a;">Auto Mithram <span style="font-size:12px; color:#64748b; font-weight:500;">(/auto-mithram/index.html)</span></h4>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Meta Title</label>
+                <input type="text" id="page-seo-auto-title" value="${escapeHtml(auto.title || '')}" placeholder="e.g. Auto Mithram - Find Auto Rickshaws in Kerala" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Meta Description</label>
+                <textarea id="page-seo-auto-desc" rows="2" placeholder="Connect directly with local auto rickshaw drivers..." style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; resize:vertical;">${escapeHtml(auto.description || '')}</textarea>
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Keywords (Comma separated)</label>
+                <input type="text" id="page-seo-auto-keywords" value="${escapeHtml(auto.keywords || '')}" placeholder="e.g. auto rickshaw, kerala transport, auto mithram" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Services Directory Card -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+              <span style="font-size:18px;">🛠️</span>
+              <h4 style="margin:0; font-size:15px; font-weight:800; color:#0f172a;">Services Directory <span style="font-size:12px; color:#64748b; font-weight:500;">(/services/index.html)</span></h4>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Meta Title</label>
+                <input type="text" id="page-seo-services-title" value="${escapeHtml(services.title || '')}" placeholder="e.g. Browse All Services | ServeKerala.in" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Meta Description</label>
+                <textarea id="page-seo-services-desc" rows="2" placeholder="Browse verified plumbers, electricians, AC repair..." style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; resize:vertical;">${escapeHtml(services.description || '')}</textarea>
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:4px;">Keywords (Comma separated)</label>
+                <input type="text" id="page-seo-services-keywords" value="${escapeHtml(services.keywords || '')}" placeholder="e.g. plumber kerala, electrician, services" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;">
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; padding-top:10px;">
+            <button type="submit" id="btn-save-page-meta" class="btn btn-primary" style="background:#059669; border-color:#059669; font-weight:700; padding:10px 24px; font-size:14px; border-radius:6px; cursor:pointer;">
+              💾 Save Page SEO &amp; Keywords
+            </button>
+            <span id="page-meta-save-status" style="font-size:13px; font-weight:600; color:#059669;"></span>
+          </div>
+        </form>
+      </div>
+    `;
   }
 
   // 1. Tracker Mode HTML
@@ -1078,6 +1204,9 @@
               <option value="Kozhikode" ${selectedDistrict === 'Kozhikode' ? 'selected' : ''}>Kozhikode</option>
               <option value="All Kerala" ${selectedDistrict === 'All Kerala' ? 'selected' : ''}>All Kerala (Statewide)</option>
             </select>
+            <button type="button" id="btn-open-add-kw-table" class="btn btn-primary" style="font-size:12px; font-weight:700; background:#059669; border-color:#059669; padding:7px 13px; display:inline-flex; align-items:center; gap:4px; border-radius:6px; cursor:pointer; color:#fff;" title="Add a new search keyword to monitor">
+              ➕ Add Keyword
+            </button>
           </div>
         </div>
 
@@ -1575,12 +1704,13 @@
             </span>
           </td>
           <td style="text-align:center;">
-            <div style="display:flex; justify-content:center; align-items:center; gap:6px;">
-              <a href="${googleSearchUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="font-size:11px; padding:3px 8px; color:#1e40af; border-color:#93c5fd; background:#eff6ff; display:inline-flex; align-items:center; gap:3px; text-decoration:none;" title="Verify live search results on Google India">
-                <span>Google SERP</span>
+            <div style="display:flex; justify-content:center; align-items:center; gap:5px;">
+              <button type="button" class="btn-edit-kw" data-kwid="${kw.id}" style="font-size:11px; padding:3px 8px; color:#0f172a; border:1px solid #cbd5e1; border-radius:4px; background:#f8fafc; cursor:pointer; font-weight:600;" title="Edit keyword details">✏️ Edit</button>
+              <a href="${googleSearchUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="font-size:11px; padding:3px 7px; color:#1e40af; border-color:#93c5fd; background:#eff6ff; display:inline-flex; align-items:center; gap:3px; text-decoration:none;" title="Verify live search results on Google India">
+                <span>SERP</span>
                 <span>↗</span>
               </a>
-              <button type="button" class="btn-delete-kw" data-kwid="${kw.id}" style="background:none; border:none; color:#94a3b8; font-size:14px; cursor:pointer;" title="Delete tracked keyword">&times;</button>
+              <button type="button" class="btn-delete-kw" data-kwid="${kw.id}" style="background:none; border:none; color:#ef4444; font-size:15px; cursor:pointer; padding:0 4px;" title="Delete tracked keyword">&times;</button>
             </div>
           </td>
         </tr>
@@ -1994,11 +2124,67 @@
     renderSuite();
   }
 
-  // Handle Add Keyword Form Submission
+  // Open Add/Edit Keyword Modal
+  function openAddKeywordModal(kwId = null) {
+    const modal = document.getElementById('sk-add-kw-modal');
+    if (!modal) return;
+
+    const idInput = document.getElementById('modal-kw-id');
+    const titleEl = document.getElementById('modal-kw-title');
+    const submitBtn = document.getElementById('btn-submit-kw-modal');
+
+    if (kwId) {
+      const kw = trackedKeywords.find(k => k.id === kwId);
+      if (!kw) return;
+
+      if (idInput) idInput.value = kw.id;
+      if (titleEl) titleEl.innerHTML = `✏️ Edit Tracked Keyword: "<span style="color:#059669;">${escapeHtml(kw.keyword)}</span>"`;
+      if (submitBtn) submitBtn.textContent = '💾 Update Keyword';
+
+      document.getElementById('modal-kw-text').value = kw.keyword || '';
+      document.getElementById('modal-kw-district').value = kw.district || 'Pathanamthitta';
+      document.getElementById('modal-kw-town').value = kw.town || '';
+      document.getElementById('modal-kw-intent').value = kw.intent || 'T';
+      document.getElementById('modal-kw-vol').value = kw.volume || 1000;
+      document.getElementById('modal-kw-kd').value = kw.kd !== undefined ? kw.kd : 25;
+      document.getElementById('modal-kw-url').value = kw.targetUrl || '';
+
+      document.getElementById('modal-pos-sk').value = kw.position !== null && kw.position !== undefined ? kw.position : '';
+      document.getElementById('modal-pos-jd').value = kw.competitors?.['justdial.com'] || '';
+      document.getElementById('modal-pos-sul').value = kw.competitors?.['sulekha.com'] || '';
+      document.getElementById('modal-pos-im').value = kw.competitors?.['indiamart.com'] || '';
+      document.getElementById('modal-pos-np').value = kw.competitors?.['naatilepani.com'] || '';
+    } else {
+      if (idInput) idInput.value = '';
+      if (titleEl) titleEl.textContent = '➕ Add Tracked Keyword';
+      if (submitBtn) submitBtn.textContent = 'Save & Track';
+
+      document.getElementById('modal-kw-text').value = '';
+      document.getElementById('modal-kw-district').value = 'Pathanamthitta';
+      document.getElementById('modal-kw-town').value = '';
+      document.getElementById('modal-kw-intent').value = 'T';
+      document.getElementById('modal-kw-vol').value = '1200';
+      document.getElementById('modal-kw-kd').value = '25';
+      document.getElementById('modal-kw-url').value = '';
+
+      document.getElementById('modal-pos-sk').value = '';
+      document.getElementById('modal-pos-jd').value = '';
+      document.getElementById('modal-pos-sul').value = '';
+      document.getElementById('modal-pos-im').value = '';
+      document.getElementById('modal-pos-np').value = '';
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  // Handle Add / Edit Keyword Form Submission
   async function handleAddKeywordSubmit(e) {
     e.preventDefault();
     const kwText = document.getElementById('modal-kw-text').value.trim();
     if (!kwText) return;
+
+    const idInput = document.getElementById('modal-kw-id');
+    const editingId = idInput?.value || null;
 
     const district = document.getElementById('modal-kw-district').value;
     const town = document.getElementById('modal-kw-town').value.trim() || district;
@@ -2006,45 +2192,134 @@
     const volume = Number(document.getElementById('modal-kw-vol').value) || 500;
     const kd = Number(document.getElementById('modal-kw-kd').value) || 20;
     const targetUrl = document.getElementById('modal-kw-url').value.trim();
-    const posSk = Number(document.getElementById('modal-pos-sk').value) || 1;
-    const posJd = Number(document.getElementById('modal-pos-jd').value) || 2;
-    const posSul = Number(document.getElementById('modal-pos-sul').value) || 4;
-    const posIm = Number(document.getElementById('modal-pos-im').value) || 6;
-    const posNp = Number(document.getElementById('modal-pos-np').value) || 10;
+
+    const valSk = document.getElementById('modal-pos-sk').value.trim();
+    const posSk = valSk !== '' ? Number(valSk) : null;
+    const posJd = Number(document.getElementById('modal-pos-jd').value) || null;
+    const posSul = Number(document.getElementById('modal-pos-sul').value) || null;
+    const posIm = Number(document.getElementById('modal-pos-im').value) || null;
+    const posNp = Number(document.getElementById('modal-pos-np').value) || null;
 
     const intentMap = { T: 'Transactional', C: 'Commercial', I: 'Informational', N: 'Navigational' };
 
-    const newKw = {
-      id: `kw-${Date.now()}`,
-      keyword: kwText,
-      district,
-      town,
-      intent,
-      intentLabel: intentMap[intent] || 'Transactional',
-      serpFeatures: ['📍 Pack', '⭐ Reviews'],
-      volume,
-      kd,
-      targetUrl,
-      position: posSk,
-      prevPosition: posSk,
-      competitors: {
-        'justdial.com': posJd,
-        'sulekha.com': posSul,
-        'indiamart.com': posIm,
-        'naatilepani.com': posNp
+    if (editingId) {
+      const idx = trackedKeywords.findIndex(k => k.id === editingId);
+      if (idx !== -1) {
+        trackedKeywords[idx] = {
+          ...trackedKeywords[idx],
+          keyword: kwText,
+          district,
+          town,
+          intent,
+          intentLabel: intentMap[intent] || 'Transactional',
+          volume,
+          kd,
+          targetUrl,
+          position: posSk,
+          prevPosition: posSk,
+          liveVerified: posSk !== null,
+          competitors: {
+            'justdial.com': posJd,
+            'sulekha.com': posSul,
+            'indiamart.com': posIm,
+            'naatilepani.com': posNp
+          }
+        };
+
+        if (window.db) {
+          window.db.collection('seo_tracker_keywords').doc(editingId).set(trackedKeywords[idx], { merge: true }).catch(() => {});
+        }
       }
-    };
+    } else {
+      const newKw = {
+        id: `kw-${Date.now()}`,
+        keyword: kwText,
+        district,
+        town,
+        intent,
+        intentLabel: intentMap[intent] || 'Transactional',
+        serpFeatures: ['📍 Pack', '⭐ Reviews'],
+        volume,
+        kd,
+        targetUrl,
+        position: posSk,
+        prevPosition: posSk,
+        liveVerified: posSk !== null,
+        competitors: {
+          'justdial.com': posJd,
+          'sulekha.com': posSul,
+          'indiamart.com': posIm,
+          'naatilepani.com': posNp
+        }
+      };
 
-    trackedKeywords.unshift(newKw);
+      trackedKeywords.unshift(newKw);
 
-    if (window.db) {
-      window.db.collection('seo_tracker_keywords').doc(newKw.id).set(newKw).catch(() => {});
+      if (window.db) {
+        window.db.collection('seo_tracker_keywords').doc(newKw.id).set(newKw).catch(() => {});
+      }
     }
 
     const modal = document.getElementById('sk-add-kw-modal');
     if (modal) modal.style.display = 'none';
 
     renderSuite();
+  }
+
+  // Handle Save Core Pages SEO & Keywords Form
+  async function handleSavePageMetaSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-save-page-meta');
+    const statusEl = document.getElementById('page-meta-save-status');
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+    }
+
+    pageSeoSettings = {
+      home: {
+        title: (document.getElementById('page-seo-home-title')?.value || '').trim(),
+        description: (document.getElementById('page-seo-home-desc')?.value || '').trim(),
+        keywords: (document.getElementById('page-seo-home-keywords')?.value || '').trim()
+      },
+      auto: {
+        title: (document.getElementById('page-seo-auto-title')?.value || '').trim(),
+        description: (document.getElementById('page-seo-auto-desc')?.value || '').trim(),
+        keywords: (document.getElementById('page-seo-auto-keywords')?.value || '').trim()
+      },
+      services: {
+        title: (document.getElementById('page-seo-services-title')?.value || '').trim(),
+        description: (document.getElementById('page-seo-services-desc')?.value || '').trim(),
+        keywords: (document.getElementById('page-seo-services-keywords')?.value || '').trim()
+      }
+    };
+
+    if (window.db) {
+      window.db.collection('site_seo').doc('global').set(pageSeoSettings, { merge: true }).then(() => {
+        if (statusEl) statusEl.textContent = '✅ Saved successfully to Firestore!';
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '💾 Save Page SEO & Keywords';
+        }
+        setTimeout(() => {
+          if (statusEl) statusEl.textContent = '';
+        }, 3000);
+      }).catch(err => {
+        console.error('Error saving page SEO:', err);
+        alert('Failed to save settings to Firestore.');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '💾 Save Page SEO & Keywords';
+        }
+      });
+    } else {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Page SEO & Keywords';
+      }
+      if (statusEl) statusEl.textContent = '✅ Updated locally (Database offline)';
+    }
   }
 
   // Attach All Event Listeners
@@ -2131,15 +2406,20 @@
     const btnReset = document.getElementById('btn-reset-seed');
     if (btnReset) btnReset.addEventListener('click', resetToDefaults);
 
-    // Modal Add Keyword
+    // Modal Add/Edit Keyword
     const btnOpenAdd = document.getElementById('btn-open-add-kw');
+    const btnOpenAddTable = document.getElementById('btn-open-add-kw-table');
     const modal = document.getElementById('sk-add-kw-modal');
     const btnCloseModal = document.getElementById('btn-close-add-modal');
     const btnCancelModal = document.getElementById('btn-cancel-add-modal');
     const formAdd = document.getElementById('form-add-keyword');
+    const formPageMeta = document.getElementById('form-core-page-seo');
 
-    if (btnOpenAdd && modal) {
-      btnOpenAdd.addEventListener('click', () => { modal.style.display = 'flex'; });
+    if (btnOpenAdd) {
+      btnOpenAdd.addEventListener('click', () => { openAddKeywordModal(); });
+    }
+    if (btnOpenAddTable) {
+      btnOpenAddTable.addEventListener('click', () => { openAddKeywordModal(); });
     }
     if (btnCloseModal && modal) {
       btnCloseModal.addEventListener('click', () => { modal.style.display = 'none'; });
@@ -2149,6 +2429,9 @@
     }
     if (formAdd) {
       formAdd.addEventListener('submit', handleAddKeywordSubmit);
+    }
+    if (formPageMeta) {
+      formPageMeta.addEventListener('submit', handleSavePageMetaSubmit);
     }
 
     // Filter Tabs
@@ -2169,6 +2452,7 @@
         const badge = document.getElementById('sk-kw-count-badge');
         if (tbody) tbody.innerHTML = renderKeywordRows();
         if (badge) badge.textContent = `${getFilteredKeywords().length} Keywords`;
+        attachEditButtons();
         attachDeleteButtons();
       });
     }
@@ -2191,7 +2475,18 @@
       });
     });
 
+    attachEditButtons();
     attachDeleteButtons();
+  }
+
+  function attachEditButtons() {
+    const editBtns = container.querySelectorAll('.btn-edit-kw');
+    editBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-kwid');
+        if (id) openAddKeywordModal(id);
+      });
+    });
   }
 
   function attachDeleteButtons() {
