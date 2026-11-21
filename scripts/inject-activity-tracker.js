@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT_DIR = path.join(__dirname, '..');
-const SCRIPT_TAG = '  <script src="/assets/js/activity-tracker.js?v=1.7" defer></script>';
+const SCRIPT_TAG = '  <script src="/assets/js/activity-tracker.js?v=1.8" defer></script>';
 
 function getHtmlFiles(dir, filesList = []) {
   const files = fs.readdirSync(dir);
