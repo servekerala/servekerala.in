@@ -105,13 +105,18 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // 7. Private rank-tracking campaigns and SERP snapshots
+    // 7. Semrush-style Position Tracker & Competitor Rankings
+    match /seo_tracker_runs/{document} {
+      allow read, write: if isAdmin();
+    }
+
+    match /seo_tracker_keywords/{document} {
+      allow read, write: if isAdmin();
+    }
+
     match /seo_tracker_settings/{document} {
       allow read, write: if isAdmin();
     }
 
-    match /seo_tracker_runs/{document} {
-      allow read, write: if isAdmin();
-    }
   }
 }

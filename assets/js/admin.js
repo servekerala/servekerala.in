@@ -681,6 +681,7 @@ if (typeof firebase !== 'undefined') {
         const bpBar = document.getElementById('business-pages-action-bar');
         if (bpBar) bpBar.style.display = 'none';
         loadSeoSettings();
+        if (typeof window.renderSeoTracker === 'function') window.renderSeoTracker();
         return;
       } else if (activeCollection === 'kpi_dashboard') {
         listingsContainer.style.display = 'none';
